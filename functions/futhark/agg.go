@@ -2,7 +2,8 @@ package futhark
 
 //go:generate futhark-opencl --library agg.fut
 
-// #cgo LDFLAGS: -L. -lagg -lOpenCL -lm
+// #cgo darwin LDFLAGS: -L. -lagg -framework OpenCL
+// #cgo !darwin LDFLAGS: -L. -lagg -lOpenCL -lm
 // #include "agg.h"
 import "C"
 
