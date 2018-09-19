@@ -67,6 +67,12 @@ func BenchmarkStddev(b *testing.B) {
 func BenchmarkStddevBySize(b *testing.B) {
 	AggFuncBySizeBenchmarkHelper(
 		b,
+		new(functions.StddevAgg),
+	)
+}
+func BenchmarkStddevFutharkBySize(b *testing.B) {
+	AggFuncBySizeBenchmarkHelper(
+		b,
 		futhark.NewAggregator(futhark.Stddev),
 	)
 }

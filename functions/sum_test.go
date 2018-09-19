@@ -39,6 +39,12 @@ func BenchmarkSum(b *testing.B) {
 func BenchmarkSumBySize(b *testing.B) {
 	AggFuncBySizeBenchmarkHelper(
 		b,
+		new(functions.SumAgg),
+	)
+}
+func BenchmarkSumFutharkBySize(b *testing.B) {
+	AggFuncBySizeBenchmarkHelper(
+		b,
 		futhark.NewAggregator(futhark.Sum),
 	)
 }

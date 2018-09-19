@@ -67,6 +67,12 @@ func BenchmarkMean(b *testing.B) {
 func BenchmarkMeanBySize(b *testing.B) {
 	AggFuncBySizeBenchmarkHelper(
 		b,
+		new(functions.MeanAgg),
+	)
+}
+func BenchmarkMeanFutharkBySize(b *testing.B) {
+	AggFuncBySizeBenchmarkHelper(
+		b,
 		futhark.NewAggregator(futhark.Mean),
 	)
 }

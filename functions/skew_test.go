@@ -77,6 +77,12 @@ func BenchmarkSkew(b *testing.B) {
 func BenchmarkSkewBySize(b *testing.B) {
 	AggFuncBySizeBenchmarkHelper(
 		b,
+		new(functions.SkewAgg),
+	)
+}
+func BenchmarkSkewFutharkBySize(b *testing.B) {
+	AggFuncBySizeBenchmarkHelper(
+		b,
 		futhark.NewAggregator(futhark.Skew),
 	)
 }

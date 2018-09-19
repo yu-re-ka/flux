@@ -400,3 +400,12 @@ func BenchmarkPercentile(b *testing.B) {
 		13.843815760607427,
 	)
 }
+func BenchmarkPercentileBySize(b *testing.B) {
+	AggFuncBySizeBenchmarkHelper(
+		b,
+		&functions.PercentileAgg{
+			Quantile:    0.9,
+			Compression: 1000,
+		},
+	)
+}

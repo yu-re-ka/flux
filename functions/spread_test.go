@@ -39,3 +39,9 @@ func BenchmarkSpread(b *testing.B) {
 		28.227196461851847,
 	)
 }
+func BenchmarkSpreadBySize(b *testing.B) {
+	AggFuncBySizeBenchmarkHelper(
+		b,
+		new(functions.SpreadAgg),
+	)
+}
