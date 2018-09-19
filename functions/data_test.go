@@ -1,8 +1,8 @@
 package functions_test
 
 import (
+	"fmt"
 	"math/rand"
-	"strconv"
 	"testing"
 	"time"
 
@@ -22,7 +22,7 @@ const (
 	seed = 42
 )
 
-var Sizes = []int{1e3, 1e4, 1e5, 1e6, 1e7, 1e8, 1e9}
+var Sizes = []int{1e3, 1e4, 1e5, 1e6, 1e7, 1e8}
 var NormalDataBySize [][]float64
 
 // NormalData is a slice of N random values that are normaly distributed with mean Mu and standard deviation Sigma.
@@ -110,7 +110,7 @@ func init() {
 func AggFuncBySizeBenchmarkHelper(b *testing.B, agg execute.Aggregate) {
 	for i, s := range Sizes {
 		data := NormalDataBySize[i]
-		b.Run(strconv.Itoa(s), func(b *testing.B) {
+		b.Run(fmt.Sprintf("%g", float64(s)), func(b *testing.B) {
 			b.Helper()
 			b.ResetTimer()
 			for n := 0; n < b.N; n++ {
