@@ -85,3 +85,6 @@ var Sum = func(ctx *C.struct_futhark_context, out *C.double, in *C.struct_futhar
 var Mean = func(ctx *C.struct_futhark_context, out *C.double, in *C.struct_futhark_f64_1d) {
 	C.futhark_entry_mean(ctx, out, in)
 }
+var Stddev = func(ctx *C.struct_futhark_context, out *C.double, in *C.struct_futhark_f64_1d) {
+	C.futhark_entry_stddev(ctx, out, in)
+}

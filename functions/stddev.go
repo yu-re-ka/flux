@@ -6,6 +6,7 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/functions/futhark"
 	"github.com/influxdata/flux/plan"
 )
 
@@ -74,7 +75,8 @@ func createStddevTransformation(id execute.DatasetID, mode execute.AccumulationM
 	if !ok {
 		return nil, nil, fmt.Errorf("invalid spec type %T", spec)
 	}
-	t, d := execute.NewAggregateTransformationAndDataset(id, mode, new(StddevAgg), s.AggregateConfig, a.Allocator())
+	agg := futhark.NewAggregator(futhark.Stddev)
+	t, d := execute.NewAggregateTransformationAndDataset(id, mode, agg, s.AggregateConfig, a.Allocator())
 	return t, d, nil
 }
 
