@@ -21,10 +21,11 @@ type Aggregator struct {
 }
 
 func NewAggregator(agg AggFunc) *Aggregator {
+	cfg := C.futhark_context_config_new()
+	C.futhark_context_config_set_device(cfg, deviceStr)
+
 	return &Aggregator{
-		//TODO(nathanielc): Create config sturct to map to futhark_context_config
-		// Using defaults for now.
-		cfg: C.futhark_context_config_new(),
+		cfg: cfg,
 		agg: agg,
 	}
 }
