@@ -7,6 +7,7 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/functions"
+	"github.com/influxdata/flux/functions/futhark"
 	"github.com/influxdata/flux/querytest"
 )
 
@@ -61,5 +62,11 @@ func BenchmarkStddev(b *testing.B) {
 		new(functions.StddevAgg),
 		NormalData,
 		2.998926113076968,
+	)
+}
+func BenchmarkStddevBySize(b *testing.B) {
+	AggFuncBySizeBenchmarkHelper(
+		b,
+		futhark.NewAggregator(futhark.Stddev),
 	)
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/functions"
+	"github.com/influxdata/flux/functions/futhark"
 	"github.com/influxdata/flux/querytest"
 )
 
@@ -61,5 +62,11 @@ func BenchmarkMean(b *testing.B) {
 		new(functions.MeanAgg),
 		NormalData,
 		10.00081696729983,
+	)
+}
+func BenchmarkMeanBySize(b *testing.B) {
+	AggFuncBySizeBenchmarkHelper(
+		b,
+		futhark.NewAggregator(futhark.Mean),
 	)
 }

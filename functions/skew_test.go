@@ -7,6 +7,7 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/functions"
+	"github.com/influxdata/flux/functions/futhark"
 	"github.com/influxdata/flux/querytest"
 )
 
@@ -71,5 +72,11 @@ func BenchmarkSkew(b *testing.B) {
 		new(functions.SkewAgg),
 		NormalData,
 		0.0032200673020400935,
+	)
+}
+func BenchmarkSkewBySize(b *testing.B) {
+	AggFuncBySizeBenchmarkHelper(
+		b,
+		futhark.NewAggregator(futhark.Skew),
 	)
 }

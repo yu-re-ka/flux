@@ -6,6 +6,7 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/functions"
+	"github.com/influxdata/flux/functions/futhark"
 	"github.com/influxdata/flux/querytest"
 )
 
@@ -35,4 +36,9 @@ func BenchmarkSum(b *testing.B) {
 		10000816.96729983,
 	)
 }
-
+func BenchmarkSumBySize(b *testing.B) {
+	AggFuncBySizeBenchmarkHelper(
+		b,
+		futhark.NewAggregator(futhark.Sum),
+	)
+}
