@@ -1,10 +1,10 @@
 package futhark
 
-//go:generate futhark-opencl --library agg.fut
-
 // #cgo darwin LDFLAGS: -L. -lagg -framework OpenCL
 // #cgo !darwin LDFLAGS: -L. -lagg -lOpenCL -lm
-// #include "agg.h"
+//
+// #include "agg_gpu.h"
+// #include "agg_cpu.h"
 import "C"
 
 import (
@@ -12,16 +12,24 @@ import (
 	"github.com/influxdata/flux/execute"
 )
 
-var ctx *C.struct_futhark_context
+var (
+	ctx_gpu *C.struct_futhark_gpu_context
+	ctx_cpu *C.struct_futhark_cpu_context
+)
 
 func init() {
-	cfg := C.futhark_context_config_new()
-	C.futhark_context_config_set_device(cfg, deviceStr)
-	ctx = C.futhark_context_new(cfg)
+	cfg_gpu := C.futhark_gpu_context_config_new()
+	C.futhark_gpu_context_config_set_device(cfg_gpu, deviceStr)
+	ctx_gpu = C.futhark_gpu_context_new(cfg_gpu)
+
+	cfg_cpu := C.futhark_cpu_context_config_new()
+	ctx_cpu = C.futhark_cpu_context_new(cfg_cpu)
 }
 
-// AggFunc is a function the performs an aggregate operation using
-type AggFunc func(*C.struct_futhark_context, *C.double, *C.struct_futhark_f64_1d)
+type AggFunc struct {
+	cpu func(*C.double, *C.struct_futhark_cpu_f64_1d)
+	gpu func(*C.double, *C.struct_futhark_gpu_f64_1d)
+}
 
 type Aggregator struct {
 	agg AggFunc
@@ -69,27 +77,42 @@ func (f *DoFloatAgg) Type() flux.DataType {
 }
 
 func (f *DoFloatAgg) DoFloat(data []float64) {
-	var in = C.futhark_new_f64_1d(ctx, (*C.double)(&data[0]), (C.int)(len(data)))
-	f.agg(ctx, (*C.double)(&f.out), in)
-	C.futhark_free_f64_1d(ctx, in)
+	if len(data) < 1e6 {
+		in := C.futhark_cpu_new_f64_1d(ctx_cpu, (*C.double)(&data[0]), C.int(len(data)))
+		f.agg.cpu((*C.double)(&f.out), in)
+		C.futhark_cpu_free_f64_1d(ctx_cpu, in)
+	} else {
+		in := C.futhark_gpu_new_f64_1d(ctx_gpu, (*C.double)(&data[0]), C.int(len(data)))
+		f.agg.gpu((*C.double)(&f.out), in)
+		C.futhark_gpu_free_f64_1d(ctx_gpu, in)
+	}
 }
 
 func (f *DoFloatAgg) ValueFloat() float64 {
 	return f.out
 }
 
-var Sum = func(ctx *C.struct_futhark_context, out *C.double, in *C.struct_futhark_f64_1d) {
-	C.futhark_entry_sum(ctx, out, in)
+var Sum = AggFunc{
+	cpu: func(out *C.double, in *C.struct_futhark_cpu_f64_1d) { C.futhark_cpu_entry_sum(ctx_cpu, out, in) },
+	gpu: func(out *C.double, in *C.struct_futhark_gpu_f64_1d) { C.futhark_gpu_entry_sum(ctx_gpu, out, in) },
 }
-var Mean = func(ctx *C.struct_futhark_context, out *C.double, in *C.struct_futhark_f64_1d) {
-	C.futhark_entry_mean(ctx, out, in)
+
+var Mean = AggFunc{
+	cpu: func(out *C.double, in *C.struct_futhark_cpu_f64_1d) { C.futhark_cpu_entry_mean(ctx_cpu, out, in) },
+	gpu: func(out *C.double, in *C.struct_futhark_gpu_f64_1d) { C.futhark_gpu_entry_mean(ctx_gpu, out, in) },
 }
-var Stddev = func(ctx *C.struct_futhark_context, out *C.double, in *C.struct_futhark_f64_1d) {
-	C.futhark_entry_stddev(ctx, out, in)
+
+var Stddev = AggFunc{
+	cpu: func(out *C.double, in *C.struct_futhark_cpu_f64_1d) { C.futhark_cpu_entry_stddev(ctx_cpu, out, in) },
+	gpu: func(out *C.double, in *C.struct_futhark_gpu_f64_1d) { C.futhark_gpu_entry_stddev(ctx_gpu, out, in) },
 }
-var Skew = func(ctx *C.struct_futhark_context, out *C.double, in *C.struct_futhark_f64_1d) {
-	C.futhark_entry_skew(ctx, out, in)
+
+var Skew = AggFunc{
+	cpu: func(out *C.double, in *C.struct_futhark_cpu_f64_1d) { C.futhark_cpu_entry_skew(ctx_cpu, out, in) },
+	gpu: func(out *C.double, in *C.struct_futhark_gpu_f64_1d) { C.futhark_gpu_entry_skew(ctx_gpu, out, in) },
 }
-var Kurtosis = func(ctx *C.struct_futhark_context, out *C.double, in *C.struct_futhark_f64_1d) {
-	C.futhark_entry_kurtosis(ctx, out, in)
+
+var Kurtosis = AggFunc{
+	cpu: func(out *C.double, in *C.struct_futhark_cpu_f64_1d) { C.futhark_cpu_entry_kurtosis(ctx_cpu, out, in) },
+	gpu: func(out *C.double, in *C.struct_futhark_gpu_f64_1d) { C.futhark_gpu_entry_kurtosis(ctx_gpu, out, in) },
 }

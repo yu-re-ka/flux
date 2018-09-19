@@ -1068,19 +1068,19 @@ static const char *size_entry_points[] = {"sum", "sum", "mean", "mean",
                                           "skew", "kurtosis", "kurtosis",
                                           "kurtosis", "kurtosis", "stddev",
                                           "stddev", "stddev", "stddev"};
-int futhark_get_num_sizes(void)
+int futhark_gpu_get_num_sizes(void)
 {
     return 20;
 }
-const char *futhark_get_size_name(int i)
+const char *futhark_gpu_get_size_name(int i)
 {
     return size_names[i];
 }
-const char *futhark_get_size_class(int i)
+const char *futhark_gpu_get_size_class(int i)
 {
     return size_classes[i];
 }
-const char *futhark_get_size_entry(int i)
+const char *futhark_gpu_get_size_entry(int i)
 {
     return size_entry_points[i];
 }
@@ -1106,14 +1106,14 @@ struct sizes {
     size_t group_sizze_5559;
     size_t max_num_groups_5561;
 } ;
-struct futhark_context_config {
+struct futhark_gpu_context_config {
     struct opencl_config opencl;
     size_t sizes[20];
 } ;
-struct futhark_context_config *futhark_context_config_new(void)
+struct futhark_gpu_context_config *futhark_gpu_context_config_new(void)
 {
-    struct futhark_context_config *cfg =
-                                  malloc(sizeof(struct futhark_context_config));
+    struct futhark_gpu_context_config *cfg =
+                                  malloc(sizeof(struct futhark_gpu_context_config));
     
     if (cfg == NULL)
         return NULL;
@@ -1142,63 +1142,63 @@ struct futhark_context_config *futhark_context_config_new(void)
     cfg->opencl.transpose_block_dim = 16;
     return cfg;
 }
-void futhark_context_config_free(struct futhark_context_config *cfg)
+void futhark_gpu_context_config_free(struct futhark_gpu_context_config *cfg)
 {
     free(cfg);
 }
-void futhark_context_config_set_debugging(struct futhark_context_config *cfg,
+void futhark_gpu_context_config_set_debugging(struct futhark_gpu_context_config *cfg,
                                           int flag)
 {
     cfg->opencl.logging = cfg->opencl.debugging = flag;
 }
-void futhark_context_config_set_logging(struct futhark_context_config *cfg,
+void futhark_gpu_context_config_set_logging(struct futhark_gpu_context_config *cfg,
                                         int flag)
 {
     cfg->opencl.logging = flag;
 }
-void futhark_context_config_set_device(struct futhark_context_config *cfg, const
+void futhark_gpu_context_config_set_device(struct futhark_gpu_context_config *cfg, const
                                        char *s)
 {
     set_preferred_device(&cfg->opencl, s);
 }
-void futhark_context_config_set_platform(struct futhark_context_config *cfg,
+void futhark_gpu_context_config_set_platform(struct futhark_gpu_context_config *cfg,
                                          const char *s)
 {
     set_preferred_platform(&cfg->opencl, s);
 }
-void futhark_context_config_dump_program_to(struct futhark_context_config *cfg,
+void futhark_gpu_context_config_dump_program_to(struct futhark_gpu_context_config *cfg,
                                             const char *path)
 {
     cfg->opencl.dump_program_to = path;
 }
-void futhark_context_config_load_program_from(struct futhark_context_config *cfg,
+void futhark_gpu_context_config_load_program_from(struct futhark_gpu_context_config *cfg,
                                               const char *path)
 {
     cfg->opencl.load_program_from = path;
 }
-void futhark_context_config_set_default_group_size(struct futhark_context_config *cfg,
+void futhark_gpu_context_config_set_default_group_size(struct futhark_gpu_context_config *cfg,
                                                    int size)
 {
     cfg->opencl.default_group_size = size;
     cfg->opencl.default_group_size_changed = 1;
 }
-void futhark_context_config_set_default_num_groups(struct futhark_context_config *cfg,
+void futhark_gpu_context_config_set_default_num_groups(struct futhark_gpu_context_config *cfg,
                                                    int num)
 {
     cfg->opencl.default_num_groups = num;
 }
-void futhark_context_config_set_default_tile_size(struct futhark_context_config *cfg,
+void futhark_gpu_context_config_set_default_tile_size(struct futhark_gpu_context_config *cfg,
                                                   int size)
 {
     cfg->opencl.default_tile_size = size;
     cfg->opencl.default_tile_size_changed = 1;
 }
-void futhark_context_config_set_default_threshold(struct futhark_context_config *cfg,
+void futhark_gpu_context_config_set_default_threshold(struct futhark_gpu_context_config *cfg,
                                                   int size)
 {
     cfg->opencl.default_threshold = size;
 }
-int futhark_context_config_set_size(struct futhark_context_config *cfg, const
+int futhark_gpu_context_config_set_size(struct futhark_gpu_context_config *cfg, const
                                     char *size_name, size_t size_value)
 {
     for (int i = 0; i < 20; i++) {
@@ -1209,7 +1209,7 @@ int futhark_context_config_set_size(struct futhark_context_config *cfg, const
     }
     return 1;
 }
-struct futhark_context {
+struct futhark_gpu_context {
     int detail_memory;
     int debugging;
     int logging;
@@ -1328,8 +1328,8 @@ void post_opencl_setup(struct opencl_context *ctx,
          NULL) && option->device_type == CL_DEVICE_TYPE_CPU)
         ctx->cfg.default_tile_size = 4;
 }
-static void init_context_early(struct futhark_context_config *cfg,
-                               struct futhark_context *ctx)
+static void init_context_early(struct futhark_gpu_context_config *cfg,
+                               struct futhark_gpu_context *ctx)
 {
     cl_int error;
     
@@ -1388,8 +1388,8 @@ static void init_context_early(struct futhark_context_config *cfg,
     ctx->reduce_kernel_5606_total_runtime = 0;
     ctx->reduce_kernel_5606_runs = 0;
 }
-static void init_context_late(struct futhark_context_config *cfg,
-                              struct futhark_context *ctx, cl_program prog)
+static void init_context_late(struct futhark_gpu_context_config *cfg,
+                              struct futhark_gpu_context *ctx, cl_program prog)
 {
     cl_int error;
     
@@ -1574,9 +1574,9 @@ static void init_context_late(struct futhark_context_config *cfg,
     ctx->sizes.group_sizze_5559 = cfg->sizes[18];
     ctx->sizes.max_num_groups_5561 = cfg->sizes[19];
 }
-struct futhark_context *futhark_context_new(struct futhark_context_config *cfg)
+struct futhark_gpu_context *futhark_gpu_context_new(struct futhark_gpu_context_config *cfg)
 {
-    struct futhark_context *ctx = malloc(sizeof(struct futhark_context));
+    struct futhark_gpu_context *ctx = malloc(sizeof(struct futhark_gpu_context));
     
     if (ctx == NULL)
         return NULL;
@@ -1592,10 +1592,10 @@ struct futhark_context *futhark_context_new(struct futhark_context_config *cfg)
     init_context_late(cfg, ctx, prog);
     return ctx;
 }
-struct futhark_context *futhark_context_new_with_command_queue(struct futhark_context_config *cfg,
+struct futhark_gpu_context *futhark_gpu_context_new_with_command_queue(struct futhark_gpu_context_config *cfg,
                                                                cl_command_queue queue)
 {
-    struct futhark_context *ctx = malloc(sizeof(struct futhark_context));
+    struct futhark_gpu_context *ctx = malloc(sizeof(struct futhark_gpu_context));
     
     if (ctx == NULL)
         return NULL;
@@ -1612,33 +1612,33 @@ struct futhark_context *futhark_context_new_with_command_queue(struct futhark_co
     init_context_late(cfg, ctx, prog);
     return ctx;
 }
-void futhark_context_free(struct futhark_context *ctx)
+void futhark_gpu_context_free(struct futhark_gpu_context *ctx)
 {
     free_lock(&ctx->lock);
     free(ctx);
 }
-int futhark_context_sync(struct futhark_context *ctx)
+int futhark_gpu_context_sync(struct futhark_gpu_context *ctx)
 {
     OPENCL_SUCCEED(clFinish(ctx->opencl.queue));
     return 0;
 }
-char *futhark_context_get_error(struct futhark_context *ctx)
+char *futhark_gpu_context_get_error(struct futhark_gpu_context *ctx)
 {
     char *error = ctx->error;
     
     ctx->error = NULL;
     return error;
 }
-int futhark_context_clear_caches(struct futhark_context *ctx)
+int futhark_gpu_context_clear_caches(struct futhark_gpu_context *ctx)
 {
     OPENCL_SUCCEED(opencl_free_all(&ctx->opencl));
     return 0;
 }
-cl_command_queue futhark_context_get_command_queue(struct futhark_context *ctx)
+cl_command_queue futhark_gpu_context_get_command_queue(struct futhark_gpu_context *ctx)
 {
     return ctx->opencl.queue;
 }
-static void memblock_unref_device(struct futhark_context *ctx,
+static void memblock_unref_device(struct futhark_gpu_context *ctx,
                                   struct memblock_device *block, const
                                   char *desc)
 {
@@ -1661,7 +1661,7 @@ static void memblock_unref_device(struct futhark_context *ctx,
         block->references = NULL;
     }
 }
-static void memblock_alloc_device(struct futhark_context *ctx,
+static void memblock_alloc_device(struct futhark_gpu_context *ctx,
                                   struct memblock_device *block, int64_t size,
                                   const char *desc)
 {
@@ -1688,7 +1688,7 @@ static void memblock_alloc_device(struct futhark_context *ctx,
     } else if (ctx->detail_memory)
         fprintf(stderr, ".\n");
 }
-static void memblock_set_device(struct futhark_context *ctx,
+static void memblock_set_device(struct futhark_gpu_context *ctx,
                                 struct memblock_device *lhs,
                                 struct memblock_device *rhs, const
                                 char *lhs_desc)
@@ -1697,7 +1697,7 @@ static void memblock_set_device(struct futhark_context *ctx,
     (*rhs->references)++;
     *lhs = *rhs;
 }
-static void memblock_unref_local(struct futhark_context *ctx,
+static void memblock_unref_local(struct futhark_gpu_context *ctx,
                                  struct memblock_local *block, const char *desc)
 {
     if (block->references != NULL) {
@@ -1718,7 +1718,7 @@ static void memblock_unref_local(struct futhark_context *ctx,
         block->references = NULL;
     }
 }
-static void memblock_alloc_local(struct futhark_context *ctx,
+static void memblock_alloc_local(struct futhark_gpu_context *ctx,
                                  struct memblock_local *block, int64_t size,
                                  const char *desc)
 {
@@ -1744,7 +1744,7 @@ static void memblock_alloc_local(struct futhark_context *ctx,
     } else if (ctx->detail_memory)
         fprintf(stderr, ".\n");
 }
-static void memblock_set_local(struct futhark_context *ctx,
+static void memblock_set_local(struct futhark_gpu_context *ctx,
                                struct memblock_local *lhs,
                                struct memblock_local *rhs, const char *lhs_desc)
 {
@@ -1752,7 +1752,7 @@ static void memblock_set_local(struct futhark_context *ctx,
     (*rhs->references)++;
     *lhs = *rhs;
 }
-static void memblock_unref(struct futhark_context *ctx, struct memblock *block,
+static void memblock_unref(struct futhark_gpu_context *ctx, struct memblock *block,
                            const char *desc)
 {
     if (block->references != NULL) {
@@ -1774,7 +1774,7 @@ static void memblock_unref(struct futhark_context *ctx, struct memblock *block,
         block->references = NULL;
     }
 }
-static void memblock_alloc(struct futhark_context *ctx, struct memblock *block,
+static void memblock_alloc(struct futhark_gpu_context *ctx, struct memblock *block,
                            int64_t size, const char *desc)
 {
     if (size < 0)
@@ -1800,14 +1800,14 @@ static void memblock_alloc(struct futhark_context *ctx, struct memblock *block,
     } else if (ctx->detail_memory)
         fprintf(stderr, ".\n");
 }
-static void memblock_set(struct futhark_context *ctx, struct memblock *lhs,
+static void memblock_set(struct futhark_gpu_context *ctx, struct memblock *lhs,
                          struct memblock *rhs, const char *lhs_desc)
 {
     memblock_unref(ctx, lhs, lhs_desc);
     (*rhs->references)++;
     *lhs = *rhs;
 }
-void futhark_debugging_report(struct futhark_context *ctx)
+void futhark_gpu_debugging_report(struct futhark_gpu_context *ctx)
 {
     if (ctx->detail_memory) {
         fprintf(stderr, "Peak memory usage for space 'device': %lld bytes.\n",
@@ -2003,27 +2003,27 @@ void futhark_debugging_report(struct futhark_context *ctx)
                     ctx->total_runs, ctx->total_runtime);
     }
 }
-static int futrts_sum(struct futhark_context *ctx, double *out_scalar_out_5873,
+static int futrts_sum(struct futhark_gpu_context *ctx, double *out_scalar_out_5873,
                       int64_t col_mem_sizze_5629,
                       struct memblock_device col_mem_5630, int32_t sizze_4841);
-static int futrts_mean(struct futhark_context *ctx, double *out_scalar_out_5885,
+static int futrts_mean(struct futhark_gpu_context *ctx, double *out_scalar_out_5885,
                        int64_t col_mem_sizze_5629,
                        struct memblock_device col_mem_5630, int32_t sizze_4848);
-static int futrts_variance(struct futhark_context *ctx,
+static int futrts_variance(struct futhark_gpu_context *ctx,
                            double *out_scalar_out_5897,
                            int64_t values_mem_sizze_5629,
                            struct memblock_device values_mem_5630,
                            int32_t sizze_4857);
-static int futrts_skew(struct futhark_context *ctx, double *out_scalar_out_5920,
+static int futrts_skew(struct futhark_gpu_context *ctx, double *out_scalar_out_5920,
                        int64_t values_mem_sizze_5629,
                        struct memblock_device values_mem_5630,
                        int32_t sizze_4875);
-static int futrts_kurtosis(struct futhark_context *ctx,
+static int futrts_kurtosis(struct futhark_gpu_context *ctx,
                            double *out_scalar_out_5944,
                            int64_t values_mem_sizze_5629,
                            struct memblock_device values_mem_5630,
                            int32_t sizze_4902);
-static int futrts_stddev(struct futhark_context *ctx,
+static int futrts_stddev(struct futhark_gpu_context *ctx,
                          double *out_scalar_out_5968,
                          int64_t values_mem_sizze_5629,
                          struct memblock_device values_mem_5630,
@@ -2968,7 +2968,7 @@ static inline double futrts_from_bits64(int64_t x)
     p.f = x;
     return p.t;
 }
-static int futrts_sum(struct futhark_context *ctx, double *out_scalar_out_5873,
+static int futrts_sum(struct futhark_gpu_context *ctx, double *out_scalar_out_5873,
                       int64_t col_mem_sizze_5629,
                       struct memblock_device col_mem_5630, int32_t sizze_4841)
 {
@@ -3121,7 +3121,7 @@ static int futrts_sum(struct futhark_context *ctx, double *out_scalar_out_5873,
     memblock_unref_device(ctx, &mem_5636, "mem_5636");
     return 0;
 }
-static int futrts_mean(struct futhark_context *ctx, double *out_scalar_out_5885,
+static int futrts_mean(struct futhark_gpu_context *ctx, double *out_scalar_out_5885,
                        int64_t col_mem_sizze_5629,
                        struct memblock_device col_mem_5630, int32_t sizze_4848)
 {
@@ -3278,7 +3278,7 @@ static int futrts_mean(struct futhark_context *ctx, double *out_scalar_out_5885,
     memblock_unref_device(ctx, &mem_5636, "mem_5636");
     return 0;
 }
-static int futrts_variance(struct futhark_context *ctx,
+static int futrts_variance(struct futhark_gpu_context *ctx,
                            double *out_scalar_out_5897,
                            int64_t values_mem_sizze_5629,
                            struct memblock_device values_mem_5630,
@@ -3588,7 +3588,7 @@ static int futrts_variance(struct futhark_context *ctx,
     memblock_unref_device(ctx, &mem_5636, "mem_5636");
     return 0;
 }
-static int futrts_skew(struct futhark_context *ctx, double *out_scalar_out_5920,
+static int futrts_skew(struct futhark_gpu_context *ctx, double *out_scalar_out_5920,
                        int64_t values_mem_sizze_5629,
                        struct memblock_device values_mem_5630,
                        int32_t sizze_4875)
@@ -3952,7 +3952,7 @@ static int futrts_skew(struct futhark_context *ctx, double *out_scalar_out_5920,
     memblock_unref_device(ctx, &mem_5636, "mem_5636");
     return 0;
 }
-static int futrts_kurtosis(struct futhark_context *ctx,
+static int futrts_kurtosis(struct futhark_gpu_context *ctx,
                            double *out_scalar_out_5944,
                            int64_t values_mem_sizze_5629,
                            struct memblock_device values_mem_5630,
@@ -4308,7 +4308,7 @@ static int futrts_kurtosis(struct futhark_context *ctx,
     memblock_unref_device(ctx, &mem_5636, "mem_5636");
     return 0;
 }
-static int futrts_stddev(struct futhark_context *ctx,
+static int futrts_stddev(struct futhark_gpu_context *ctx,
                          double *out_scalar_out_5968,
                          int64_t values_mem_sizze_5629,
                          struct memblock_device values_mem_5630,
@@ -4620,14 +4620,14 @@ static int futrts_stddev(struct futhark_context *ctx,
     memblock_unref_device(ctx, &mem_5636, "mem_5636");
     return 0;
 }
-struct futhark_f64_1d {
+struct futhark_gpu_f64_1d {
     struct memblock_device mem;
     int64_t shape[1];
 } ;
-struct futhark_f64_1d *futhark_new_f64_1d(struct futhark_context *ctx,
+struct futhark_gpu_f64_1d *futhark_gpu_new_f64_1d(struct futhark_gpu_context *ctx,
                                           double *data, int dim0)
 {
-    struct futhark_f64_1d *arr = malloc(sizeof(struct futhark_f64_1d));
+    struct futhark_gpu_f64_1d *arr = malloc(sizeof(struct futhark_gpu_f64_1d));
     
     if (arr == NULL)
         return NULL;
@@ -4642,10 +4642,10 @@ struct futhark_f64_1d *futhark_new_f64_1d(struct futhark_context *ctx,
     lock_unlock(&ctx->lock);
     return arr;
 }
-struct futhark_f64_1d *futhark_new_raw_f64_1d(struct futhark_context *ctx,
+struct futhark_gpu_f64_1d *futhark_gpu_new_raw_f64_1d(struct futhark_gpu_context *ctx,
                                               cl_mem data, int offset, int dim0)
 {
-    struct futhark_f64_1d *arr = malloc(sizeof(struct futhark_f64_1d));
+    struct futhark_gpu_f64_1d *arr = malloc(sizeof(struct futhark_gpu_f64_1d));
     
     if (arr == NULL)
         return NULL;
@@ -4663,7 +4663,7 @@ struct futhark_f64_1d *futhark_new_raw_f64_1d(struct futhark_context *ctx,
     lock_unlock(&ctx->lock);
     return arr;
 }
-int futhark_free_f64_1d(struct futhark_context *ctx, struct futhark_f64_1d *arr)
+int futhark_gpu_free_f64_1d(struct futhark_gpu_context *ctx, struct futhark_gpu_f64_1d *arr)
 {
     lock_lock(&ctx->lock);
     memblock_unref_device(ctx, &arr->mem, "arr->mem");
@@ -4671,8 +4671,8 @@ int futhark_free_f64_1d(struct futhark_context *ctx, struct futhark_f64_1d *arr)
     free(arr);
     return 0;
 }
-int futhark_values_f64_1d(struct futhark_context *ctx,
-                          struct futhark_f64_1d *arr, double *data)
+int futhark_gpu_values_f64_1d(struct futhark_gpu_context *ctx,
+                          struct futhark_gpu_f64_1d *arr, double *data)
 {
     lock_lock(&ctx->lock);
     if (arr->shape[0] * sizeof(double) > 0)
@@ -4683,18 +4683,18 @@ int futhark_values_f64_1d(struct futhark_context *ctx,
     lock_unlock(&ctx->lock);
     return 0;
 }
-cl_mem futhark_values_raw_f64_1d(struct futhark_context *ctx,
-                                 struct futhark_f64_1d *arr)
+cl_mem futhark_gpu_values_raw_f64_1d(struct futhark_gpu_context *ctx,
+                                 struct futhark_gpu_f64_1d *arr)
 {
     return arr->mem.mem;
 }
-int64_t *futhark_shape_f64_1d(struct futhark_context *ctx,
-                              struct futhark_f64_1d *arr)
+int64_t *futhark_gpu_shape_f64_1d(struct futhark_gpu_context *ctx,
+                              struct futhark_gpu_f64_1d *arr)
 {
     return arr->shape;
 }
-int futhark_entry_sum(struct futhark_context *ctx, double *out0, const
-                      struct futhark_f64_1d *in0)
+int futhark_gpu_entry_sum(struct futhark_gpu_context *ctx, double *out0, const
+                      struct futhark_gpu_f64_1d *in0)
 {
     int64_t col_mem_sizze_5629;
     struct memblock_device col_mem_5630;
@@ -4718,8 +4718,8 @@ int futhark_entry_sum(struct futhark_context *ctx, double *out0, const
     lock_unlock(&ctx->lock);
     return ret;
 }
-int futhark_entry_mean(struct futhark_context *ctx, double *out0, const
-                       struct futhark_f64_1d *in0)
+int futhark_gpu_entry_mean(struct futhark_gpu_context *ctx, double *out0, const
+                       struct futhark_gpu_f64_1d *in0)
 {
     int64_t col_mem_sizze_5629;
     struct memblock_device col_mem_5630;
@@ -4743,8 +4743,8 @@ int futhark_entry_mean(struct futhark_context *ctx, double *out0, const
     lock_unlock(&ctx->lock);
     return ret;
 }
-int futhark_entry_variance(struct futhark_context *ctx, double *out0, const
-                           struct futhark_f64_1d *in0)
+int futhark_gpu_entry_variance(struct futhark_gpu_context *ctx, double *out0, const
+                           struct futhark_gpu_f64_1d *in0)
 {
     int64_t values_mem_sizze_5629;
     struct memblock_device values_mem_5630;
@@ -4768,8 +4768,8 @@ int futhark_entry_variance(struct futhark_context *ctx, double *out0, const
     lock_unlock(&ctx->lock);
     return ret;
 }
-int futhark_entry_skew(struct futhark_context *ctx, double *out0, const
-                       struct futhark_f64_1d *in0)
+int futhark_gpu_entry_skew(struct futhark_gpu_context *ctx, double *out0, const
+                       struct futhark_gpu_f64_1d *in0)
 {
     int64_t values_mem_sizze_5629;
     struct memblock_device values_mem_5630;
@@ -4793,8 +4793,8 @@ int futhark_entry_skew(struct futhark_context *ctx, double *out0, const
     lock_unlock(&ctx->lock);
     return ret;
 }
-int futhark_entry_kurtosis(struct futhark_context *ctx, double *out0, const
-                           struct futhark_f64_1d *in0)
+int futhark_gpu_entry_kurtosis(struct futhark_gpu_context *ctx, double *out0, const
+                           struct futhark_gpu_f64_1d *in0)
 {
     int64_t values_mem_sizze_5629;
     struct memblock_device values_mem_5630;
@@ -4818,8 +4818,8 @@ int futhark_entry_kurtosis(struct futhark_context *ctx, double *out0, const
     lock_unlock(&ctx->lock);
     return ret;
 }
-int futhark_entry_stddev(struct futhark_context *ctx, double *out0, const
-                         struct futhark_f64_1d *in0)
+int futhark_gpu_entry_stddev(struct futhark_gpu_context *ctx, double *out0, const
+                         struct futhark_gpu_f64_1d *in0)
 {
     int64_t values_mem_sizze_5629;
     struct memblock_device values_mem_5630;
