@@ -964,53 +964,68 @@ const char *opencl_program[] =
             "x;\n}\nstatic inline uint32_t zext_i8_i32(uint8_t x)\n{\n    return x;\n}\nstatic inline uint64_t zext_i8_i64(uint8_t x)\n{\n    return x;\n}\nstatic inline uint8_t zext_i16_i8(uint16_t x)\n{\n    return x;\n}\nstatic inline uint16_t zext_i16_i16(uint16_t x)\n{\n    return x;\n}\nstatic inline uint32_t zext_i16_i32(uint16_t x)\n{\n    return x;\n}\nstatic inline uint64_t zext_i16_i64(uint16_t x)\n{\n    return x;\n}\nstatic inline uint8_t zext_i32_i8(uint32_t x)\n{\n    return x;\n}\nstatic inline uint16_t zext_i32_i16(uint32_t x)\n{\n    return x;\n}\nstatic inline uint32_t zext_i32_i32(uint32_t x)\n{\n    return x;\n}\nstatic inline uint64_t zext_i32_i64(uint32_t x)\n{\n    return x;\n}\nstatic inline uint8_t zext_i64_i8(uint64_t x)\n{\n    return x;\n}\nstatic inline uint16_t zext_i64_i16(uint64_t x)\n{\n    return x;\n}\nstatic inline uint32_t zext_i64_i32(uint64_t x)\n{\n    return x;\n}\nstatic inline uint64_t zext_i64_i64(uint64_t x)\n{\n    return x;\n}\nstatic inline float fdiv32(float x, float y)\n{\n    return x / y;\n}\nstatic inline float fadd32(float x, float y)\n{\n    return x + y;\n}\nstatic inline float fsub32(float x, float y)\n{\n    return x - y;\n}\nstatic inline float fmul32(float x, float y)\n{\n    return x * y;\n}\nstatic inline float fmin32(float x, float y)\n{\n    return x < y ? x : y;\n}\nstatic inline float fmax32(float x, float y)\n{\n    return x < y ? y : x;\n}\nstatic inline float fpow32(float x, float y)\n{\n    return pow(x, y);\n}\nstatic inline char cmplt32(float x, float y)\n{\n    return x < y;\n}\nstatic inline char cmple32(float x, float y)\n{\n    return x <= y;\n}\nstatic inline float sitofp_i8_f32(int8_t x)\n{\n    return x;\n}\nstatic inline float sitofp_i16_f32(int16_t x)\n{\n    return x;\n}\nstatic inline float sitofp_i32_f32(int32_t x)\n{\n    return x;\n}\nstatic inline float sitofp_i64_f32(int64_t x)\n{\n    return x;\n}\nstatic inline float uitofp_i8_f32(uint8_t x)\n{\n    return x;\n}\nstatic inline float uitofp_i16_f32(uint16_t x)\n{\n    return x;\n}\nstatic inline float uitofp_i32_f32(uint32_t x)\n{\n    return x;\n}\nstatic inl",
             "ine float uitofp_i64_f32(uint64_t x)\n{\n    return x;\n}\nstatic inline int8_t fptosi_f32_i8(float x)\n{\n    return x;\n}\nstatic inline int16_t fptosi_f32_i16(float x)\n{\n    return x;\n}\nstatic inline int32_t fptosi_f32_i32(float x)\n{\n    return x;\n}\nstatic inline int64_t fptosi_f32_i64(float x)\n{\n    return x;\n}\nstatic inline uint8_t fptoui_f32_i8(float x)\n{\n    return x;\n}\nstatic inline uint16_t fptoui_f32_i16(float x)\n{\n    return x;\n}\nstatic inline uint32_t fptoui_f32_i32(float x)\n{\n    return x;\n}\nstatic inline uint64_t fptoui_f32_i64(float x)\n{\n    return x;\n}\nstatic inline float futrts_log32(float x)\n{\n    return log(x);\n}\nstatic inline float futrts_log2_32(float x)\n{\n    return log2(x);\n}\nstatic inline float futrts_log10_32(float x)\n{\n    return log10(x);\n}\nstatic inline float futrts_sqrt32(float x)\n{\n    return sqrt(x);\n}\nstatic inline float futrts_exp32(float x)\n{\n    return exp(x);\n}\nstatic inline float futrts_cos32(float x)\n{\n    return cos(x);\n}\nstatic inline float futrts_sin32(float x)\n{\n    return sin(x);\n}\nstatic inline float futrts_tan32(float x)\n{\n    return tan(x);\n}\nstatic inline float futrts_acos32(float x)\n{\n    return acos(x);\n}\nstatic inline float futrts_asin32(float x)\n{\n    return asin(x);\n}\nstatic inline float futrts_atan32(float x)\n{\n    return atan(x);\n}\nstatic inline float futrts_atan2_32(float x, float y)\n{\n    return atan2(x, y);\n}\nstatic inline float futrts_round32(float x)\n{\n    return rint(x);\n}\nstatic inline char futrts_isnan32(float x)\n{\n    return isnan(x);\n}\nstatic inline char futrts_isinf32(float x)\n{\n    return isinf(x);\n}\nstatic inline int32_t futrts_to_bits32(float x)\n{\n    union {\n        float f;\n        int32_t t;\n    } p;\n    \n    p.f = x;\n    return p.t;\n}\nstatic inline float futrts_from_bits32(int32_t x)\n{\n    union {\n        int32_t f;\n        float t;\n    } p;\n    \n    p.f = x;\n    return p.t;\n}\nstatic inline double fdiv64(double x, double y)\n{\n    return x / y;\n}\nstatic inline double fadd64(double x, double y)\n{\n    retu",
             "rn x + y;\n}\nstatic inline double fsub64(double x, double y)\n{\n    return x - y;\n}\nstatic inline double fmul64(double x, double y)\n{\n    return x * y;\n}\nstatic inline double fmin64(double x, double y)\n{\n    return x < y ? x : y;\n}\nstatic inline double fmax64(double x, double y)\n{\n    return x < y ? y : x;\n}\nstatic inline double fpow64(double x, double y)\n{\n    return pow(x, y);\n}\nstatic inline char cmplt64(double x, double y)\n{\n    return x < y;\n}\nstatic inline char cmple64(double x, double y)\n{\n    return x <= y;\n}\nstatic inline double sitofp_i8_f64(int8_t x)\n{\n    return x;\n}\nstatic inline double sitofp_i16_f64(int16_t x)\n{\n    return x;\n}\nstatic inline double sitofp_i32_f64(int32_t x)\n{\n    return x;\n}\nstatic inline double sitofp_i64_f64(int64_t x)\n{\n    return x;\n}\nstatic inline double uitofp_i8_f64(uint8_t x)\n{\n    return x;\n}\nstatic inline double uitofp_i16_f64(uint16_t x)\n{\n    return x;\n}\nstatic inline double uitofp_i32_f64(uint32_t x)\n{\n    return x;\n}\nstatic inline double uitofp_i64_f64(uint64_t x)\n{\n    return x;\n}\nstatic inline int8_t fptosi_f64_i8(double x)\n{\n    return x;\n}\nstatic inline int16_t fptosi_f64_i16(double x)\n{\n    return x;\n}\nstatic inline int32_t fptosi_f64_i32(double x)\n{\n    return x;\n}\nstatic inline int64_t fptosi_f64_i64(double x)\n{\n    return x;\n}\nstatic inline uint8_t fptoui_f64_i8(double x)\n{\n    return x;\n}\nstatic inline uint16_t fptoui_f64_i16(double x)\n{\n    return x;\n}\nstatic inline uint32_t fptoui_f64_i32(double x)\n{\n    return x;\n}\nstatic inline uint64_t fptoui_f64_i64(double x)\n{\n    return x;\n}\nstatic inline double futrts_log64(double x)\n{\n    return log(x);\n}\nstatic inline double futrts_log2_64(double x)\n{\n    return log2(x);\n}\nstatic inline double futrts_log10_64(double x)\n{\n    return log10(x);\n}\nstatic inline double futrts_sqrt64(double x)\n{\n    return sqrt(x);\n}\nstatic inline double futrts_exp64(double x)\n{\n    return exp(x);\n}\nstatic inline double futrts_cos64(double x)\n{\n    return cos(x);\n}\nstatic inline double futrts",
-            "_sin64(double x)\n{\n    return sin(x);\n}\nstatic inline double futrts_tan64(double x)\n{\n    return tan(x);\n}\nstatic inline double futrts_acos64(double x)\n{\n    return acos(x);\n}\nstatic inline double futrts_asin64(double x)\n{\n    return asin(x);\n}\nstatic inline double futrts_atan64(double x)\n{\n    return atan(x);\n}\nstatic inline double futrts_atan2_64(double x, double y)\n{\n    return atan2(x, y);\n}\nstatic inline double futrts_round64(double x)\n{\n    return rint(x);\n}\nstatic inline char futrts_isnan64(double x)\n{\n    return isnan(x);\n}\nstatic inline char futrts_isinf64(double x)\n{\n    return isinf(x);\n}\nstatic inline int64_t futrts_to_bits64(double x)\n{\n    union {\n        double f;\n        int64_t t;\n    } p;\n    \n    p.f = x;\n    return p.t;\n}\nstatic inline double futrts_from_bits64(int64_t x)\n{\n    union {\n        int64_t f;\n        double t;\n    } p;\n    \n    p.f = x;\n    return p.t;\n}\nstatic inline float fpconv_f32_f32(float x)\n{\n    return x;\n}\nstatic inline double fpconv_f32_f64(float x)\n{\n    return x;\n}\nstatic inline float fpconv_f64_f32(double x)\n{\n    return x;\n}\nstatic inline double fpconv_f64_f64(double x)\n{\n    return x;\n}\n#define group_sizze_4952 (group_size_4951)\n#define max_num_groups_4954 (max_num_groups_4953)\n#define group_sizze_5013 (group_size_5012)\n#define max_num_groups_5015 (max_num_groups_5014)\n#define group_sizze_5085 (group_size_5084)\n#define max_num_groups_5087 (max_num_groups_5086)\n#define group_sizze_5244 (group_size_5243)\n#define max_num_groups_5246 (max_num_groups_5245)\n__kernel void chunked_reduce_kernel_4968(__local volatile\n                                         int64_t *mem_aligned_0,\n                                         int32_t sizze_4805,\n                                         int32_t num_threads_4960,\n                                         int32_t per_thread_elements_4963,\n                                         __global unsigned char *col_mem_5425,\n                                         __global unsigned char *mem_543",
-            "1)\n{\n    __local volatile char *restrict mem_5428 = mem_aligned_0;\n    int32_t wave_sizze_5481;\n    int32_t group_sizze_5482;\n    bool thread_active_5483;\n    int32_t global_tid_4968;\n    int32_t local_tid_4969;\n    int32_t group_id_4970;\n    \n    global_tid_4968 = get_global_id(0);\n    local_tid_4969 = get_local_id(0);\n    group_sizze_5482 = get_local_size(0);\n    wave_sizze_5481 = LOCKSTEP_WIDTH;\n    group_id_4970 = get_group_id(0);\n    thread_active_5483 = 1;\n    \n    int32_t chunk_sizze_4975 = smin32(per_thread_elements_4963,\n                                      squot32(sizze_4805 - global_tid_4968 +\n                                              num_threads_4960 - 1,\n                                              num_threads_4960));\n    double res_4978;\n    \n    if (thread_active_5483) {\n        double acc_4981 = 0.0;\n        \n        for (int32_t i_4980 = 0; i_4980 < chunk_sizze_4975; i_4980++) {\n            int32_t j_t_s_5406 = num_threads_4960 * i_4980;\n            int32_t j_p_i_t_s_5407 = global_tid_4968 + j_t_s_5406;\n            double x_4983 = *(__global double *) &col_mem_5425[j_p_i_t_s_5407 *\n                                                               8];\n            double res_4986 = acc_4981 + x_4983;\n            double acc_tmp_5484 = res_4986;\n            \n            acc_4981 = acc_tmp_5484;\n        }\n        res_4978 = acc_4981;\n    }\n    \n    double final_result_4989;\n    \n    for (int32_t comb_iter_5485 = 0; comb_iter_5485 < squot32(group_sizze_4952 +\n                                                              group_sizze_4952 -\n                                                              1,\n                                                              group_sizze_4952);\n         comb_iter_5485++) {\n        int32_t combine_id_4973;\n        int32_t flat_comb_id_5486 = comb_iter_5485 * group_sizze_4952 +\n                local_tid_4969;\n        \n        combine_id_4973 = flat_comb_id_5486;\n        if (slt32(combine_id_4973, group_sizze_4952) &&",
-            " 1) {\n            *(__local double *) &mem_5428[combine_id_4973 * 8] = res_4978;\n        }\n    }\n    barrier(CLK_LOCAL_MEM_FENCE);\n    \n    int32_t offset_5488;\n    int32_t skip_waves_5487;\n    int32_t my_index_4990;\n    int32_t other_index_4991;\n    double x_4992;\n    double x_4993;\n    \n    my_index_4990 = local_tid_4969;\n    offset_5488 = 0;\n    other_index_4991 = local_tid_4969 + offset_5488;\n    if (slt32(local_tid_4969, group_sizze_4952)) {\n        x_4992 = *(__local double *) &mem_5428[(local_tid_4969 + offset_5488) *\n                                               8];\n    }\n    offset_5488 = 1;\n    other_index_4991 = local_tid_4969 + offset_5488;\n    while (slt32(offset_5488, wave_sizze_5481)) {\n        if (slt32(other_index_4991, group_sizze_4952) && ((local_tid_4969 -\n                                                           squot32(local_tid_4969,\n                                                                   wave_sizze_5481) *\n                                                           wave_sizze_5481) &\n                                                          (2 * offset_5488 -\n                                                           1)) == 0) {\n            // read array element\n            {\n                x_4993 = *(volatile __local\n                           double *) &mem_5428[(local_tid_4969 + offset_5488) *\n                                               8];\n            }\n            \n            double res_4994;\n            \n            if (thread_active_5483) {\n                res_4994 = x_4992 + x_4993;\n            }\n            x_4992 = res_4994;\n            *(volatile __local double *) &mem_5428[local_tid_4969 * 8] = x_4992;\n        }\n        offset_5488 *= 2;\n        other_index_4991 = local_tid_4969 + offset_5488;\n    }\n    skip_waves_5487 = 1;\n    while (slt32(skip_waves_5487, squot32(group_sizze_4952 + wave_sizze_5481 -\n                                          1, wave_sizze_5481))) {\n        barrier(CLK_LOCAL_MEM_FENCE);\n        of",
-            "fset_5488 = skip_waves_5487 * wave_sizze_5481;\n        other_index_4991 = local_tid_4969 + offset_5488;\n        if (slt32(other_index_4991, group_sizze_4952) && ((local_tid_4969 -\n                                                           squot32(local_tid_4969,\n                                                                   wave_sizze_5481) *\n                                                           wave_sizze_5481) ==\n                                                          0 &&\n                                                          (squot32(local_tid_4969,\n                                                                   wave_sizze_5481) &\n                                                           (2 *\n                                                            skip_waves_5487 -\n                                                            1)) == 0)) {\n            // read array element\n            {\n                x_4993 = *(__local double *) &mem_5428[(local_tid_4969 +\n                                                        offset_5488) * 8];\n            }\n            \n            double res_4994;\n            \n            if (thread_active_5483) {\n                res_4994 = x_4992 + x_4993;\n            }\n            x_4992 = res_4994;\n            *(__local double *) &mem_5428[local_tid_4969 * 8] = x_4992;\n        }\n        skip_waves_5487 *= 2;\n    }\n    final_result_4989 = x_4992;\n    if (local_tid_4969 == 0) {\n        *(__global double *) &mem_5431[group_id_4970 * 8] = final_result_4989;\n    }\n}\n__kernel void chunked_reduce_kernel_5029(__local volatile\n                                         int64_t *mem_aligned_0,\n                                         int32_t sizze_4812,\n                                         int32_t num_threads_5021,\n                                         int32_t per_thread_elements_5024,\n                                         __global unsigned char *col_mem_5425,\n                                         __global unsigned c",
-            "har *mem_5431)\n{\n    __local volatile char *restrict mem_5428 = mem_aligned_0;\n    int32_t wave_sizze_5499;\n    int32_t group_sizze_5500;\n    bool thread_active_5501;\n    int32_t global_tid_5029;\n    int32_t local_tid_5030;\n    int32_t group_id_5031;\n    \n    global_tid_5029 = get_global_id(0);\n    local_tid_5030 = get_local_id(0);\n    group_sizze_5500 = get_local_size(0);\n    wave_sizze_5499 = LOCKSTEP_WIDTH;\n    group_id_5031 = get_group_id(0);\n    thread_active_5501 = 1;\n    \n    int32_t chunk_sizze_5036 = smin32(per_thread_elements_5024,\n                                      squot32(sizze_4812 - global_tid_5029 +\n                                              num_threads_5021 - 1,\n                                              num_threads_5021));\n    double res_5039;\n    \n    if (thread_active_5501) {\n        double acc_5042 = 0.0;\n        \n        for (int32_t i_5041 = 0; i_5041 < chunk_sizze_5036; i_5041++) {\n            int32_t j_t_s_5406 = num_threads_5021 * i_5041;\n            int32_t j_p_i_t_s_5407 = global_tid_5029 + j_t_s_5406;\n            double x_5044 = *(__global double *) &col_mem_5425[j_p_i_t_s_5407 *\n                                                               8];\n            double res_5047 = acc_5042 + x_5044;\n            double acc_tmp_5502 = res_5047;\n            \n            acc_5042 = acc_tmp_5502;\n        }\n        res_5039 = acc_5042;\n    }\n    \n    double final_result_5050;\n    \n    for (int32_t comb_iter_5503 = 0; comb_iter_5503 < squot32(group_sizze_5013 +\n                                                              group_sizze_5013 -\n                                                              1,\n                                                              group_sizze_5013);\n         comb_iter_5503++) {\n        int32_t combine_id_5034;\n        int32_t flat_comb_id_5504 = comb_iter_5503 * group_sizze_5013 +\n                local_tid_5030;\n        \n        combine_id_5034 = flat_comb_id_5504;\n        if (slt32(combine_id_5034, group_si",
-            "zze_5013) && 1) {\n            *(__local double *) &mem_5428[combine_id_5034 * 8] = res_5039;\n        }\n    }\n    barrier(CLK_LOCAL_MEM_FENCE);\n    \n    int32_t offset_5506;\n    int32_t skip_waves_5505;\n    int32_t my_index_5051;\n    int32_t other_index_5052;\n    double x_5053;\n    double x_5054;\n    \n    my_index_5051 = local_tid_5030;\n    offset_5506 = 0;\n    other_index_5052 = local_tid_5030 + offset_5506;\n    if (slt32(local_tid_5030, group_sizze_5013)) {\n        x_5053 = *(__local double *) &mem_5428[(local_tid_5030 + offset_5506) *\n                                               8];\n    }\n    offset_5506 = 1;\n    other_index_5052 = local_tid_5030 + offset_5506;\n    while (slt32(offset_5506, wave_sizze_5499)) {\n        if (slt32(other_index_5052, group_sizze_5013) && ((local_tid_5030 -\n                                                           squot32(local_tid_5030,\n                                                                   wave_sizze_5499) *\n                                                           wave_sizze_5499) &\n                                                          (2 * offset_5506 -\n                                                           1)) == 0) {\n            // read array element\n            {\n                x_5054 = *(volatile __local\n                           double *) &mem_5428[(local_tid_5030 + offset_5506) *\n                                               8];\n            }\n            \n            double res_5055;\n            \n            if (thread_active_5501) {\n                res_5055 = x_5053 + x_5054;\n            }\n            x_5053 = res_5055;\n            *(volatile __local double *) &mem_5428[local_tid_5030 * 8] = x_5053;\n        }\n        offset_5506 *= 2;\n        other_index_5052 = local_tid_5030 + offset_5506;\n    }\n    skip_waves_5505 = 1;\n    while (slt32(skip_waves_5505, squot32(group_sizze_5013 + wave_sizze_5499 -\n                                          1, wave_sizze_5499))) {\n        barrier(CLK_LOCAL_MEM_FENCE)",
-            ";\n        offset_5506 = skip_waves_5505 * wave_sizze_5499;\n        other_index_5052 = local_tid_5030 + offset_5506;\n        if (slt32(other_index_5052, group_sizze_5013) && ((local_tid_5030 -\n                                                           squot32(local_tid_5030,\n                                                                   wave_sizze_5499) *\n                                                           wave_sizze_5499) ==\n                                                          0 &&\n                                                          (squot32(local_tid_5030,\n                                                                   wave_sizze_5499) &\n                                                           (2 *\n                                                            skip_waves_5505 -\n                                                            1)) == 0)) {\n            // read array element\n            {\n                x_5054 = *(__local double *) &mem_5428[(local_tid_5030 +\n                                                        offset_5506) * 8];\n            }\n            \n            double res_5055;\n            \n            if (thread_active_5501) {\n                res_5055 = x_5053 + x_5054;\n            }\n            x_5053 = res_5055;\n            *(__local double *) &mem_5428[local_tid_5030 * 8] = x_5053;\n        }\n        skip_waves_5505 *= 2;\n    }\n    final_result_5050 = x_5053;\n    if (local_tid_5030 == 0) {\n        *(__global double *) &mem_5431[group_id_5031 * 8] = final_result_5050;\n    }\n}\n__kernel void chunked_reduce_kernel_5103(__local volatile\n                                         int64_t *mem_aligned_0,\n                                         __local volatile\n                                         int64_t *mem_aligned_1,\n                                         __local volatile\n                                         int64_t *mem_aligned_2,\n                                         int32_t sizze_4821,\n                       ",
-            "                  int32_t num_threads_5093,\n                                         int32_t per_thread_elements_5096,\n                                         int32_t per_chunk_5395, __global\n                                         unsigned char *mem_5435, __global\n                                         unsigned char *mem_5447, __global\n                                         unsigned char *mem_5450, __global\n                                         unsigned char *mem_5453)\n{\n    __local volatile char *restrict mem_5438 = mem_aligned_0;\n    __local volatile char *restrict mem_5441 = mem_aligned_1;\n    __local volatile char *restrict mem_5444 = mem_aligned_2;\n    int32_t wave_sizze_5518;\n    int32_t group_sizze_5519;\n    bool thread_active_5520;\n    int32_t global_tid_5103;\n    int32_t local_tid_5104;\n    int32_t group_id_5105;\n    \n    global_tid_5103 = get_global_id(0);\n    local_tid_5104 = get_local_id(0);\n    group_sizze_5519 = get_local_size(0);\n    wave_sizze_5518 = LOCKSTEP_WIDTH;\n    group_id_5105 = get_group_id(0);\n    thread_active_5520 = 1;\n    \n    int32_t chunk_sizze_5119;\n    int32_t starting_point_5521 = global_tid_5103 * per_thread_elements_5096;\n    int32_t remaining_elements_5522 = sizze_4821 - starting_point_5521;\n    \n    if (sle32(remaining_elements_5522, 0) || sle32(sizze_4821,\n                                                   starting_point_5521)) {\n        chunk_sizze_5119 = 0;\n    } else {\n        if (slt32(sizze_4821, (global_tid_5103 + 1) *\n                  per_thread_elements_5096)) {\n            chunk_sizze_5119 = sizze_4821 - global_tid_5103 *\n                per_thread_elements_5096;\n        } else {\n            chunk_sizze_5119 = per_thread_elements_5096;\n        }\n    }\n    \n    int32_t slice_offset_5120;\n    double res_5125;\n    bool cond_5126;\n    double res_5127;\n    double res_5128;\n    double res_5129;\n    \n    if (thread_active_5520) {\n        slice_offset_5120 = per_thread_elements_5096 * global_tid_5103;\n        res_512",
-            "5 = sitofp_i32_f64(chunk_sizze_5119);\n        cond_5126 = res_5125 == 0.0;\n        if (cond_5126) {\n            res_5127 = 0.0;\n        } else {\n            res_5127 = res_5125;\n        }\n        if (cond_5126) {\n            res_5128 = 0.0;\n            res_5129 = 0.0;\n        } else {\n            double res_5130;\n            double res_5144;\n            double res_5145;\n            double res_5161;\n            double x_5133 = 0.0;\n            \n            for (int32_t chunk_offset_5132 = 0; chunk_offset_5132 <\n                 chunk_sizze_5119; chunk_offset_5132++) {\n                int32_t j_p_i_t_s_5409 = slice_offset_5120 + chunk_offset_5132;\n                int32_t new_index_5410 = squot32(j_p_i_t_s_5409,\n                                                 per_chunk_5395);\n                int32_t binop_y_5412 = per_chunk_5395 * new_index_5410;\n                int32_t new_index_5413 = j_p_i_t_s_5409 - binop_y_5412;\n                double x_5140 = *(__global double *) &mem_5435[(new_index_5413 *\n                                                                num_threads_5093 +\n                                                                new_index_5410) *\n                                                               8];\n                double res_5143 = x_5133 + x_5140;\n                double x_tmp_5523 = res_5143;\n                \n                x_5133 = x_tmp_5523;\n            }\n            res_5130 = x_5133;\n            res_5144 = res_5130 / res_5125;\n            \n            double x_5148 = 0.0;\n            \n            for (int32_t chunk_offset_5147 = 0; chunk_offset_5147 <\n                 chunk_sizze_5119; chunk_offset_5147++) {\n                int32_t j_p_i_t_s_5419 = slice_offset_5120 + chunk_offset_5147;\n                int32_t new_index_5420 = squot32(j_p_i_t_s_5419,\n                                                 per_chunk_5395);\n                int32_t binop_y_5422 = per_chunk_5395 * new_index_5420;\n                int32_t new_index_5423 = j_p_i_t_s",
-            "_5419 - binop_y_5422;\n                double x_5155 = *(__global double *) &mem_5435[(new_index_5423 *\n                                                                num_threads_5093 +\n                                                                new_index_5420) *\n                                                               8];\n                double x_5157 = x_5155 - res_5144;\n                double res_5158 = x_5157 * x_5157;\n                double res_5160 = x_5148 + res_5158;\n                double x_tmp_5524 = res_5160;\n                \n                x_5148 = x_tmp_5524;\n            }\n            res_5145 = x_5148;\n            res_5161 = res_5145 / res_5125;\n            res_5128 = res_5144;\n            res_5129 = res_5161;\n        }\n    }\n    \n    double final_result_5168;\n    double final_result_5169;\n    double final_result_5170;\n    \n    for (int32_t comb_iter_5525 = 0; comb_iter_5525 < squot32(group_sizze_5085 +\n                                                              group_sizze_5085 -\n                                                              1,\n                                                              group_sizze_5085);\n         comb_iter_5525++) {\n        int32_t combine_id_5113;\n        int32_t flat_comb_id_5526 = comb_iter_5525 * group_sizze_5085 +\n                local_tid_5104;\n        \n        combine_id_5113 = flat_comb_id_5526;\n        if (slt32(combine_id_5113, group_sizze_5085) && 1) {\n            *(__local double *) &mem_5438[combine_id_5113 * 8] = res_5128;\n        }\n    }\n    barrier(CLK_LOCAL_MEM_FENCE);\n    for (int32_t comb_iter_5527 = 0; comb_iter_5527 < squot32(group_sizze_5085 +\n                                                              group_sizze_5085 -\n                                                              1,\n                                                              group_sizze_5085);\n         comb_iter_5527++) {\n        int32_t combine_id_5114;\n        int32_t flat_comb_id_5528 = comb_iter_5527 * gr",
-            "oup_sizze_5085 +\n                local_tid_5104;\n        \n        combine_id_5114 = flat_comb_id_5528;\n        if (slt32(combine_id_5114, group_sizze_5085) && 1) {\n            *(__local double *) &mem_5441[combine_id_5114 * 8] = res_5127;\n        }\n    }\n    barrier(CLK_LOCAL_MEM_FENCE);\n    for (int32_t comb_iter_5529 = 0; comb_iter_5529 < squot32(group_sizze_5085 +\n                                                              group_sizze_5085 -\n                                                              1,\n                                                              group_sizze_5085);\n         comb_iter_5529++) {\n        int32_t combine_id_5115;\n        int32_t flat_comb_id_5530 = comb_iter_5529 * group_sizze_5085 +\n                local_tid_5104;\n        \n        combine_id_5115 = flat_comb_id_5530;\n        if (slt32(combine_id_5115, group_sizze_5085) && 1) {\n            *(__local double *) &mem_5444[combine_id_5115 * 8] = res_5129;\n        }\n    }\n    barrier(CLK_LOCAL_MEM_FENCE);\n    \n    int32_t offset_5532;\n    int32_t skip_waves_5531;\n    int32_t my_index_5171;\n    int32_t other_index_5172;\n    double x_5173;\n    double x_5174;\n    double x_5175;\n    double x_5176;\n    double x_5177;\n    double x_5178;\n    \n    my_index_5171 = local_tid_5104;\n    offset_5532 = 0;\n    other_index_5172 = local_tid_5104 + offset_5532;\n    if (slt32(local_tid_5104, group_sizze_5085)) {\n        x_5173 = *(__local double *) &mem_5438[(local_tid_5104 + offset_5532) *\n                                               8];\n        x_5174 = *(__local double *) &mem_5441[(local_tid_5104 + offset_5532) *\n                                               8];\n        x_5175 = *(__local double *) &mem_5444[(local_tid_5104 + offset_5532) *\n                                               8];\n    }\n    offset_5532 = 1;\n    other_index_5172 = local_tid_5104 + offset_5532;\n    while (slt32(offset_5532, wave_sizze_5518)) {\n        if (slt32(other_index_5172, group_sizze_5085) && ((local_tid_5104 -\n  ",
-            "                                                         squot32(local_tid_5104,\n                                                                   wave_sizze_5518) *\n                                                           wave_sizze_5518) &\n                                                          (2 * offset_5532 -\n                                                           1)) == 0) {\n            // read array element\n            {\n                x_5176 = *(volatile __local\n                           double *) &mem_5438[(local_tid_5104 + offset_5532) *\n                                               8];\n                x_5177 = *(volatile __local\n                           double *) &mem_5441[(local_tid_5104 + offset_5532) *\n                                               8];\n                x_5178 = *(volatile __local\n                           double *) &mem_5444[(local_tid_5104 + offset_5532) *\n                                               8];\n            }\n            \n            bool cond_5179;\n            double res_5180;\n            double res_5181;\n            double res_5182;\n            \n            if (thread_active_5520) {\n                cond_5179 = x_5174 == 0.0;\n                if (cond_5179) {\n                    res_5180 = x_5176;\n                    res_5181 = x_5177;\n                    res_5182 = x_5178;\n                } else {\n                    bool cond_5183;\n                    double res_5184;\n                    double res_5185;\n                    double res_5186;\n                    \n                    cond_5183 = x_5177 == 0.0;\n                    if (cond_5183) {\n                        res_5184 = x_5173;\n                        res_5185 = x_5174;\n                        res_5186 = x_5175;\n                    } else {\n                        double res_5187;\n                        double res_5188;\n                        double res_5189;\n                        double x_5190;\n                        double res_5191;\n          ",
-            "              double y_5192;\n                        double res_5193;\n                        double y_5194;\n                        double res_5195;\n                        double res_5196;\n                        double x_5197;\n                        double x_5198;\n                        double x_5199;\n                        double x_5200;\n                        double y_5201;\n                        double res_5202;\n                        double y_5203;\n                        double res_5204;\n                        \n                        res_5187 = x_5174 + x_5177;\n                        res_5188 = x_5173 * x_5174;\n                        res_5189 = x_5176 * x_5177;\n                        x_5190 = res_5188 + res_5189;\n                        res_5191 = x_5190 / res_5187;\n                        y_5192 = x_5174 - 1.0;\n                        res_5193 = x_5175 * y_5192;\n                        y_5194 = x_5177 - 1.0;\n                        res_5195 = x_5178 * y_5194;\n                        res_5196 = x_5176 - x_5173;\n                        x_5197 = res_5193 + res_5195;\n                        x_5198 = res_5196 * res_5196;\n                        x_5199 = x_5174 * x_5198;\n                        x_5200 = x_5177 * x_5199;\n                        y_5201 = x_5200 / res_5187;\n                        res_5202 = x_5197 + y_5201;\n                        y_5203 = res_5187 - 1.0;\n                        res_5204 = res_5202 / y_5203;\n                        res_5184 = res_5191;\n                        res_5185 = res_5187;\n                        res_5186 = res_5204;\n                    }\n                    res_5180 = res_5184;\n                    res_5181 = res_5185;\n                    res_5182 = res_5186;\n                }\n            }\n            x_5173 = res_5180;\n            x_5174 = res_5181;\n            x_5175 = res_5182;\n            *(volatile __local double *) &mem_5438[local_tid_5104 * 8] = x_5173;\n            *(volatile __local double *) &mem_5441[lo",
-            "cal_tid_5104 * 8] = x_5174;\n            *(volatile __local double *) &mem_5444[local_tid_5104 * 8] = x_5175;\n        }\n        offset_5532 *= 2;\n        other_index_5172 = local_tid_5104 + offset_5532;\n    }\n    skip_waves_5531 = 1;\n    while (slt32(skip_waves_5531, squot32(group_sizze_5085 + wave_sizze_5518 -\n                                          1, wave_sizze_5518))) {\n        barrier(CLK_LOCAL_MEM_FENCE);\n        offset_5532 = skip_waves_5531 * wave_sizze_5518;\n        other_index_5172 = local_tid_5104 + offset_5532;\n        if (slt32(other_index_5172, group_sizze_5085) && ((local_tid_5104 -\n                                                           squot32(local_tid_5104,\n                                                                   wave_sizze_5518) *\n                                                           wave_sizze_5518) ==\n                                                          0 &&\n                                                          (squot32(local_tid_5104,\n                                                                   wave_sizze_5518) &\n                                                           (2 *\n                                                            skip_waves_5531 -\n                                                            1)) == 0)) {\n            // read array element\n            {\n                x_5176 = *(__local double *) &mem_5438[(local_tid_5104 +\n                                                        offset_5532) * 8];\n                x_5177 = *(__local double *) &mem_5441[(local_tid_5104 +\n                                                        offset_5532) * 8];\n                x_5178 = *(__local double *) &mem_5444[(local_tid_5104 +\n                                                        offset_5532) * 8];\n            }\n            \n            bool cond_5179;\n            double res_5180;\n            double res_5181;\n            double res_5182;\n            \n            if (thread_active_5520) {\n              ",
-            "  cond_5179 = x_5174 == 0.0;\n                if (cond_5179) {\n                    res_5180 = x_5176;\n                    res_5181 = x_5177;\n                    res_5182 = x_5178;\n                } else {\n                    bool cond_5183;\n                    double res_5184;\n                    double res_5185;\n                    double res_5186;\n                    \n                    cond_5183 = x_5177 == 0.0;\n                    if (cond_5183) {\n                        res_5184 = x_5173;\n                        res_5185 = x_5174;\n                        res_5186 = x_5175;\n                    } else {\n                        double res_5187;\n                        double res_5188;\n                        double res_5189;\n                        double x_5190;\n                        double res_5191;\n                        double y_5192;\n                        double res_5193;\n                        double y_5194;\n                        double res_5195;\n                        double res_5196;\n                        double x_5197;\n                        double x_5198;\n                        double x_5199;\n                        double x_5200;\n                        double y_5201;\n                        double res_5202;\n                        double y_5203;\n                        double res_5204;\n                        \n                        res_5187 = x_5174 + x_5177;\n                        res_5188 = x_5173 * x_5174;\n                        res_5189 = x_5176 * x_5177;\n                        x_5190 = res_5188 + res_5189;\n                        res_5191 = x_5190 / res_5187;\n                        y_5192 = x_5174 - 1.0;\n                        res_5193 = x_5175 * y_5192;\n                        y_5194 = x_5177 - 1.0;\n                        res_5195 = x_5178 * y_5194;\n                        res_5196 = x_5176 - x_5173;\n                        x_5197 = res_5193 + res_5195;\n                        x_5198 = res_5196 * res_5196;\n                   ",
-            "     x_5199 = x_5174 * x_5198;\n                        x_5200 = x_5177 * x_5199;\n                        y_5201 = x_5200 / res_5187;\n                        res_5202 = x_5197 + y_5201;\n                        y_5203 = res_5187 - 1.0;\n                        res_5204 = res_5202 / y_5203;\n                        res_5184 = res_5191;\n                        res_5185 = res_5187;\n                        res_5186 = res_5204;\n                    }\n                    res_5180 = res_5184;\n                    res_5181 = res_5185;\n                    res_5182 = res_5186;\n                }\n            }\n            x_5173 = res_5180;\n            x_5174 = res_5181;\n            x_5175 = res_5182;\n            *(__local double *) &mem_5438[local_tid_5104 * 8] = x_5173;\n            *(__local double *) &mem_5441[local_tid_5104 * 8] = x_5174;\n            *(__local double *) &mem_5444[local_tid_5104 * 8] = x_5175;\n        }\n        skip_waves_5531 *= 2;\n    }\n    final_result_5168 = x_5173;\n    final_result_5169 = x_5174;\n    final_result_5170 = x_5175;\n    if (local_tid_5104 == 0) {\n        *(__global double *) &mem_5447[group_id_5105 * 8] = final_result_5168;\n    }\n    if (local_tid_5104 == 0) {\n        *(__global double *) &mem_5450[group_id_5105 * 8] = final_result_5169;\n    }\n    if (local_tid_5104 == 0) {\n        *(__global double *) &mem_5453[group_id_5105 * 8] = final_result_5170;\n    }\n}\n__kernel void chunked_reduce_kernel_5262(__local volatile\n                                         int64_t *mem_aligned_0,\n                                         __local volatile\n                                         int64_t *mem_aligned_1,\n                                         __local volatile\n                                         int64_t *mem_aligned_2,\n                                         int32_t sizze_4882,\n                                         int32_t num_threads_5252,\n                                         int32_t per_thread_elements_5255,\n                           ",
-            "              int32_t per_chunk_5395, __global\n                                         unsigned char *mem_5435, __global\n                                         unsigned char *mem_5447, __global\n                                         unsigned char *mem_5450, __global\n                                         unsigned char *mem_5453)\n{\n    __local volatile char *restrict mem_5438 = mem_aligned_0;\n    __local volatile char *restrict mem_5441 = mem_aligned_1;\n    __local volatile char *restrict mem_5444 = mem_aligned_2;\n    int32_t wave_sizze_5548;\n    int32_t group_sizze_5549;\n    bool thread_active_5550;\n    int32_t global_tid_5262;\n    int32_t local_tid_5263;\n    int32_t group_id_5264;\n    \n    global_tid_5262 = get_global_id(0);\n    local_tid_5263 = get_local_id(0);\n    group_sizze_5549 = get_local_size(0);\n    wave_sizze_5548 = LOCKSTEP_WIDTH;\n    group_id_5264 = get_group_id(0);\n    thread_active_5550 = 1;\n    \n    int32_t chunk_sizze_5278;\n    int32_t starting_point_5551 = global_tid_5262 * per_thread_elements_5255;\n    int32_t remaining_elements_5552 = sizze_4882 - starting_point_5551;\n    \n    if (sle32(remaining_elements_5552, 0) || sle32(sizze_4882,\n                                                   starting_point_5551)) {\n        chunk_sizze_5278 = 0;\n    } else {\n        if (slt32(sizze_4882, (global_tid_5262 + 1) *\n                  per_thread_elements_5255)) {\n            chunk_sizze_5278 = sizze_4882 - global_tid_5262 *\n                per_thread_elements_5255;\n        } else {\n            chunk_sizze_5278 = per_thread_elements_5255;\n        }\n    }\n    \n    int32_t slice_offset_5279;\n    double res_5284;\n    bool cond_5285;\n    double res_5286;\n    double res_5287;\n    double res_5288;\n    \n    if (thread_active_5550) {\n        slice_offset_5279 = per_thread_elements_5255 * global_tid_5262;\n        res_5284 = sitofp_i32_f64(chunk_sizze_5278);\n        cond_5285 = res_5284 == 0.0;\n        if (cond_5285) {\n            res_5286 = 0.0;\n        } else {\n ",
-            "           res_5286 = res_5284;\n        }\n        if (cond_5285) {\n            res_5287 = 0.0;\n            res_5288 = 0.0;\n        } else {\n            double res_5289;\n            double res_5303;\n            double res_5304;\n            double res_5320;\n            double x_5292 = 0.0;\n            \n            for (int32_t chunk_offset_5291 = 0; chunk_offset_5291 <\n                 chunk_sizze_5278; chunk_offset_5291++) {\n                int32_t j_p_i_t_s_5409 = slice_offset_5279 + chunk_offset_5291;\n                int32_t new_index_5410 = squot32(j_p_i_t_s_5409,\n                                                 per_chunk_5395);\n                int32_t binop_y_5412 = per_chunk_5395 * new_index_5410;\n                int32_t new_index_5413 = j_p_i_t_s_5409 - binop_y_5412;\n                double x_5299 = *(__global double *) &mem_5435[(new_index_5413 *\n                                                                num_threads_5252 +\n                                                                new_index_5410) *\n                                                               8];\n                double res_5302 = x_5292 + x_5299;\n                double x_tmp_5553 = res_5302;\n                \n                x_5292 = x_tmp_5553;\n            }\n            res_5289 = x_5292;\n            res_5303 = res_5289 / res_5284;\n            \n            double x_5307 = 0.0;\n            \n            for (int32_t chunk_offset_5306 = 0; chunk_offset_5306 <\n                 chunk_sizze_5278; chunk_offset_5306++) {\n                int32_t j_p_i_t_s_5419 = slice_offset_5279 + chunk_offset_5306;\n                int32_t new_index_5420 = squot32(j_p_i_t_s_5419,\n                                                 per_chunk_5395);\n                int32_t binop_y_5422 = per_chunk_5395 * new_index_5420;\n                int32_t new_index_5423 = j_p_i_t_s_5419 - binop_y_5422;\n                double x_5314 = *(__global double *) &mem_5435[(new_index_5423 *\n                                           ",
-            "                     num_threads_5252 +\n                                                                new_index_5420) *\n                                                               8];\n                double x_5316 = x_5314 - res_5303;\n                double res_5317 = x_5316 * x_5316;\n                double res_5319 = x_5307 + res_5317;\n                double x_tmp_5554 = res_5319;\n                \n                x_5307 = x_tmp_5554;\n            }\n            res_5304 = x_5307;\n            res_5320 = res_5304 / res_5284;\n            res_5287 = res_5303;\n            res_5288 = res_5320;\n        }\n    }\n    \n    double final_result_5327;\n    double final_result_5328;\n    double final_result_5329;\n    \n    for (int32_t comb_iter_5555 = 0; comb_iter_5555 < squot32(group_sizze_5244 +\n                                                              group_sizze_5244 -\n                                                              1,\n                                                              group_sizze_5244);\n         comb_iter_5555++) {\n        int32_t combine_id_5272;\n        int32_t flat_comb_id_5556 = comb_iter_5555 * group_sizze_5244 +\n                local_tid_5263;\n        \n        combine_id_5272 = flat_comb_id_5556;\n        if (slt32(combine_id_5272, group_sizze_5244) && 1) {\n            *(__local double *) &mem_5438[combine_id_5272 * 8] = res_5287;\n        }\n    }\n    barrier(CLK_LOCAL_MEM_FENCE);\n    for (int32_t comb_iter_5557 = 0; comb_iter_5557 < squot32(group_sizze_5244 +\n                                                              group_sizze_5244 -\n                                                              1,\n                                                              group_sizze_5244);\n         comb_iter_5557++) {\n        int32_t combine_id_5273;\n        int32_t flat_comb_id_5558 = comb_iter_5557 * group_sizze_5244 +\n                local_tid_5263;\n        \n        combine_id_5273 = flat_comb_id_5558;\n        if (slt32(combine_id_5273, group_si",
-            "zze_5244) && 1) {\n            *(__local double *) &mem_5441[combine_id_5273 * 8] = res_5286;\n        }\n    }\n    barrier(CLK_LOCAL_MEM_FENCE);\n    for (int32_t comb_iter_5559 = 0; comb_iter_5559 < squot32(group_sizze_5244 +\n                                                              group_sizze_5244 -\n                                                              1,\n                                                              group_sizze_5244);\n         comb_iter_5559++) {\n        int32_t combine_id_5274;\n        int32_t flat_comb_id_5560 = comb_iter_5559 * group_sizze_5244 +\n                local_tid_5263;\n        \n        combine_id_5274 = flat_comb_id_5560;\n        if (slt32(combine_id_5274, group_sizze_5244) && 1) {\n            *(__local double *) &mem_5444[combine_id_5274 * 8] = res_5288;\n        }\n    }\n    barrier(CLK_LOCAL_MEM_FENCE);\n    \n    int32_t offset_5562;\n    int32_t skip_waves_5561;\n    int32_t my_index_5330;\n    int32_t other_index_5331;\n    double x_5332;\n    double x_5333;\n    double x_5334;\n    double x_5335;\n    double x_5336;\n    double x_5337;\n    \n    my_index_5330 = local_tid_5263;\n    offset_5562 = 0;\n    other_index_5331 = local_tid_5263 + offset_5562;\n    if (slt32(local_tid_5263, group_sizze_5244)) {\n        x_5332 = *(__local double *) &mem_5438[(local_tid_5263 + offset_5562) *\n                                               8];\n        x_5333 = *(__local double *) &mem_5441[(local_tid_5263 + offset_5562) *\n                                               8];\n        x_5334 = *(__local double *) &mem_5444[(local_tid_5263 + offset_5562) *\n                                               8];\n    }\n    offset_5562 = 1;\n    other_index_5331 = local_tid_5263 + offset_5562;\n    while (slt32(offset_5562, wave_sizze_5548)) {\n        if (slt32(other_index_5331, group_sizze_5244) && ((local_tid_5263 -\n                                                           squot32(local_tid_5263,\n                                                                 ",
-            "  wave_sizze_5548) *\n                                                           wave_sizze_5548) &\n                                                          (2 * offset_5562 -\n                                                           1)) == 0) {\n            // read array element\n            {\n                x_5335 = *(volatile __local\n                           double *) &mem_5438[(local_tid_5263 + offset_5562) *\n                                               8];\n                x_5336 = *(volatile __local\n                           double *) &mem_5441[(local_tid_5263 + offset_5562) *\n                                               8];\n                x_5337 = *(volatile __local\n                           double *) &mem_5444[(local_tid_5263 + offset_5562) *\n                                               8];\n            }\n            \n            bool cond_5338;\n            double res_5339;\n            double res_5340;\n            double res_5341;\n            \n            if (thread_active_5550) {\n                cond_5338 = x_5333 == 0.0;\n                if (cond_5338) {\n                    res_5339 = x_5335;\n                    res_5340 = x_5336;\n                    res_5341 = x_5337;\n                } else {\n                    bool cond_5342;\n                    double res_5343;\n                    double res_5344;\n                    double res_5345;\n                    \n                    cond_5342 = x_5336 == 0.0;\n                    if (cond_5342) {\n                        res_5343 = x_5332;\n                        res_5344 = x_5333;\n                        res_5345 = x_5334;\n                    } else {\n                        double res_5346;\n                        double res_5347;\n                        double res_5348;\n                        double x_5349;\n                        double res_5350;\n                        double y_5351;\n                        double res_5352;\n                        double y_5353;\n                        double res_53",
-            "54;\n                        double res_5355;\n                        double x_5356;\n                        double x_5357;\n                        double x_5358;\n                        double x_5359;\n                        double y_5360;\n                        double res_5361;\n                        double y_5362;\n                        double res_5363;\n                        \n                        res_5346 = x_5333 + x_5336;\n                        res_5347 = x_5332 * x_5333;\n                        res_5348 = x_5335 * x_5336;\n                        x_5349 = res_5347 + res_5348;\n                        res_5350 = x_5349 / res_5346;\n                        y_5351 = x_5333 - 1.0;\n                        res_5352 = x_5334 * y_5351;\n                        y_5353 = x_5336 - 1.0;\n                        res_5354 = x_5337 * y_5353;\n                        res_5355 = x_5335 - x_5332;\n                        x_5356 = res_5352 + res_5354;\n                        x_5357 = res_5355 * res_5355;\n                        x_5358 = x_5333 * x_5357;\n                        x_5359 = x_5336 * x_5358;\n                        y_5360 = x_5359 / res_5346;\n                        res_5361 = x_5356 + y_5360;\n                        y_5362 = res_5346 - 1.0;\n                        res_5363 = res_5361 / y_5362;\n                        res_5343 = res_5350;\n                        res_5344 = res_5346;\n                        res_5345 = res_5363;\n                    }\n                    res_5339 = res_5343;\n                    res_5340 = res_5344;\n                    res_5341 = res_5345;\n                }\n            }\n            x_5332 = res_5339;\n            x_5333 = res_5340;\n            x_5334 = res_5341;\n            *(volatile __local double *) &mem_5438[local_tid_5263 * 8] = x_5332;\n            *(volatile __local double *) &mem_5441[local_tid_5263 * 8] = x_5333;\n            *(volatile __local double *) &mem_5444[local_tid_5263 * 8] = x_5334;\n        }\n        offset_5562 *= 2;\n ",
-            "       other_index_5331 = local_tid_5263 + offset_5562;\n    }\n    skip_waves_5561 = 1;\n    while (slt32(skip_waves_5561, squot32(group_sizze_5244 + wave_sizze_5548 -\n                                          1, wave_sizze_5548))) {\n        barrier(CLK_LOCAL_MEM_FENCE);\n        offset_5562 = skip_waves_5561 * wave_sizze_5548;\n        other_index_5331 = local_tid_5263 + offset_5562;\n        if (slt32(other_index_5331, group_sizze_5244) && ((local_tid_5263 -\n                                                           squot32(local_tid_5263,\n                                                                   wave_sizze_5548) *\n                                                           wave_sizze_5548) ==\n                                                          0 &&\n                                                          (squot32(local_tid_5263,\n                                                                   wave_sizze_5548) &\n                                                           (2 *\n                                                            skip_waves_5561 -\n                                                            1)) == 0)) {\n            // read array element\n            {\n                x_5335 = *(__local double *) &mem_5438[(local_tid_5263 +\n                                                        offset_5562) * 8];\n                x_5336 = *(__local double *) &mem_5441[(local_tid_5263 +\n                                                        offset_5562) * 8];\n                x_5337 = *(__local double *) &mem_5444[(local_tid_5263 +\n                                                        offset_5562) * 8];\n            }\n            \n            bool cond_5338;\n            double res_5339;\n            double res_5340;\n            double res_5341;\n            \n            if (thread_active_5550) {\n                cond_5338 = x_5333 == 0.0;\n                if (cond_5338) {\n                    res_5339 = x_5335;\n                    res_5340 = x_5336;\n      ",
-            "              res_5341 = x_5337;\n                } else {\n                    bool cond_5342;\n                    double res_5343;\n                    double res_5344;\n                    double res_5345;\n                    \n                    cond_5342 = x_5336 == 0.0;\n                    if (cond_5342) {\n                        res_5343 = x_5332;\n                        res_5344 = x_5333;\n                        res_5345 = x_5334;\n                    } else {\n                        double res_5346;\n                        double res_5347;\n                        double res_5348;\n                        double x_5349;\n                        double res_5350;\n                        double y_5351;\n                        double res_5352;\n                        double y_5353;\n                        double res_5354;\n                        double res_5355;\n                        double x_5356;\n                        double x_5357;\n                        double x_5358;\n                        double x_5359;\n                        double y_5360;\n                        double res_5361;\n                        double y_5362;\n                        double res_5363;\n                        \n                        res_5346 = x_5333 + x_5336;\n                        res_5347 = x_5332 * x_5333;\n                        res_5348 = x_5335 * x_5336;\n                        x_5349 = res_5347 + res_5348;\n                        res_5350 = x_5349 / res_5346;\n                        y_5351 = x_5333 - 1.0;\n                        res_5352 = x_5334 * y_5351;\n                        y_5353 = x_5336 - 1.0;\n                        res_5354 = x_5337 * y_5353;\n                        res_5355 = x_5335 - x_5332;\n                        x_5356 = res_5352 + res_5354;\n                        x_5357 = res_5355 * res_5355;\n                        x_5358 = x_5333 * x_5357;\n                        x_5359 = x_5336 * x_5358;\n                        y_5360 = x_5359 / res_5346;\n             ",
-            "           res_5361 = x_5356 + y_5360;\n                        y_5362 = res_5346 - 1.0;\n                        res_5363 = res_5361 / y_5362;\n                        res_5343 = res_5350;\n                        res_5344 = res_5346;\n                        res_5345 = res_5363;\n                    }\n                    res_5339 = res_5343;\n                    res_5340 = res_5344;\n                    res_5341 = res_5345;\n                }\n            }\n            x_5332 = res_5339;\n            x_5333 = res_5340;\n            x_5334 = res_5341;\n            *(__local double *) &mem_5438[local_tid_5263 * 8] = x_5332;\n            *(__local double *) &mem_5441[local_tid_5263 * 8] = x_5333;\n            *(__local double *) &mem_5444[local_tid_5263 * 8] = x_5334;\n        }\n        skip_waves_5561 *= 2;\n    }\n    final_result_5327 = x_5332;\n    final_result_5328 = x_5333;\n    final_result_5329 = x_5334;\n    if (local_tid_5263 == 0) {\n        *(__global double *) &mem_5447[group_id_5264 * 8] = final_result_5327;\n    }\n    if (local_tid_5263 == 0) {\n        *(__global double *) &mem_5450[group_id_5264 * 8] = final_result_5328;\n    }\n    if (local_tid_5263 == 0) {\n        *(__global double *) &mem_5453[group_id_5264 * 8] = final_result_5329;\n    }\n}\n__kernel void fut_kernel_map_transpose_f64(__global double *odata,\n                                           uint odata_offset, __global\n                                           double *idata, uint idata_offset,\n                                           uint width, uint height,\n                                           uint input_size, uint output_size,\n                                           __local double *block)\n{\n    uint x_index;\n    uint y_index;\n    uint our_array_offset;\n    \n    // Adjust the input and output arrays with the basic offset.\n    odata += odata_offset / sizeof(double);\n    idata += idata_offset / sizeof(double);\n    // Adjust the input and output arrays for the third dimension.\n    our_array_offset = get_g",
-            "lobal_id(2) * width * height;\n    odata += our_array_offset;\n    idata += our_array_offset;\n    // read the matrix tile into shared memory\n    x_index = get_global_id(0);\n    y_index = get_global_id(1);\n    \n    uint index_in = y_index * width + x_index;\n    \n    if ((x_index < width && y_index < height) && index_in < input_size)\n        block[get_local_id(1) * (FUT_BLOCK_DIM + 1) + get_local_id(0)] =\n            idata[index_in];\n    barrier(CLK_LOCAL_MEM_FENCE);\n    // Scatter the transposed matrix tile to global memory.\n    x_index = get_group_id(1) * FUT_BLOCK_DIM + get_local_id(0);\n    y_index = get_group_id(0) * FUT_BLOCK_DIM + get_local_id(1);\n    \n    uint index_out = y_index * height + x_index;\n    \n    if ((x_index < height && y_index < width) && index_out < output_size)\n        odata[index_out] = block[get_local_id(0) * (FUT_BLOCK_DIM + 1) +\n                                 get_local_id(1)];\n}\n__kernel void fut_kernel_map_transpose_lowheight_f64(__global double *odata,\n                                                     uint odata_offset, __global\n                                                     double *idata,\n                                                     uint idata_offset,\n                                                     uint width, uint height,\n                                                     uint input_size,\n                                                     uint output_size,\n                                                     uint mulx, __local\n                                                     double *block)\n{\n    uint x_index;\n    uint y_index;\n    uint our_array_offset;\n    \n    // Adjust the input and output arrays with the basic offset.\n    odata += odata_offset / sizeof(double);\n    idata += idata_offset / sizeof(double);\n    // Adjust the input and output arrays for the third dimension.\n    our_array_offset = get_global_id(2) * width * height;\n    odata += our_array_offset;\n    idata += our_array_offset;\n    // read the ",
-            "matrix tile into shared memory\n    x_index = get_group_id(0) * FUT_BLOCK_DIM * mulx + get_local_id(0) +\n        get_local_id(1) % mulx * FUT_BLOCK_DIM;\n    y_index = get_group_id(1) * FUT_BLOCK_DIM + get_local_id(1) / mulx;\n    \n    uint index_in = y_index * width + x_index;\n    \n    if ((x_index < width && y_index < height) && index_in < input_size)\n        block[get_local_id(1) * (FUT_BLOCK_DIM + 1) + get_local_id(0)] =\n            idata[index_in];\n    barrier(CLK_LOCAL_MEM_FENCE);\n    // Scatter the transposed matrix tile to global memory.\n    x_index = get_group_id(1) * FUT_BLOCK_DIM + get_local_id(0) / mulx;\n    y_index = get_group_id(0) * FUT_BLOCK_DIM * mulx + get_local_id(1) +\n        get_local_id(0) % mulx * FUT_BLOCK_DIM;\n    \n    uint index_out = y_index * height + x_index;\n    \n    if ((x_index < height && y_index < width) && index_out < output_size)\n        odata[index_out] = block[get_local_id(0) * (FUT_BLOCK_DIM + 1) +\n                                 get_local_id(1)];\n}\n__kernel void fut_kernel_map_transpose_lowwidth_f64(__global double *odata,\n                                                    uint odata_offset, __global\n                                                    double *idata,\n                                                    uint idata_offset,\n                                                    uint width, uint height,\n                                                    uint input_size,\n                                                    uint output_size, uint muly,\n                                                    __local double *block)\n{\n    uint x_index;\n    uint y_index;\n    uint our_array_offset;\n    \n    // Adjust the input and output arrays with the basic offset.\n    odata += odata_offset / sizeof(double);\n    idata += idata_offset / sizeof(double);\n    // Adjust the input and output arrays for the third dimension.\n    our_array_offset = get_global_id(2) * width * height;\n    odata += our_array_offset;\n    idata += our_array_o",
-            "ffset;\n    // read the matrix tile into shared memory\n    x_index = get_group_id(0) * FUT_BLOCK_DIM + get_local_id(0) / muly;\n    y_index = get_group_id(1) * FUT_BLOCK_DIM * muly + get_local_id(1) +\n        get_local_id(0) % muly * FUT_BLOCK_DIM;\n    \n    uint index_in = y_index * width + x_index;\n    \n    if ((x_index < width && y_index < height) && index_in < input_size)\n        block[get_local_id(1) * (FUT_BLOCK_DIM + 1) + get_local_id(0)] =\n            idata[index_in];\n    barrier(CLK_LOCAL_MEM_FENCE);\n    // Scatter the transposed matrix tile to global memory.\n    x_index = get_group_id(1) * FUT_BLOCK_DIM * muly + get_local_id(0) +\n        get_local_id(1) % muly * FUT_BLOCK_DIM;\n    y_index = get_group_id(0) * FUT_BLOCK_DIM + get_local_id(1) / muly;\n    \n    uint index_out = y_index * height + x_index;\n    \n    if ((x_index < height && y_index < width) && index_out < output_size)\n        odata[index_out] = block[get_local_id(0) * (FUT_BLOCK_DIM + 1) +\n                                 get_local_id(1)];\n}\n__kernel void fut_kernel_map_transpose_small_f64(__global double *odata,\n                                                 uint odata_offset, __global\n                                                 double *idata,\n                                                 uint idata_offset,\n                                                 uint num_arrays, uint width,\n                                                 uint height, uint input_size,\n                                                 uint output_size)\n{\n    uint our_array_offset = get_global_id(0) / (height * width) * (height *\n                                                                   width);\n    uint x_index = get_global_id(0) % (height * width) / height;\n    uint y_index = get_global_id(0) % height;\n    \n    // Adjust the input and output arrays with the basic offset.\n    odata += odata_offset / sizeof(double);\n    idata += idata_offset / sizeof(double);\n    // Adjust the input and output arrays.\n    o",
-            "data += our_array_offset;\n    idata += our_array_offset;\n    \n    uint index_in = y_index * width + x_index;\n    uint index_out = x_index * height + y_index;\n    \n    if (get_global_id(0) < input_size)\n        odata[index_out] = idata[index_in];\n}\n__kernel void reduce_kernel_4996(__local volatile int64_t *mem_aligned_0,\n                                 int32_t num_groups_4959, __global\n                                 unsigned char *mem_5431, __global\n                                 unsigned char *mem_5437)\n{\n    __local volatile char *restrict mem_5434 = mem_aligned_0;\n    int32_t wave_sizze_5490;\n    int32_t group_sizze_5491;\n    bool thread_active_5492;\n    int32_t global_tid_4996;\n    int32_t local_tid_4997;\n    int32_t group_id_4998;\n    \n    global_tid_4996 = get_global_id(0);\n    local_tid_4997 = get_local_id(0);\n    group_sizze_5491 = get_local_size(0);\n    wave_sizze_5490 = LOCKSTEP_WIDTH;\n    group_id_4998 = get_group_id(0);\n    thread_active_5492 = 1;\n    \n    bool in_bounds_4999;\n    double x_5384;\n    \n    if (thread_active_5492) {\n        in_bounds_4999 = slt32(local_tid_4997, num_groups_4959);\n        if (in_bounds_4999) {\n            double x_5000 = *(__global double *) &mem_5431[global_tid_4996 * 8];\n            \n            x_5384 = x_5000;\n        } else {\n            x_5384 = 0.0;\n        }\n    }\n    \n    double final_result_5004;\n    \n    for (int32_t comb_iter_5493 = 0; comb_iter_5493 <\n         squot32(max_num_groups_4954 + max_num_groups_4954 - 1,\n                 max_num_groups_4954); comb_iter_5493++) {\n        int32_t combine_id_5003;\n        int32_t flat_comb_id_5494 = comb_iter_5493 * max_num_groups_4954 +\n                local_tid_4997;\n        \n        combine_id_5003 = flat_comb_id_5494;\n        if (slt32(combine_id_5003, max_num_groups_4954) && 1) {\n            *(__local double *) &mem_5434[combine_id_5003 * 8] = x_5384;\n        }\n    }\n    barrier(CLK_LOCAL_MEM_FENCE);\n    \n    int32_t offset_5496;\n    int32_t skip_waves_5495;\n    ",
-            "double x_4808;\n    double x_4809;\n    int32_t my_index_4966;\n    int32_t other_index_4967;\n    \n    my_index_4966 = local_tid_4997;\n    offset_5496 = 0;\n    other_index_4967 = local_tid_4997 + offset_5496;\n    if (slt32(local_tid_4997, max_num_groups_4954)) {\n        x_4808 = *(__local double *) &mem_5434[(local_tid_4997 + offset_5496) *\n                                               8];\n    }\n    offset_5496 = 1;\n    other_index_4967 = local_tid_4997 + offset_5496;\n    while (slt32(offset_5496, wave_sizze_5490)) {\n        if (slt32(other_index_4967, max_num_groups_4954) && ((local_tid_4997 -\n                                                              squot32(local_tid_4997,\n                                                                      wave_sizze_5490) *\n                                                              wave_sizze_5490) &\n                                                             (2 * offset_5496 -\n                                                              1)) == 0) {\n            // read array element\n            {\n                x_4809 = *(volatile __local\n                           double *) &mem_5434[(local_tid_4997 + offset_5496) *\n                                               8];\n            }\n            \n            double res_4810;\n            \n            if (thread_active_5492) {\n                res_4810 = x_4808 + x_4809;\n            }\n            x_4808 = res_4810;\n            *(volatile __local double *) &mem_5434[local_tid_4997 * 8] = x_4808;\n        }\n        offset_5496 *= 2;\n        other_index_4967 = local_tid_4997 + offset_5496;\n    }\n    skip_waves_5495 = 1;\n    while (slt32(skip_waves_5495, squot32(max_num_groups_4954 +\n                                          wave_sizze_5490 - 1,\n                                          wave_sizze_5490))) {\n        barrier(CLK_LOCAL_MEM_FENCE);\n        offset_5496 = skip_waves_5495 * wave_sizze_5490;\n        other_index_4967 = local_tid_4997 + offset_5496;\n        if (slt32(other_",
-            "index_4967, max_num_groups_4954) && ((local_tid_4997 -\n                                                              squot32(local_tid_4997,\n                                                                      wave_sizze_5490) *\n                                                              wave_sizze_5490) ==\n                                                             0 &&\n                                                             (squot32(local_tid_4997,\n                                                                      wave_sizze_5490) &\n                                                              (2 *\n                                                               skip_waves_5495 -\n                                                               1)) == 0)) {\n            // read array element\n            {\n                x_4809 = *(__local double *) &mem_5434[(local_tid_4997 +\n                                                        offset_5496) * 8];\n            }\n            \n            double res_4810;\n            \n            if (thread_active_5492) {\n                res_4810 = x_4808 + x_4809;\n            }\n            x_4808 = res_4810;\n            *(__local double *) &mem_5434[local_tid_4997 * 8] = x_4808;\n        }\n        skip_waves_5495 *= 2;\n    }\n    final_result_5004 = x_4808;\n    if (local_tid_4997 == 0) {\n        *(__global double *) &mem_5437[group_id_4998 * 8] = final_result_5004;\n    }\n}\n__kernel void reduce_kernel_5057(__local volatile int64_t *mem_aligned_0,\n                                 int32_t num_groups_5020, __global\n                                 unsigned char *mem_5431, __global\n                                 unsigned char *mem_5437)\n{\n    __local volatile char *restrict mem_5434 = mem_aligned_0;\n    int32_t wave_sizze_5508;\n    int32_t group_sizze_5509;\n    bool thread_active_5510;\n    int32_t global_tid_5057;\n    int32_t local_tid_5058;\n    int32_t group_id_5059;\n    \n    global_tid_5057 = get_global_id(0);\n    local_tid_50",
-            "58 = get_local_id(0);\n    group_sizze_5509 = get_local_size(0);\n    wave_sizze_5508 = LOCKSTEP_WIDTH;\n    group_id_5059 = get_group_id(0);\n    thread_active_5510 = 1;\n    \n    bool in_bounds_5060;\n    double x_5384;\n    \n    if (thread_active_5510) {\n        in_bounds_5060 = slt32(local_tid_5058, num_groups_5020);\n        if (in_bounds_5060) {\n            double x_5061 = *(__global double *) &mem_5431[global_tid_5057 * 8];\n            \n            x_5384 = x_5061;\n        } else {\n            x_5384 = 0.0;\n        }\n    }\n    \n    double final_result_5065;\n    \n    for (int32_t comb_iter_5511 = 0; comb_iter_5511 <\n         squot32(max_num_groups_5015 + max_num_groups_5015 - 1,\n                 max_num_groups_5015); comb_iter_5511++) {\n        int32_t combine_id_5064;\n        int32_t flat_comb_id_5512 = comb_iter_5511 * max_num_groups_5015 +\n                local_tid_5058;\n        \n        combine_id_5064 = flat_comb_id_5512;\n        if (slt32(combine_id_5064, max_num_groups_5015) && 1) {\n            *(__local double *) &mem_5434[combine_id_5064 * 8] = x_5384;\n        }\n    }\n    barrier(CLK_LOCAL_MEM_FENCE);\n    \n    int32_t offset_5514;\n    int32_t skip_waves_5513;\n    double x_4815;\n    double x_4816;\n    int32_t my_index_5027;\n    int32_t other_index_5028;\n    \n    my_index_5027 = local_tid_5058;\n    offset_5514 = 0;\n    other_index_5028 = local_tid_5058 + offset_5514;\n    if (slt32(local_tid_5058, max_num_groups_5015)) {\n        x_4815 = *(__local double *) &mem_5434[(local_tid_5058 + offset_5514) *\n                                               8];\n    }\n    offset_5514 = 1;\n    other_index_5028 = local_tid_5058 + offset_5514;\n    while (slt32(offset_5514, wave_sizze_5508)) {\n        if (slt32(other_index_5028, max_num_groups_5015) && ((local_tid_5058 -\n                                                              squot32(local_tid_5058,\n                                                                      wave_sizze_5508) *\n                                    ",
-            "                          wave_sizze_5508) &\n                                                             (2 * offset_5514 -\n                                                              1)) == 0) {\n            // read array element\n            {\n                x_4816 = *(volatile __local\n                           double *) &mem_5434[(local_tid_5058 + offset_5514) *\n                                               8];\n            }\n            \n            double res_4817;\n            \n            if (thread_active_5510) {\n                res_4817 = x_4815 + x_4816;\n            }\n            x_4815 = res_4817;\n            *(volatile __local double *) &mem_5434[local_tid_5058 * 8] = x_4815;\n        }\n        offset_5514 *= 2;\n        other_index_5028 = local_tid_5058 + offset_5514;\n    }\n    skip_waves_5513 = 1;\n    while (slt32(skip_waves_5513, squot32(max_num_groups_5015 +\n                                          wave_sizze_5508 - 1,\n                                          wave_sizze_5508))) {\n        barrier(CLK_LOCAL_MEM_FENCE);\n        offset_5514 = skip_waves_5513 * wave_sizze_5508;\n        other_index_5028 = local_tid_5058 + offset_5514;\n        if (slt32(other_index_5028, max_num_groups_5015) && ((local_tid_5058 -\n                                                              squot32(local_tid_5058,\n                                                                      wave_sizze_5508) *\n                                                              wave_sizze_5508) ==\n                                                             0 &&\n                                                             (squot32(local_tid_5058,\n                                                                      wave_sizze_5508) &\n                                                              (2 *\n                                                               skip_waves_5513 -\n                                                               1)) == 0)) {\n            // read array element\n",
-            "            {\n                x_4816 = *(__local double *) &mem_5434[(local_tid_5058 +\n                                                        offset_5514) * 8];\n            }\n            \n            double res_4817;\n            \n            if (thread_active_5510) {\n                res_4817 = x_4815 + x_4816;\n            }\n            x_4815 = res_4817;\n            *(__local double *) &mem_5434[local_tid_5058 * 8] = x_4815;\n        }\n        skip_waves_5513 *= 2;\n    }\n    final_result_5065 = x_4815;\n    if (local_tid_5058 == 0) {\n        *(__global double *) &mem_5437[group_id_5059 * 8] = final_result_5065;\n    }\n}\n__kernel void reduce_kernel_5208(__local volatile int64_t *mem_aligned_0,\n                                 __local volatile int64_t *mem_aligned_1,\n                                 __local volatile int64_t *mem_aligned_2,\n                                 int32_t num_groups_5092, __global\n                                 unsigned char *mem_5447, __global\n                                 unsigned char *mem_5450, __global\n                                 unsigned char *mem_5453, __global\n                                 unsigned char *mem_5465, __global\n                                 unsigned char *mem_5468, __global\n                                 unsigned char *mem_5471)\n{\n    __local volatile char *restrict mem_5456 = mem_aligned_0;\n    __local volatile char *restrict mem_5459 = mem_aligned_1;\n    __local volatile char *restrict mem_5462 = mem_aligned_2;\n    int32_t wave_sizze_5536;\n    int32_t group_sizze_5537;\n    bool thread_active_5538;\n    int32_t global_tid_5208;\n    int32_t local_tid_5209;\n    int32_t group_id_5210;\n    \n    global_tid_5208 = get_global_id(0);\n    local_tid_5209 = get_local_id(0);\n    group_sizze_5537 = get_local_size(0);\n    wave_sizze_5536 = LOCKSTEP_WIDTH;\n    group_id_5210 = get_group_id(0);\n    thread_active_5538 = 1;\n    \n    bool in_bounds_5211;\n    double x_5384;\n    double x_5386;\n    double x_5388;\n    \n    if (thre",
-            "ad_active_5538) {\n        in_bounds_5211 = slt32(local_tid_5209, num_groups_5092);\n        if (in_bounds_5211) {\n            double x_5212 = *(__global double *) &mem_5447[global_tid_5208 * 8];\n            \n            x_5384 = x_5212;\n        } else {\n            x_5384 = 0.0;\n        }\n        if (in_bounds_5211) {\n            double x_5214 = *(__global double *) &mem_5450[global_tid_5208 * 8];\n            \n            x_5386 = x_5214;\n        } else {\n            x_5386 = 0.0;\n        }\n        if (in_bounds_5211) {\n            double x_5216 = *(__global double *) &mem_5453[global_tid_5208 * 8];\n            \n            x_5388 = x_5216;\n        } else {\n            x_5388 = 0.0;\n        }\n    }\n    \n    double final_result_5222;\n    double final_result_5223;\n    double final_result_5224;\n    \n    for (int32_t comb_iter_5539 = 0; comb_iter_5539 <\n         squot32(max_num_groups_5087 + max_num_groups_5087 - 1,\n                 max_num_groups_5087); comb_iter_5539++) {\n        int32_t combine_id_5221;\n        int32_t flat_comb_id_5540 = comb_iter_5539 * max_num_groups_5087 +\n                local_tid_5209;\n        \n        combine_id_5221 = flat_comb_id_5540;\n        if (slt32(combine_id_5221, max_num_groups_5087) && 1) {\n            *(__local double *) &mem_5456[combine_id_5221 * 8] = x_5384;\n            *(__local double *) &mem_5459[combine_id_5221 * 8] = x_5386;\n            *(__local double *) &mem_5462[combine_id_5221 * 8] = x_5388;\n        }\n    }\n    barrier(CLK_LOCAL_MEM_FENCE);\n    \n    int32_t offset_5542;\n    int32_t skip_waves_5541;\n    double x_4826;\n    double x_4827;\n    double x_4828;\n    double x_4829;\n    double x_4830;\n    double x_4831;\n    int32_t my_index_5101;\n    int32_t other_index_5102;\n    \n    my_index_5101 = local_tid_5209;\n    offset_5542 = 0;\n    other_index_5102 = local_tid_5209 + offset_5542;\n    if (slt32(local_tid_5209, max_num_groups_5087)) {\n        x_4826 = *(__local double *) &mem_5456[(local_tid_5209 + offset_5542) *\n          ",
-            "                                     8];\n        x_4827 = *(__local double *) &mem_5459[(local_tid_5209 + offset_5542) *\n                                               8];\n        x_4828 = *(__local double *) &mem_5462[(local_tid_5209 + offset_5542) *\n                                               8];\n    }\n    offset_5542 = 1;\n    other_index_5102 = local_tid_5209 + offset_5542;\n    while (slt32(offset_5542, wave_sizze_5536)) {\n        if (slt32(other_index_5102, max_num_groups_5087) && ((local_tid_5209 -\n                                                              squot32(local_tid_5209,\n                                                                      wave_sizze_5536) *\n                                                              wave_sizze_5536) &\n                                                             (2 * offset_5542 -\n                                                              1)) == 0) {\n            // read array element\n            {\n                x_4829 = *(volatile __local\n                           double *) &mem_5456[(local_tid_5209 + offset_5542) *\n                                               8];\n                x_4830 = *(volatile __local\n                           double *) &mem_5459[(local_tid_5209 + offset_5542) *\n                                               8];\n                x_4831 = *(volatile __local\n                           double *) &mem_5462[(local_tid_5209 + offset_5542) *\n                                               8];\n            }\n            \n            bool cond_4832;\n            double res_4833;\n            double res_4834;\n            double res_4835;\n            \n            if (thread_active_5538) {\n                cond_4832 = x_4827 == 0.0;\n                if (cond_4832) {\n                    res_4833 = x_4829;\n                    res_4834 = x_4830;\n                    res_4835 = x_4831;\n                } else {\n                    bool cond_4836;\n                    double res_4837;\n                    d",
-            "ouble res_4838;\n                    double res_4839;\n                    \n                    cond_4836 = x_4830 == 0.0;\n                    if (cond_4836) {\n                        res_4837 = x_4826;\n                        res_4838 = x_4827;\n                        res_4839 = x_4828;\n                    } else {\n                        double res_4840;\n                        double res_4841;\n                        double res_4842;\n                        double x_4843;\n                        double res_4844;\n                        double y_4845;\n                        double res_4846;\n                        double y_4847;\n                        double res_4848;\n                        double res_4849;\n                        double x_4850;\n                        double x_4851;\n                        double x_4852;\n                        double x_4853;\n                        double y_4854;\n                        double res_4855;\n                        double y_4856;\n                        double res_4857;\n                        \n                        res_4840 = x_4827 + x_4830;\n                        res_4841 = x_4826 * x_4827;\n                        res_4842 = x_4829 * x_4830;\n                        x_4843 = res_4841 + res_4842;\n                        res_4844 = x_4843 / res_4840;\n                        y_4845 = x_4827 - 1.0;\n                        res_4846 = x_4828 * y_4845;\n                        y_4847 = x_4830 - 1.0;\n                        res_4848 = x_4831 * y_4847;\n                        res_4849 = x_4829 - x_4826;\n                        x_4850 = res_4846 + res_4848;\n                        x_4851 = res_4849 * res_4849;\n                        x_4852 = x_4827 * x_4851;\n                        x_4853 = x_4830 * x_4852;\n                        y_4854 = x_4853 / res_4840;\n                        res_4855 = x_4850 + y_4854;\n                        y_4856 = res_4840 - 1.0;\n                        res_4857 = res_4855 / y_4856;\n          ",
-            "              res_4837 = res_4844;\n                        res_4838 = res_4840;\n                        res_4839 = res_4857;\n                    }\n                    res_4833 = res_4837;\n                    res_4834 = res_4838;\n                    res_4835 = res_4839;\n                }\n            }\n            x_4826 = res_4833;\n            x_4827 = res_4834;\n            x_4828 = res_4835;\n            *(volatile __local double *) &mem_5456[local_tid_5209 * 8] = x_4826;\n            *(volatile __local double *) &mem_5459[local_tid_5209 * 8] = x_4827;\n            *(volatile __local double *) &mem_5462[local_tid_5209 * 8] = x_4828;\n        }\n        offset_5542 *= 2;\n        other_index_5102 = local_tid_5209 + offset_5542;\n    }\n    skip_waves_5541 = 1;\n    while (slt32(skip_waves_5541, squot32(max_num_groups_5087 +\n                                          wave_sizze_5536 - 1,\n                                          wave_sizze_5536))) {\n        barrier(CLK_LOCAL_MEM_FENCE);\n        offset_5542 = skip_waves_5541 * wave_sizze_5536;\n        other_index_5102 = local_tid_5209 + offset_5542;\n        if (slt32(other_index_5102, max_num_groups_5087) && ((local_tid_5209 -\n                                                              squot32(local_tid_5209,\n                                                                      wave_sizze_5536) *\n                                                              wave_sizze_5536) ==\n                                                             0 &&\n                                                             (squot32(local_tid_5209,\n                                                                      wave_sizze_5536) &\n                                                              (2 *\n                                                               skip_waves_5541 -\n                                                               1)) == 0)) {\n            // read array element\n            {\n                x_4829 = *(__local double *) &m",
-            "em_5456[(local_tid_5209 +\n                                                        offset_5542) * 8];\n                x_4830 = *(__local double *) &mem_5459[(local_tid_5209 +\n                                                        offset_5542) * 8];\n                x_4831 = *(__local double *) &mem_5462[(local_tid_5209 +\n                                                        offset_5542) * 8];\n            }\n            \n            bool cond_4832;\n            double res_4833;\n            double res_4834;\n            double res_4835;\n            \n            if (thread_active_5538) {\n                cond_4832 = x_4827 == 0.0;\n                if (cond_4832) {\n                    res_4833 = x_4829;\n                    res_4834 = x_4830;\n                    res_4835 = x_4831;\n                } else {\n                    bool cond_4836;\n                    double res_4837;\n                    double res_4838;\n                    double res_4839;\n                    \n                    cond_4836 = x_4830 == 0.0;\n                    if (cond_4836) {\n                        res_4837 = x_4826;\n                        res_4838 = x_4827;\n                        res_4839 = x_4828;\n                    } else {\n                        double res_4840;\n                        double res_4841;\n                        double res_4842;\n                        double x_4843;\n                        double res_4844;\n                        double y_4845;\n                        double res_4846;\n                        double y_4847;\n                        double res_4848;\n                        double res_4849;\n                        double x_4850;\n                        double x_4851;\n                        double x_4852;\n                        double x_4853;\n                        double y_4854;\n                        double res_4855;\n                        double y_4856;\n                        double res_4857;\n                        \n                        res_4840 = x_",
-            "4827 + x_4830;\n                        res_4841 = x_4826 * x_4827;\n                        res_4842 = x_4829 * x_4830;\n                        x_4843 = res_4841 + res_4842;\n                        res_4844 = x_4843 / res_4840;\n                        y_4845 = x_4827 - 1.0;\n                        res_4846 = x_4828 * y_4845;\n                        y_4847 = x_4830 - 1.0;\n                        res_4848 = x_4831 * y_4847;\n                        res_4849 = x_4829 - x_4826;\n                        x_4850 = res_4846 + res_4848;\n                        x_4851 = res_4849 * res_4849;\n                        x_4852 = x_4827 * x_4851;\n                        x_4853 = x_4830 * x_4852;\n                        y_4854 = x_4853 / res_4840;\n                        res_4855 = x_4850 + y_4854;\n                        y_4856 = res_4840 - 1.0;\n                        res_4857 = res_4855 / y_4856;\n                        res_4837 = res_4844;\n                        res_4838 = res_4840;\n                        res_4839 = res_4857;\n                    }\n                    res_4833 = res_4837;\n                    res_4834 = res_4838;\n                    res_4835 = res_4839;\n                }\n            }\n            x_4826 = res_4833;\n            x_4827 = res_4834;\n            x_4828 = res_4835;\n            *(__local double *) &mem_5456[local_tid_5209 * 8] = x_4826;\n            *(__local double *) &mem_5459[local_tid_5209 * 8] = x_4827;\n            *(__local double *) &mem_5462[local_tid_5209 * 8] = x_4828;\n        }\n        skip_waves_5541 *= 2;\n    }\n    final_result_5222 = x_4826;\n    final_result_5223 = x_4827;\n    final_result_5224 = x_4828;\n    if (local_tid_5209 == 0) {\n        *(__global double *) &mem_5465[group_id_5210 * 8] = final_result_5222;\n    }\n    if (local_tid_5209 == 0) {\n        *(__global double *) &mem_5468[group_id_5210 * 8] = final_result_5223;\n    }\n    if (local_tid_5209 == 0) {\n        *(__global double *) &mem_5471[group_id_5210 * 8] = final_result_5224;\n   ",
-            " }\n}\n__kernel void reduce_kernel_5367(__local volatile int64_t *mem_aligned_0,\n                                 __local volatile int64_t *mem_aligned_1,\n                                 __local volatile int64_t *mem_aligned_2,\n                                 int32_t num_groups_5251, __global\n                                 unsigned char *mem_5447, __global\n                                 unsigned char *mem_5450, __global\n                                 unsigned char *mem_5453, __global\n                                 unsigned char *mem_5465, __global\n                                 unsigned char *mem_5468, __global\n                                 unsigned char *mem_5471)\n{\n    __local volatile char *restrict mem_5456 = mem_aligned_0;\n    __local volatile char *restrict mem_5459 = mem_aligned_1;\n    __local volatile char *restrict mem_5462 = mem_aligned_2;\n    int32_t wave_sizze_5566;\n    int32_t group_sizze_5567;\n    bool thread_active_5568;\n    int32_t global_tid_5367;\n    int32_t local_tid_5368;\n    int32_t group_id_5369;\n    \n    global_tid_5367 = get_global_id(0);\n    local_tid_5368 = get_local_id(0);\n    group_sizze_5567 = get_local_size(0);\n    wave_sizze_5566 = LOCKSTEP_WIDTH;\n    group_id_5369 = get_group_id(0);\n    thread_active_5568 = 1;\n    \n    bool in_bounds_5370;\n    double x_5384;\n    double x_5386;\n    double x_5388;\n    \n    if (thread_active_5568) {\n        in_bounds_5370 = slt32(local_tid_5368, num_groups_5251);\n        if (in_bounds_5370) {\n            double x_5371 = *(__global double *) &mem_5447[global_tid_5367 * 8];\n            \n            x_5384 = x_5371;\n        } else {\n            x_5384 = 0.0;\n        }\n        if (in_bounds_5370) {\n            double x_5373 = *(__global double *) &mem_5450[global_tid_5367 * 8];\n            \n            x_5386 = x_5373;\n        } else {\n            x_5386 = 0.0;\n        }\n        if (in_bounds_5370) {\n            double x_5375 = *(__global double *) &mem_5453[global_tid_5367 * 8];\n            \n  ",
-            "          x_5388 = x_5375;\n        } else {\n            x_5388 = 0.0;\n        }\n    }\n    \n    double final_result_5381;\n    double final_result_5382;\n    double final_result_5383;\n    \n    for (int32_t comb_iter_5569 = 0; comb_iter_5569 <\n         squot32(max_num_groups_5246 + max_num_groups_5246 - 1,\n                 max_num_groups_5246); comb_iter_5569++) {\n        int32_t combine_id_5380;\n        int32_t flat_comb_id_5570 = comb_iter_5569 * max_num_groups_5246 +\n                local_tid_5368;\n        \n        combine_id_5380 = flat_comb_id_5570;\n        if (slt32(combine_id_5380, max_num_groups_5246) && 1) {\n            *(__local double *) &mem_5456[combine_id_5380 * 8] = x_5384;\n            *(__local double *) &mem_5459[combine_id_5380 * 8] = x_5386;\n            *(__local double *) &mem_5462[combine_id_5380 * 8] = x_5388;\n        }\n    }\n    barrier(CLK_LOCAL_MEM_FENCE);\n    \n    int32_t offset_5572;\n    int32_t skip_waves_5571;\n    double x_4887;\n    double x_4888;\n    double x_4889;\n    double x_4890;\n    double x_4891;\n    double x_4892;\n    int32_t my_index_5260;\n    int32_t other_index_5261;\n    \n    my_index_5260 = local_tid_5368;\n    offset_5572 = 0;\n    other_index_5261 = local_tid_5368 + offset_5572;\n    if (slt32(local_tid_5368, max_num_groups_5246)) {\n        x_4887 = *(__local double *) &mem_5456[(local_tid_5368 + offset_5572) *\n                                               8];\n        x_4888 = *(__local double *) &mem_5459[(local_tid_5368 + offset_5572) *\n                                               8];\n        x_4889 = *(__local double *) &mem_5462[(local_tid_5368 + offset_5572) *\n                                               8];\n    }\n    offset_5572 = 1;\n    other_index_5261 = local_tid_5368 + offset_5572;\n    while (slt32(offset_5572, wave_sizze_5566)) {\n        if (slt32(other_index_5261, max_num_groups_5246) && ((local_tid_5368 -\n                                                              squot32(local_tid_5368,\n                       ",
-            "                                               wave_sizze_5566) *\n                                                              wave_sizze_5566) &\n                                                             (2 * offset_5572 -\n                                                              1)) == 0) {\n            // read array element\n            {\n                x_4890 = *(volatile __local\n                           double *) &mem_5456[(local_tid_5368 + offset_5572) *\n                                               8];\n                x_4891 = *(volatile __local\n                           double *) &mem_5459[(local_tid_5368 + offset_5572) *\n                                               8];\n                x_4892 = *(volatile __local\n                           double *) &mem_5462[(local_tid_5368 + offset_5572) *\n                                               8];\n            }\n            \n            bool cond_4893;\n            double res_4894;\n            double res_4895;\n            double res_4896;\n            \n            if (thread_active_5568) {\n                cond_4893 = x_4888 == 0.0;\n                if (cond_4893) {\n                    res_4894 = x_4890;\n                    res_4895 = x_4891;\n                    res_4896 = x_4892;\n                } else {\n                    bool cond_4897;\n                    double res_4898;\n                    double res_4899;\n                    double res_4900;\n                    \n                    cond_4897 = x_4891 == 0.0;\n                    if (cond_4897) {\n                        res_4898 = x_4887;\n                        res_4899 = x_4888;\n                        res_4900 = x_4889;\n                    } else {\n                        double res_4901;\n                        double res_4902;\n                        double res_4903;\n                        double x_4904;\n                        double res_4905;\n                        double y_4906;\n                        double res_4907;\n                      ",
-            "  double y_4908;\n                        double res_4909;\n                        double res_4910;\n                        double x_4911;\n                        double x_4912;\n                        double x_4913;\n                        double x_4914;\n                        double y_4915;\n                        double res_4916;\n                        double y_4917;\n                        double res_4918;\n                        \n                        res_4901 = x_4888 + x_4891;\n                        res_4902 = x_4887 * x_4888;\n                        res_4903 = x_4890 * x_4891;\n                        x_4904 = res_4902 + res_4903;\n                        res_4905 = x_4904 / res_4901;\n                        y_4906 = x_4888 - 1.0;\n                        res_4907 = x_4889 * y_4906;\n                        y_4908 = x_4891 - 1.0;\n                        res_4909 = x_4892 * y_4908;\n                        res_4910 = x_4890 - x_4887;\n                        x_4911 = res_4907 + res_4909;\n                        x_4912 = res_4910 * res_4910;\n                        x_4913 = x_4888 * x_4912;\n                        x_4914 = x_4891 * x_4913;\n                        y_4915 = x_4914 / res_4901;\n                        res_4916 = x_4911 + y_4915;\n                        y_4917 = res_4901 - 1.0;\n                        res_4918 = res_4916 / y_4917;\n                        res_4898 = res_4905;\n                        res_4899 = res_4901;\n                        res_4900 = res_4918;\n                    }\n                    res_4894 = res_4898;\n                    res_4895 = res_4899;\n                    res_4896 = res_4900;\n                }\n            }\n            x_4887 = res_4894;\n            x_4888 = res_4895;\n            x_4889 = res_4896;\n            *(volatile __local double *) &mem_5456[local_tid_5368 * 8] = x_4887;\n            *(volatile __local double *) &mem_5459[local_tid_5368 * 8] = x_4888;\n            *(volatile __local double *) &mem_5462[local_tid_536",
-            "8 * 8] = x_4889;\n        }\n        offset_5572 *= 2;\n        other_index_5261 = local_tid_5368 + offset_5572;\n    }\n    skip_waves_5571 = 1;\n    while (slt32(skip_waves_5571, squot32(max_num_groups_5246 +\n                                          wave_sizze_5566 - 1,\n                                          wave_sizze_5566))) {\n        barrier(CLK_LOCAL_MEM_FENCE);\n        offset_5572 = skip_waves_5571 * wave_sizze_5566;\n        other_index_5261 = local_tid_5368 + offset_5572;\n        if (slt32(other_index_5261, max_num_groups_5246) && ((local_tid_5368 -\n                                                              squot32(local_tid_5368,\n                                                                      wave_sizze_5566) *\n                                                              wave_sizze_5566) ==\n                                                             0 &&\n                                                             (squot32(local_tid_5368,\n                                                                      wave_sizze_5566) &\n                                                              (2 *\n                                                               skip_waves_5571 -\n                                                               1)) == 0)) {\n            // read array element\n            {\n                x_4890 = *(__local double *) &mem_5456[(local_tid_5368 +\n                                                        offset_5572) * 8];\n                x_4891 = *(__local double *) &mem_5459[(local_tid_5368 +\n                                                        offset_5572) * 8];\n                x_4892 = *(__local double *) &mem_5462[(local_tid_5368 +\n                                                        offset_5572) * 8];\n            }\n            \n            bool cond_4893;\n            double res_4894;\n            double res_4895;\n            double res_4896;\n            \n            if (thread_active_5568) {\n                cond_4893 = x_4",
-            "888 == 0.0;\n                if (cond_4893) {\n                    res_4894 = x_4890;\n                    res_4895 = x_4891;\n                    res_4896 = x_4892;\n                } else {\n                    bool cond_4897;\n                    double res_4898;\n                    double res_4899;\n                    double res_4900;\n                    \n                    cond_4897 = x_4891 == 0.0;\n                    if (cond_4897) {\n                        res_4898 = x_4887;\n                        res_4899 = x_4888;\n                        res_4900 = x_4889;\n                    } else {\n                        double res_4901;\n                        double res_4902;\n                        double res_4903;\n                        double x_4904;\n                        double res_4905;\n                        double y_4906;\n                        double res_4907;\n                        double y_4908;\n                        double res_4909;\n                        double res_4910;\n                        double x_4911;\n                        double x_4912;\n                        double x_4913;\n                        double x_4914;\n                        double y_4915;\n                        double res_4916;\n                        double y_4917;\n                        double res_4918;\n                        \n                        res_4901 = x_4888 + x_4891;\n                        res_4902 = x_4887 * x_4888;\n                        res_4903 = x_4890 * x_4891;\n                        x_4904 = res_4902 + res_4903;\n                        res_4905 = x_4904 / res_4901;\n                        y_4906 = x_4888 - 1.0;\n                        res_4907 = x_4889 * y_4906;\n                        y_4908 = x_4891 - 1.0;\n                        res_4909 = x_4892 * y_4908;\n                        res_4910 = x_4890 - x_4887;\n                        x_4911 = res_4907 + res_4909;\n                        x_4912 = res_4910 * res_4910;\n                        x_4913 = x_4",
-            "888 * x_4912;\n                        x_4914 = x_4891 * x_4913;\n                        y_4915 = x_4914 / res_4901;\n                        res_4916 = x_4911 + y_4915;\n                        y_4917 = res_4901 - 1.0;\n                        res_4918 = res_4916 / y_4917;\n                        res_4898 = res_4905;\n                        res_4899 = res_4901;\n                        res_4900 = res_4918;\n                    }\n                    res_4894 = res_4898;\n                    res_4895 = res_4899;\n                    res_4896 = res_4900;\n                }\n            }\n            x_4887 = res_4894;\n            x_4888 = res_4895;\n            x_4889 = res_4896;\n            *(__local double *) &mem_5456[local_tid_5368 * 8] = x_4887;\n            *(__local double *) &mem_5459[local_tid_5368 * 8] = x_4888;\n            *(__local double *) &mem_5462[local_tid_5368 * 8] = x_4889;\n        }\n        skip_waves_5571 *= 2;\n    }\n    final_result_5381 = x_4887;\n    final_result_5382 = x_4888;\n    final_result_5383 = x_4889;\n    if (local_tid_5368 == 0) {\n        *(__global double *) &mem_5465[group_id_5369 * 8] = final_result_5381;\n    }\n    if (local_tid_5368 == 0) {\n        *(__global double *) &mem_5468[group_id_5369 * 8] = final_result_5382;\n    }\n    if (local_tid_5368 == 0) {\n        *(__global double *) &mem_5471[group_id_5369 * 8] = final_result_5383;\n    }\n}\n",
+            "_sin64(double x)\n{\n    return sin(x);\n}\nstatic inline double futrts_tan64(double x)\n{\n    return tan(x);\n}\nstatic inline double futrts_acos64(double x)\n{\n    return acos(x);\n}\nstatic inline double futrts_asin64(double x)\n{\n    return asin(x);\n}\nstatic inline double futrts_atan64(double x)\n{\n    return atan(x);\n}\nstatic inline double futrts_atan2_64(double x, double y)\n{\n    return atan2(x, y);\n}\nstatic inline double futrts_round64(double x)\n{\n    return rint(x);\n}\nstatic inline char futrts_isnan64(double x)\n{\n    return isnan(x);\n}\nstatic inline char futrts_isinf64(double x)\n{\n    return isinf(x);\n}\nstatic inline int64_t futrts_to_bits64(double x)\n{\n    union {\n        double f;\n        int64_t t;\n    } p;\n    \n    p.f = x;\n    return p.t;\n}\nstatic inline double futrts_from_bits64(int64_t x)\n{\n    union {\n        int64_t f;\n        double t;\n    } p;\n    \n    p.f = x;\n    return p.t;\n}\nstatic inline float fpconv_f32_f32(float x)\n{\n    return x;\n}\nstatic inline double fpconv_f32_f64(float x)\n{\n    return x;\n}\nstatic inline float fpconv_f64_f32(double x)\n{\n    return x;\n}\nstatic inline double fpconv_f64_f64(double x)\n{\n    return x;\n}\n#define group_sizze_4954 (group_size_4953)\n#define max_num_groups_4956 (max_num_groups_4955)\n#define group_sizze_5015 (group_size_5014)\n#define max_num_groups_5017 (max_num_groups_5016)\n#define group_sizze_5076 (group_size_5075)\n#define max_num_groups_5078 (max_num_groups_5077)\n#define group_sizze_5137 (group_size_5136)\n#define max_num_groups_5139 (max_num_groups_5138)\n#define group_sizze_5200 (group_size_5199)\n#define max_num_groups_5202 (max_num_groups_5201)\n#define group_sizze_5263 (group_size_5262)\n#define max_num_groups_5265 (max_num_groups_5264)\n#define group_sizze_5349 (group_size_5348)\n#define max_num_groups_5351 (max_num_groups_5350)\n#define group_sizze_5412 (group_size_5411)\n#define max_num_groups_5414 (max_num_groups_5413)\n#define group_sizze_5499 (group_size_5498)\n#define max_num_groups_5501 (max_num_groups_5500)\n#define grou",
+            "p_sizze_5560 (group_size_5559)\n#define max_num_groups_5562 (max_num_groups_5561)\n__kernel void chunked_reduce_kernel_4970(__local volatile\n                                         int64_t *mem_aligned_0,\n                                         int32_t sizze_4841,\n                                         int32_t num_threads_4962,\n                                         int32_t per_thread_elements_4965,\n                                         __global unsigned char *col_mem_5630,\n                                         __global unsigned char *mem_5636)\n{\n    __local volatile char *restrict mem_5633 = mem_aligned_0;\n    int32_t wave_sizze_5688;\n    int32_t group_sizze_5689;\n    bool thread_active_5690;\n    int32_t global_tid_4970;\n    int32_t local_tid_4971;\n    int32_t group_id_4972;\n    \n    global_tid_4970 = get_global_id(0);\n    local_tid_4971 = get_local_id(0);\n    group_sizze_5689 = get_local_size(0);\n    wave_sizze_5688 = LOCKSTEP_WIDTH;\n    group_id_4972 = get_group_id(0);\n    thread_active_5690 = 1;\n    \n    int32_t chunk_sizze_4977 = smin32(per_thread_elements_4965,\n                                      squot32(sizze_4841 - global_tid_4970 +\n                                              num_threads_4962 - 1,\n                                              num_threads_4962));\n    double res_4980;\n    \n    if (thread_active_5690) {\n        double acc_4983 = 0.0;\n        \n        for (int32_t i_4982 = 0; i_4982 < chunk_sizze_4977; i_4982++) {\n            int32_t j_t_s_5623 = num_threads_4962 * i_4982;\n            int32_t j_p_i_t_s_5624 = global_tid_4970 + j_t_s_5623;\n            double x_4985 = *(__global double *) &col_mem_5630[j_p_i_t_s_5624 *\n                                                               8];\n            double res_4988 = acc_4983 + x_4985;\n            double acc_tmp_5691 = res_4988;\n            \n            acc_4983 = acc_tmp_5691;\n        }\n        res_4980 = acc_4983;\n    }\n    \n    double final_result_4991;\n    \n    for (int32_t comb_ite",
+            "r_5692 = 0; comb_iter_5692 < squot32(group_sizze_4954 +\n                                                              group_sizze_4954 -\n                                                              1,\n                                                              group_sizze_4954);\n         comb_iter_5692++) {\n        int32_t combine_id_4975;\n        int32_t flat_comb_id_5693 = comb_iter_5692 * group_sizze_4954 +\n                local_tid_4971;\n        \n        combine_id_4975 = flat_comb_id_5693;\n        if (slt32(combine_id_4975, group_sizze_4954) && 1) {\n            *(__local double *) &mem_5633[combine_id_4975 * 8] = res_4980;\n        }\n    }\n    barrier(CLK_LOCAL_MEM_FENCE);\n    \n    int32_t offset_5695;\n    int32_t skip_waves_5694;\n    int32_t my_index_4992;\n    int32_t other_index_4993;\n    double x_4994;\n    double x_4995;\n    \n    my_index_4992 = local_tid_4971;\n    offset_5695 = 0;\n    other_index_4993 = local_tid_4971 + offset_5695;\n    if (slt32(local_tid_4971, group_sizze_4954)) {\n        x_4994 = *(__local double *) &mem_5633[(local_tid_4971 + offset_5695) *\n                                               8];\n    }\n    offset_5695 = 1;\n    other_index_4993 = local_tid_4971 + offset_5695;\n    while (slt32(offset_5695, wave_sizze_5688)) {\n        if (slt32(other_index_4993, group_sizze_4954) && ((local_tid_4971 -\n                                                           squot32(local_tid_4971,\n                                                                   wave_sizze_5688) *\n                                                           wave_sizze_5688) &\n                                                          (2 * offset_5695 -\n                                                           1)) == 0) {\n            // read array element\n            {\n                x_4995 = *(volatile __local\n                           double *) &mem_5633[(local_tid_4971 + offset_5695) *\n                                               8];\n            }\n            \n         ",
+            "   double res_4996;\n            \n            if (thread_active_5690) {\n                res_4996 = x_4994 + x_4995;\n            }\n            x_4994 = res_4996;\n            *(volatile __local double *) &mem_5633[local_tid_4971 * 8] = x_4994;\n        }\n        offset_5695 *= 2;\n        other_index_4993 = local_tid_4971 + offset_5695;\n    }\n    skip_waves_5694 = 1;\n    while (slt32(skip_waves_5694, squot32(group_sizze_4954 + wave_sizze_5688 -\n                                          1, wave_sizze_5688))) {\n        barrier(CLK_LOCAL_MEM_FENCE);\n        offset_5695 = skip_waves_5694 * wave_sizze_5688;\n        other_index_4993 = local_tid_4971 + offset_5695;\n        if (slt32(other_index_4993, group_sizze_4954) && ((local_tid_4971 -\n                                                           squot32(local_tid_4971,\n                                                                   wave_sizze_5688) *\n                                                           wave_sizze_5688) ==\n                                                          0 &&\n                                                          (squot32(local_tid_4971,\n                                                                   wave_sizze_5688) &\n                                                           (2 *\n                                                            skip_waves_5694 -\n                                                            1)) == 0)) {\n            // read array element\n            {\n                x_4995 = *(__local double *) &mem_5633[(local_tid_4971 +\n                                                        offset_5695) * 8];\n            }\n            \n            double res_4996;\n            \n            if (thread_active_5690) {\n                res_4996 = x_4994 + x_4995;\n            }\n            x_4994 = res_4996;\n            *(__local double *) &mem_5633[local_tid_4971 * 8] = x_4994;\n        }\n        skip_waves_5694 *= 2;\n    }\n    final_result_4991 = x_4994;\n    if (local_tid_4971 ==",
+            " 0) {\n        *(__global double *) &mem_5636[group_id_4972 * 8] = final_result_4991;\n    }\n}\n__kernel void chunked_reduce_kernel_5031(__local volatile\n                                         int64_t *mem_aligned_0,\n                                         int32_t sizze_4848,\n                                         int32_t num_threads_5023,\n                                         int32_t per_thread_elements_5026,\n                                         __global unsigned char *col_mem_5630,\n                                         __global unsigned char *mem_5636)\n{\n    __local volatile char *restrict mem_5633 = mem_aligned_0;\n    int32_t wave_sizze_5706;\n    int32_t group_sizze_5707;\n    bool thread_active_5708;\n    int32_t global_tid_5031;\n    int32_t local_tid_5032;\n    int32_t group_id_5033;\n    \n    global_tid_5031 = get_global_id(0);\n    local_tid_5032 = get_local_id(0);\n    group_sizze_5707 = get_local_size(0);\n    wave_sizze_5706 = LOCKSTEP_WIDTH;\n    group_id_5033 = get_group_id(0);\n    thread_active_5708 = 1;\n    \n    int32_t chunk_sizze_5038 = smin32(per_thread_elements_5026,\n                                      squot32(sizze_4848 - global_tid_5031 +\n                                              num_threads_5023 - 1,\n                                              num_threads_5023));\n    double res_5041;\n    \n    if (thread_active_5708) {\n        double acc_5044 = 0.0;\n        \n        for (int32_t i_5043 = 0; i_5043 < chunk_sizze_5038; i_5043++) {\n            int32_t j_t_s_5623 = num_threads_5023 * i_5043;\n            int32_t j_p_i_t_s_5624 = global_tid_5031 + j_t_s_5623;\n            double x_5046 = *(__global double *) &col_mem_5630[j_p_i_t_s_5624 *\n                                                               8];\n            double res_5049 = acc_5044 + x_5046;\n            double acc_tmp_5709 = res_5049;\n            \n            acc_5044 = acc_tmp_5709;\n        }\n        res_5041 = acc_5044;\n    }\n    \n    double final_result_5052;\n    \n    for (int3",
+            "2_t comb_iter_5710 = 0; comb_iter_5710 < squot32(group_sizze_5015 +\n                                                              group_sizze_5015 -\n                                                              1,\n                                                              group_sizze_5015);\n         comb_iter_5710++) {\n        int32_t combine_id_5036;\n        int32_t flat_comb_id_5711 = comb_iter_5710 * group_sizze_5015 +\n                local_tid_5032;\n        \n        combine_id_5036 = flat_comb_id_5711;\n        if (slt32(combine_id_5036, group_sizze_5015) && 1) {\n            *(__local double *) &mem_5633[combine_id_5036 * 8] = res_5041;\n        }\n    }\n    barrier(CLK_LOCAL_MEM_FENCE);\n    \n    int32_t offset_5713;\n    int32_t skip_waves_5712;\n    int32_t my_index_5053;\n    int32_t other_index_5054;\n    double x_5055;\n    double x_5056;\n    \n    my_index_5053 = local_tid_5032;\n    offset_5713 = 0;\n    other_index_5054 = local_tid_5032 + offset_5713;\n    if (slt32(local_tid_5032, group_sizze_5015)) {\n        x_5055 = *(__local double *) &mem_5633[(local_tid_5032 + offset_5713) *\n                                               8];\n    }\n    offset_5713 = 1;\n    other_index_5054 = local_tid_5032 + offset_5713;\n    while (slt32(offset_5713, wave_sizze_5706)) {\n        if (slt32(other_index_5054, group_sizze_5015) && ((local_tid_5032 -\n                                                           squot32(local_tid_5032,\n                                                                   wave_sizze_5706) *\n                                                           wave_sizze_5706) &\n                                                          (2 * offset_5713 -\n                                                           1)) == 0) {\n            // read array element\n            {\n                x_5056 = *(volatile __local\n                           double *) &mem_5633[(local_tid_5032 + offset_5713) *\n                                               8];\n            }\n          ",
+            "  \n            double res_5057;\n            \n            if (thread_active_5708) {\n                res_5057 = x_5055 + x_5056;\n            }\n            x_5055 = res_5057;\n            *(volatile __local double *) &mem_5633[local_tid_5032 * 8] = x_5055;\n        }\n        offset_5713 *= 2;\n        other_index_5054 = local_tid_5032 + offset_5713;\n    }\n    skip_waves_5712 = 1;\n    while (slt32(skip_waves_5712, squot32(group_sizze_5015 + wave_sizze_5706 -\n                                          1, wave_sizze_5706))) {\n        barrier(CLK_LOCAL_MEM_FENCE);\n        offset_5713 = skip_waves_5712 * wave_sizze_5706;\n        other_index_5054 = local_tid_5032 + offset_5713;\n        if (slt32(other_index_5054, group_sizze_5015) && ((local_tid_5032 -\n                                                           squot32(local_tid_5032,\n                                                                   wave_sizze_5706) *\n                                                           wave_sizze_5706) ==\n                                                          0 &&\n                                                          (squot32(local_tid_5032,\n                                                                   wave_sizze_5706) &\n                                                           (2 *\n                                                            skip_waves_5712 -\n                                                            1)) == 0)) {\n            // read array element\n            {\n                x_5056 = *(__local double *) &mem_5633[(local_tid_5032 +\n                                                        offset_5713) * 8];\n            }\n            \n            double res_5057;\n            \n            if (thread_active_5708) {\n                res_5057 = x_5055 + x_5056;\n            }\n            x_5055 = res_5057;\n            *(__local double *) &mem_5633[local_tid_5032 * 8] = x_5055;\n        }\n        skip_waves_5712 *= 2;\n    }\n    final_result_5052 = x_5055;\n    if (local",
+            "_tid_5032 == 0) {\n        *(__global double *) &mem_5636[group_id_5033 * 8] = final_result_5052;\n    }\n}\n__kernel void chunked_reduce_kernel_5092(__local volatile\n                                         int64_t *mem_aligned_0,\n                                         int32_t sizze_4857,\n                                         int32_t num_threads_5084,\n                                         int32_t per_thread_elements_5087,\n                                         __global\n                                         unsigned char *values_mem_5630,\n                                         __global unsigned char *mem_5636)\n{\n    __local volatile char *restrict mem_5633 = mem_aligned_0;\n    int32_t wave_sizze_5724;\n    int32_t group_sizze_5725;\n    bool thread_active_5726;\n    int32_t global_tid_5092;\n    int32_t local_tid_5093;\n    int32_t group_id_5094;\n    \n    global_tid_5092 = get_global_id(0);\n    local_tid_5093 = get_local_id(0);\n    group_sizze_5725 = get_local_size(0);\n    wave_sizze_5724 = LOCKSTEP_WIDTH;\n    group_id_5094 = get_group_id(0);\n    thread_active_5726 = 1;\n    \n    int32_t chunk_sizze_5099 = smin32(per_thread_elements_5087,\n                                      squot32(sizze_4857 - global_tid_5092 +\n                                              num_threads_5084 - 1,\n                                              num_threads_5084));\n    double res_5102;\n    \n    if (thread_active_5726) {\n        double acc_5105 = 0.0;\n        \n        for (int32_t i_5104 = 0; i_5104 < chunk_sizze_5099; i_5104++) {\n            int32_t j_t_s_5623 = num_threads_5084 * i_5104;\n            int32_t j_p_i_t_s_5624 = global_tid_5092 + j_t_s_5623;\n            double x_5107 = *(__global\n                              double *) &values_mem_5630[j_p_i_t_s_5624 * 8];\n            double res_5110 = acc_5105 + x_5107;\n            double acc_tmp_5727 = res_5110;\n            \n            acc_5105 = acc_tmp_5727;\n        }\n        res_5102 = acc_5105;\n    }\n    \n    double final_resul",
+            "t_5113;\n    \n    for (int32_t comb_iter_5728 = 0; comb_iter_5728 < squot32(group_sizze_5076 +\n                                                              group_sizze_5076 -\n                                                              1,\n                                                              group_sizze_5076);\n         comb_iter_5728++) {\n        int32_t combine_id_5097;\n        int32_t flat_comb_id_5729 = comb_iter_5728 * group_sizze_5076 +\n                local_tid_5093;\n        \n        combine_id_5097 = flat_comb_id_5729;\n        if (slt32(combine_id_5097, group_sizze_5076) && 1) {\n            *(__local double *) &mem_5633[combine_id_5097 * 8] = res_5102;\n        }\n    }\n    barrier(CLK_LOCAL_MEM_FENCE);\n    \n    int32_t offset_5731;\n    int32_t skip_waves_5730;\n    int32_t my_index_5114;\n    int32_t other_index_5115;\n    double x_5116;\n    double x_5117;\n    \n    my_index_5114 = local_tid_5093;\n    offset_5731 = 0;\n    other_index_5115 = local_tid_5093 + offset_5731;\n    if (slt32(local_tid_5093, group_sizze_5076)) {\n        x_5116 = *(__local double *) &mem_5633[(local_tid_5093 + offset_5731) *\n                                               8];\n    }\n    offset_5731 = 1;\n    other_index_5115 = local_tid_5093 + offset_5731;\n    while (slt32(offset_5731, wave_sizze_5724)) {\n        if (slt32(other_index_5115, group_sizze_5076) && ((local_tid_5093 -\n                                                           squot32(local_tid_5093,\n                                                                   wave_sizze_5724) *\n                                                           wave_sizze_5724) &\n                                                          (2 * offset_5731 -\n                                                           1)) == 0) {\n            // read array element\n            {\n                x_5117 = *(volatile __local\n                           double *) &mem_5633[(local_tid_5093 + offset_5731) *\n                                               8]",
+            ";\n            }\n            \n            double res_5118;\n            \n            if (thread_active_5726) {\n                res_5118 = x_5116 + x_5117;\n            }\n            x_5116 = res_5118;\n            *(volatile __local double *) &mem_5633[local_tid_5093 * 8] = x_5116;\n        }\n        offset_5731 *= 2;\n        other_index_5115 = local_tid_5093 + offset_5731;\n    }\n    skip_waves_5730 = 1;\n    while (slt32(skip_waves_5730, squot32(group_sizze_5076 + wave_sizze_5724 -\n                                          1, wave_sizze_5724))) {\n        barrier(CLK_LOCAL_MEM_FENCE);\n        offset_5731 = skip_waves_5730 * wave_sizze_5724;\n        other_index_5115 = local_tid_5093 + offset_5731;\n        if (slt32(other_index_5115, group_sizze_5076) && ((local_tid_5093 -\n                                                           squot32(local_tid_5093,\n                                                                   wave_sizze_5724) *\n                                                           wave_sizze_5724) ==\n                                                          0 &&\n                                                          (squot32(local_tid_5093,\n                                                                   wave_sizze_5724) &\n                                                           (2 *\n                                                            skip_waves_5730 -\n                                                            1)) == 0)) {\n            // read array element\n            {\n                x_5117 = *(__local double *) &mem_5633[(local_tid_5093 +\n                                                        offset_5731) * 8];\n            }\n            \n            double res_5118;\n            \n            if (thread_active_5726) {\n                res_5118 = x_5116 + x_5117;\n            }\n            x_5116 = res_5118;\n            *(__local double *) &mem_5633[local_tid_5093 * 8] = x_5116;\n        }\n        skip_waves_5730 *= 2;\n    }\n    final_result_51",
+            "13 = x_5116;\n    if (local_tid_5093 == 0) {\n        *(__global double *) &mem_5636[group_id_5094 * 8] = final_result_5113;\n    }\n}\n__kernel void chunked_reduce_kernel_5153(__local volatile\n                                         int64_t *mem_aligned_0,\n                                         int32_t sizze_4857, double res_4865,\n                                         int32_t num_threads_5145,\n                                         int32_t per_thread_elements_5148,\n                                         __global\n                                         unsigned char *values_mem_5630,\n                                         __global unsigned char *mem_5648)\n{\n    __local volatile char *restrict mem_5645 = mem_aligned_0;\n    int32_t wave_sizze_5741;\n    int32_t group_sizze_5742;\n    bool thread_active_5743;\n    int32_t global_tid_5153;\n    int32_t local_tid_5154;\n    int32_t group_id_5155;\n    \n    global_tid_5153 = get_global_id(0);\n    local_tid_5154 = get_local_id(0);\n    group_sizze_5742 = get_local_size(0);\n    wave_sizze_5741 = LOCKSTEP_WIDTH;\n    group_id_5155 = get_group_id(0);\n    thread_active_5743 = 1;\n    \n    int32_t chunk_sizze_5160 = smin32(per_thread_elements_5148,\n                                      squot32(sizze_4857 - global_tid_5153 +\n                                              num_threads_5145 - 1,\n                                              num_threads_5145));\n    double res_5163;\n    \n    if (thread_active_5743) {\n        double acc_5166 = 0.0;\n        \n        for (int32_t i_5165 = 0; i_5165 < chunk_sizze_5160; i_5165++) {\n            int32_t j_t_s_5627 = num_threads_5145 * i_5165;\n            int32_t j_p_i_t_s_5628 = global_tid_5153 + j_t_s_5627;\n            double x_5168 = *(__global\n                              double *) &values_mem_5630[j_p_i_t_s_5628 * 8];\n            double res_5170 = x_5168 - res_4865;\n            double res_5171 = res_5170 * res_5170;\n            double res_5173 = acc_5166 + res_5171;\n            double ac",
+            "c_tmp_5744 = res_5173;\n            \n            acc_5166 = acc_tmp_5744;\n        }\n        res_5163 = acc_5166;\n    }\n    \n    double final_result_5176;\n    \n    for (int32_t comb_iter_5745 = 0; comb_iter_5745 < squot32(group_sizze_5137 +\n                                                              group_sizze_5137 -\n                                                              1,\n                                                              group_sizze_5137);\n         comb_iter_5745++) {\n        int32_t combine_id_5158;\n        int32_t flat_comb_id_5746 = comb_iter_5745 * group_sizze_5137 +\n                local_tid_5154;\n        \n        combine_id_5158 = flat_comb_id_5746;\n        if (slt32(combine_id_5158, group_sizze_5137) && 1) {\n            *(__local double *) &mem_5645[combine_id_5158 * 8] = res_5163;\n        }\n    }\n    barrier(CLK_LOCAL_MEM_FENCE);\n    \n    int32_t offset_5748;\n    int32_t skip_waves_5747;\n    int32_t my_index_5177;\n    int32_t other_index_5178;\n    double x_5179;\n    double x_5180;\n    \n    my_index_5177 = local_tid_5154;\n    offset_5748 = 0;\n    other_index_5178 = local_tid_5154 + offset_5748;\n    if (slt32(local_tid_5154, group_sizze_5137)) {\n        x_5179 = *(__local double *) &mem_5645[(local_tid_5154 + offset_5748) *\n                                               8];\n    }\n    offset_5748 = 1;\n    other_index_5178 = local_tid_5154 + offset_5748;\n    while (slt32(offset_5748, wave_sizze_5741)) {\n        if (slt32(other_index_5178, group_sizze_5137) && ((local_tid_5154 -\n                                                           squot32(local_tid_5154,\n                                                                   wave_sizze_5741) *\n                                                           wave_sizze_5741) &\n                                                          (2 * offset_5748 -\n                                                           1)) == 0) {\n            // read array element\n            {\n                x_5180 = *(v",
+            "olatile __local\n                           double *) &mem_5645[(local_tid_5154 + offset_5748) *\n                                               8];\n            }\n            \n            double res_5181;\n            \n            if (thread_active_5743) {\n                res_5181 = x_5179 + x_5180;\n            }\n            x_5179 = res_5181;\n            *(volatile __local double *) &mem_5645[local_tid_5154 * 8] = x_5179;\n        }\n        offset_5748 *= 2;\n        other_index_5178 = local_tid_5154 + offset_5748;\n    }\n    skip_waves_5747 = 1;\n    while (slt32(skip_waves_5747, squot32(group_sizze_5137 + wave_sizze_5741 -\n                                          1, wave_sizze_5741))) {\n        barrier(CLK_LOCAL_MEM_FENCE);\n        offset_5748 = skip_waves_5747 * wave_sizze_5741;\n        other_index_5178 = local_tid_5154 + offset_5748;\n        if (slt32(other_index_5178, group_sizze_5137) && ((local_tid_5154 -\n                                                           squot32(local_tid_5154,\n                                                                   wave_sizze_5741) *\n                                                           wave_sizze_5741) ==\n                                                          0 &&\n                                                          (squot32(local_tid_5154,\n                                                                   wave_sizze_5741) &\n                                                           (2 *\n                                                            skip_waves_5747 -\n                                                            1)) == 0)) {\n            // read array element\n            {\n                x_5180 = *(__local double *) &mem_5645[(local_tid_5154 +\n                                                        offset_5748) * 8];\n            }\n            \n            double res_5181;\n            \n            if (thread_active_5743) {\n                res_5181 = x_5179 + x_5180;\n            }\n            x_5179 = re",
+            "s_5181;\n            *(__local double *) &mem_5645[local_tid_5154 * 8] = x_5179;\n        }\n        skip_waves_5747 *= 2;\n    }\n    final_result_5176 = x_5179;\n    if (local_tid_5154 == 0) {\n        *(__global double *) &mem_5648[group_id_5155 * 8] = final_result_5176;\n    }\n}\n__kernel void chunked_reduce_kernel_5216(__local volatile\n                                         int64_t *mem_aligned_0,\n                                         int32_t sizze_4875,\n                                         int32_t num_threads_5208,\n                                         int32_t per_thread_elements_5211,\n                                         __global\n                                         unsigned char *values_mem_5630,\n                                         __global unsigned char *mem_5636)\n{\n    __local volatile char *restrict mem_5633 = mem_aligned_0;\n    int32_t wave_sizze_5759;\n    int32_t group_sizze_5760;\n    bool thread_active_5761;\n    int32_t global_tid_5216;\n    int32_t local_tid_5217;\n    int32_t group_id_5218;\n    \n    global_tid_5216 = get_global_id(0);\n    local_tid_5217 = get_local_id(0);\n    group_sizze_5760 = get_local_size(0);\n    wave_sizze_5759 = LOCKSTEP_WIDTH;\n    group_id_5218 = get_group_id(0);\n    thread_active_5761 = 1;\n    \n    int32_t chunk_sizze_5223 = smin32(per_thread_elements_5211,\n                                      squot32(sizze_4875 - global_tid_5216 +\n                                              num_threads_5208 - 1,\n                                              num_threads_5208));\n    double res_5226;\n    \n    if (thread_active_5761) {\n        double acc_5229 = 0.0;\n        \n        for (int32_t i_5228 = 0; i_5228 < chunk_sizze_5223; i_5228++) {\n            int32_t j_t_s_5623 = num_threads_5208 * i_5228;\n            int32_t j_p_i_t_s_5624 = global_tid_5216 + j_t_s_5623;\n            double x_5231 = *(__global\n                              double *) &values_mem_5630[j_p_i_t_s_5624 * 8];\n            double res_5234 = acc_5229 + x_5",
+            "231;\n            double acc_tmp_5762 = res_5234;\n            \n            acc_5229 = acc_tmp_5762;\n        }\n        res_5226 = acc_5229;\n    }\n    \n    double final_result_5237;\n    \n    for (int32_t comb_iter_5763 = 0; comb_iter_5763 < squot32(group_sizze_5200 +\n                                                              group_sizze_5200 -\n                                                              1,\n                                                              group_sizze_5200);\n         comb_iter_5763++) {\n        int32_t combine_id_5221;\n        int32_t flat_comb_id_5764 = comb_iter_5763 * group_sizze_5200 +\n                local_tid_5217;\n        \n        combine_id_5221 = flat_comb_id_5764;\n        if (slt32(combine_id_5221, group_sizze_5200) && 1) {\n            *(__local double *) &mem_5633[combine_id_5221 * 8] = res_5226;\n        }\n    }\n    barrier(CLK_LOCAL_MEM_FENCE);\n    \n    int32_t offset_5766;\n    int32_t skip_waves_5765;\n    int32_t my_index_5238;\n    int32_t other_index_5239;\n    double x_5240;\n    double x_5241;\n    \n    my_index_5238 = local_tid_5217;\n    offset_5766 = 0;\n    other_index_5239 = local_tid_5217 + offset_5766;\n    if (slt32(local_tid_5217, group_sizze_5200)) {\n        x_5240 = *(__local double *) &mem_5633[(local_tid_5217 + offset_5766) *\n                                               8];\n    }\n    offset_5766 = 1;\n    other_index_5239 = local_tid_5217 + offset_5766;\n    while (slt32(offset_5766, wave_sizze_5759)) {\n        if (slt32(other_index_5239, group_sizze_5200) && ((local_tid_5217 -\n                                                           squot32(local_tid_5217,\n                                                                   wave_sizze_5759) *\n                                                           wave_sizze_5759) &\n                                                          (2 * offset_5766 -\n                                                           1)) == 0) {\n            // read array element\n            {\n  ",
+            "              x_5241 = *(volatile __local\n                           double *) &mem_5633[(local_tid_5217 + offset_5766) *\n                                               8];\n            }\n            \n            double res_5242;\n            \n            if (thread_active_5761) {\n                res_5242 = x_5240 + x_5241;\n            }\n            x_5240 = res_5242;\n            *(volatile __local double *) &mem_5633[local_tid_5217 * 8] = x_5240;\n        }\n        offset_5766 *= 2;\n        other_index_5239 = local_tid_5217 + offset_5766;\n    }\n    skip_waves_5765 = 1;\n    while (slt32(skip_waves_5765, squot32(group_sizze_5200 + wave_sizze_5759 -\n                                          1, wave_sizze_5759))) {\n        barrier(CLK_LOCAL_MEM_FENCE);\n        offset_5766 = skip_waves_5765 * wave_sizze_5759;\n        other_index_5239 = local_tid_5217 + offset_5766;\n        if (slt32(other_index_5239, group_sizze_5200) && ((local_tid_5217 -\n                                                           squot32(local_tid_5217,\n                                                                   wave_sizze_5759) *\n                                                           wave_sizze_5759) ==\n                                                          0 &&\n                                                          (squot32(local_tid_5217,\n                                                                   wave_sizze_5759) &\n                                                           (2 *\n                                                            skip_waves_5765 -\n                                                            1)) == 0)) {\n            // read array element\n            {\n                x_5241 = *(__local double *) &mem_5633[(local_tid_5217 +\n                                                        offset_5766) * 8];\n            }\n            \n            double res_5242;\n            \n            if (thread_active_5761) {\n                res_5242 = x_5240 + x_5241;\n           ",
+            " }\n            x_5240 = res_5242;\n            *(__local double *) &mem_5633[local_tid_5217 * 8] = x_5240;\n        }\n        skip_waves_5765 *= 2;\n    }\n    final_result_5237 = x_5240;\n    if (local_tid_5217 == 0) {\n        *(__global double *) &mem_5636[group_id_5218 * 8] = final_result_5237;\n    }\n}\n__kernel void chunked_reduce_kernel_5280(__local volatile\n                                         int64_t *mem_aligned_0,\n                                         __local volatile\n                                         int64_t *mem_aligned_1,\n                                         int32_t sizze_4875, double res_4883,\n                                         int32_t num_threads_5271,\n                                         int32_t per_thread_elements_5274,\n                                         __global\n                                         unsigned char *values_mem_5630,\n                                         __global unsigned char *mem_5651,\n                                         __global unsigned char *mem_5654)\n{\n    __local volatile char *restrict mem_5645 = mem_aligned_0;\n    __local volatile char *restrict mem_5648 = mem_aligned_1;\n    int32_t wave_sizze_5776;\n    int32_t group_sizze_5777;\n    bool thread_active_5778;\n    int32_t global_tid_5280;\n    int32_t local_tid_5281;\n    int32_t group_id_5282;\n    \n    global_tid_5280 = get_global_id(0);\n    local_tid_5281 = get_local_id(0);\n    group_sizze_5777 = get_local_size(0);\n    wave_sizze_5776 = LOCKSTEP_WIDTH;\n    group_id_5282 = get_group_id(0);\n    thread_active_5778 = 1;\n    \n    int32_t chunk_sizze_5291 = smin32(per_thread_elements_5274,\n                                      squot32(sizze_4875 - global_tid_5280 +\n                                              num_threads_5271 - 1,\n                                              num_threads_5271));\n    double res_5295;\n    double res_5296;\n    \n    if (thread_active_5778) {\n        double acc_5299;\n        double acc_5300;\n        \n        acc_5299 ",
+            "= 0.0;\n        acc_5300 = 0.0;\n        for (int32_t i_5298 = 0; i_5298 < chunk_sizze_5291; i_5298++) {\n            int32_t j_t_s_5627 = num_threads_5271 * i_5298;\n            int32_t j_p_i_t_s_5628 = global_tid_5280 + j_t_s_5627;\n            double x_5302 = *(__global\n                              double *) &values_mem_5630[j_p_i_t_s_5628 * 8];\n            double res_5305 = x_5302 - res_4883;\n            double res_5306 = res_5305 * res_5305;\n            double res_5307 = res_5305 * res_5306;\n            double res_5310 = acc_5299 + res_5306;\n            double res_5311 = acc_5300 + res_5307;\n            double acc_tmp_5779 = res_5310;\n            double acc_tmp_5780;\n            \n            acc_tmp_5780 = res_5311;\n            acc_5299 = acc_tmp_5779;\n            acc_5300 = acc_tmp_5780;\n        }\n        res_5295 = acc_5299;\n        res_5296 = acc_5300;\n    }\n    \n    double final_result_5316;\n    double final_result_5317;\n    \n    for (int32_t comb_iter_5781 = 0; comb_iter_5781 < squot32(group_sizze_5263 +\n                                                              group_sizze_5263 -\n                                                              1,\n                                                              group_sizze_5263);\n         comb_iter_5781++) {\n        int32_t combine_id_5287;\n        int32_t flat_comb_id_5782 = comb_iter_5781 * group_sizze_5263 +\n                local_tid_5281;\n        \n        combine_id_5287 = flat_comb_id_5782;\n        if (slt32(combine_id_5287, group_sizze_5263) && 1) {\n            *(__local double *) &mem_5645[combine_id_5287 * 8] = res_5295;\n        }\n    }\n    barrier(CLK_LOCAL_MEM_FENCE);\n    for (int32_t comb_iter_5783 = 0; comb_iter_5783 < squot32(group_sizze_5263 +\n                                                              group_sizze_5263 -\n                                                              1,\n                                                              group_sizze_5263);\n         comb_iter_5783++) {\n    ",
+            "    int32_t combine_id_5288;\n        int32_t flat_comb_id_5784 = comb_iter_5783 * group_sizze_5263 +\n                local_tid_5281;\n        \n        combine_id_5288 = flat_comb_id_5784;\n        if (slt32(combine_id_5288, group_sizze_5263) && 1) {\n            *(__local double *) &mem_5648[combine_id_5288 * 8] = res_5296;\n        }\n    }\n    barrier(CLK_LOCAL_MEM_FENCE);\n    \n    int32_t offset_5786;\n    int32_t skip_waves_5785;\n    int32_t my_index_5318;\n    int32_t other_index_5319;\n    double x_5320;\n    double x_5321;\n    double x_5322;\n    double x_5323;\n    \n    my_index_5318 = local_tid_5281;\n    offset_5786 = 0;\n    other_index_5319 = local_tid_5281 + offset_5786;\n    if (slt32(local_tid_5281, group_sizze_5263)) {\n        x_5320 = *(__local double *) &mem_5645[(local_tid_5281 + offset_5786) *\n                                               8];\n        x_5321 = *(__local double *) &mem_5648[(local_tid_5281 + offset_5786) *\n                                               8];\n    }\n    offset_5786 = 1;\n    other_index_5319 = local_tid_5281 + offset_5786;\n    while (slt32(offset_5786, wave_sizze_5776)) {\n        if (slt32(other_index_5319, group_sizze_5263) && ((local_tid_5281 -\n                                                           squot32(local_tid_5281,\n                                                                   wave_sizze_5776) *\n                                                           wave_sizze_5776) &\n                                                          (2 * offset_5786 -\n                                                           1)) == 0) {\n            // read array element\n            {\n                x_5322 = *(volatile __local\n                           double *) &mem_5645[(local_tid_5281 + offset_5786) *\n                                               8];\n                x_5323 = *(volatile __local\n                           double *) &mem_5648[(local_tid_5281 + offset_5786) *\n                                               8];\n        ",
+            "    }\n            \n            double res_5324;\n            double res_5325;\n            \n            if (thread_active_5778) {\n                res_5324 = x_5320 + x_5322;\n                res_5325 = x_5321 + x_5323;\n            }\n            x_5320 = res_5324;\n            x_5321 = res_5325;\n            *(volatile __local double *) &mem_5645[local_tid_5281 * 8] = x_5320;\n            *(volatile __local double *) &mem_5648[local_tid_5281 * 8] = x_5321;\n        }\n        offset_5786 *= 2;\n        other_index_5319 = local_tid_5281 + offset_5786;\n    }\n    skip_waves_5785 = 1;\n    while (slt32(skip_waves_5785, squot32(group_sizze_5263 + wave_sizze_5776 -\n                                          1, wave_sizze_5776))) {\n        barrier(CLK_LOCAL_MEM_FENCE);\n        offset_5786 = skip_waves_5785 * wave_sizze_5776;\n        other_index_5319 = local_tid_5281 + offset_5786;\n        if (slt32(other_index_5319, group_sizze_5263) && ((local_tid_5281 -\n                                                           squot32(local_tid_5281,\n                                                                   wave_sizze_5776) *\n                                                           wave_sizze_5776) ==\n                                                          0 &&\n                                                          (squot32(local_tid_5281,\n                                                                   wave_sizze_5776) &\n                                                           (2 *\n                                                            skip_waves_5785 -\n                                                            1)) == 0)) {\n            // read array element\n            {\n                x_5322 = *(__local double *) &mem_5645[(local_tid_5281 +\n                                                        offset_5786) * 8];\n                x_5323 = *(__local double *) &mem_5648[(local_tid_5281 +\n                                                        offset_5786) * 8];\n          ",
+            "  }\n            \n            double res_5324;\n            double res_5325;\n            \n            if (thread_active_5778) {\n                res_5324 = x_5320 + x_5322;\n                res_5325 = x_5321 + x_5323;\n            }\n            x_5320 = res_5324;\n            x_5321 = res_5325;\n            *(__local double *) &mem_5645[local_tid_5281 * 8] = x_5320;\n            *(__local double *) &mem_5648[local_tid_5281 * 8] = x_5321;\n        }\n        skip_waves_5785 *= 2;\n    }\n    final_result_5316 = x_5320;\n    final_result_5317 = x_5321;\n    if (local_tid_5281 == 0) {\n        *(__global double *) &mem_5651[group_id_5282 * 8] = final_result_5316;\n    }\n    if (local_tid_5281 == 0) {\n        *(__global double *) &mem_5654[group_id_5282 * 8] = final_result_5317;\n    }\n}\n__kernel void chunked_reduce_kernel_5365(__local volatile\n                                         int64_t *mem_aligned_0,\n                                         int32_t sizze_4902,\n                                         int32_t num_threads_5357,\n                                         int32_t per_thread_elements_5360,\n                                         __global\n                                         unsigned char *values_mem_5630,\n                                         __global unsigned char *mem_5636)\n{\n    __local volatile char *restrict mem_5633 = mem_aligned_0;\n    int32_t wave_sizze_5799;\n    int32_t group_sizze_5800;\n    bool thread_active_5801;\n    int32_t global_tid_5365;\n    int32_t local_tid_5366;\n    int32_t group_id_5367;\n    \n    global_tid_5365 = get_global_id(0);\n    local_tid_5366 = get_local_id(0);\n    group_sizze_5800 = get_local_size(0);\n    wave_sizze_5799 = LOCKSTEP_WIDTH;\n    group_id_5367 = get_group_id(0);\n    thread_active_5801 = 1;\n    \n    int32_t chunk_sizze_5372 = smin32(per_thread_elements_5360,\n                                      squot32(sizze_4902 - global_tid_5365 +\n                                              num_threads_5357 - 1,\n                    ",
+            "                          num_threads_5357));\n    double res_5375;\n    \n    if (thread_active_5801) {\n        double acc_5378 = 0.0;\n        \n        for (int32_t i_5377 = 0; i_5377 < chunk_sizze_5372; i_5377++) {\n            int32_t j_t_s_5623 = num_threads_5357 * i_5377;\n            int32_t j_p_i_t_s_5624 = global_tid_5365 + j_t_s_5623;\n            double x_5380 = *(__global\n                              double *) &values_mem_5630[j_p_i_t_s_5624 * 8];\n            double res_5383 = acc_5378 + x_5380;\n            double acc_tmp_5802 = res_5383;\n            \n            acc_5378 = acc_tmp_5802;\n        }\n        res_5375 = acc_5378;\n    }\n    \n    double final_result_5386;\n    \n    for (int32_t comb_iter_5803 = 0; comb_iter_5803 < squot32(group_sizze_5349 +\n                                                              group_sizze_5349 -\n                                                              1,\n                                                              group_sizze_5349);\n         comb_iter_5803++) {\n        int32_t combine_id_5370;\n        int32_t flat_comb_id_5804 = comb_iter_5803 * group_sizze_5349 +\n                local_tid_5366;\n        \n        combine_id_5370 = flat_comb_id_5804;\n        if (slt32(combine_id_5370, group_sizze_5349) && 1) {\n            *(__local double *) &mem_5633[combine_id_5370 * 8] = res_5375;\n        }\n    }\n    barrier(CLK_LOCAL_MEM_FENCE);\n    \n    int32_t offset_5806;\n    int32_t skip_waves_5805;\n    int32_t my_index_5387;\n    int32_t other_index_5388;\n    double x_5389;\n    double x_5390;\n    \n    my_index_5387 = local_tid_5366;\n    offset_5806 = 0;\n    other_index_5388 = local_tid_5366 + offset_5806;\n    if (slt32(local_tid_5366, group_sizze_5349)) {\n        x_5389 = *(__local double *) &mem_5633[(local_tid_5366 + offset_5806) *\n                                               8];\n    }\n    offset_5806 = 1;\n    other_index_5388 = local_tid_5366 + offset_5806;\n    while (slt32(offset_5806, wave_sizze_5799)) {\n        if (slt32(o",
+            "ther_index_5388, group_sizze_5349) && ((local_tid_5366 -\n                                                           squot32(local_tid_5366,\n                                                                   wave_sizze_5799) *\n                                                           wave_sizze_5799) &\n                                                          (2 * offset_5806 -\n                                                           1)) == 0) {\n            // read array element\n            {\n                x_5390 = *(volatile __local\n                           double *) &mem_5633[(local_tid_5366 + offset_5806) *\n                                               8];\n            }\n            \n            double res_5391;\n            \n            if (thread_active_5801) {\n                res_5391 = x_5389 + x_5390;\n            }\n            x_5389 = res_5391;\n            *(volatile __local double *) &mem_5633[local_tid_5366 * 8] = x_5389;\n        }\n        offset_5806 *= 2;\n        other_index_5388 = local_tid_5366 + offset_5806;\n    }\n    skip_waves_5805 = 1;\n    while (slt32(skip_waves_5805, squot32(group_sizze_5349 + wave_sizze_5799 -\n                                          1, wave_sizze_5799))) {\n        barrier(CLK_LOCAL_MEM_FENCE);\n        offset_5806 = skip_waves_5805 * wave_sizze_5799;\n        other_index_5388 = local_tid_5366 + offset_5806;\n        if (slt32(other_index_5388, group_sizze_5349) && ((local_tid_5366 -\n                                                           squot32(local_tid_5366,\n                                                                   wave_sizze_5799) *\n                                                           wave_sizze_5799) ==\n                                                          0 &&\n                                                          (squot32(local_tid_5366,\n                                                                   wave_sizze_5799) &\n                                                           (2 *\n       ",
+            "                                                     skip_waves_5805 -\n                                                            1)) == 0)) {\n            // read array element\n            {\n                x_5390 = *(__local double *) &mem_5633[(local_tid_5366 +\n                                                        offset_5806) * 8];\n            }\n            \n            double res_5391;\n            \n            if (thread_active_5801) {\n                res_5391 = x_5389 + x_5390;\n            }\n            x_5389 = res_5391;\n            *(__local double *) &mem_5633[local_tid_5366 * 8] = x_5389;\n        }\n        skip_waves_5805 *= 2;\n    }\n    final_result_5386 = x_5389;\n    if (local_tid_5366 == 0) {\n        *(__global double *) &mem_5636[group_id_5367 * 8] = final_result_5386;\n    }\n}\n__kernel void chunked_reduce_kernel_5429(__local volatile\n                                         int64_t *mem_aligned_0,\n                                         __local volatile\n                                         int64_t *mem_aligned_1,\n                                         int32_t sizze_4902, double res_4910,\n                                         int32_t num_threads_5420,\n                                         int32_t per_thread_elements_5423,\n                                         __global\n                                         unsigned char *values_mem_5630,\n                                         __global unsigned char *mem_5651,\n                                         __global unsigned char *mem_5654)\n{\n    __local volatile char *restrict mem_5645 = mem_aligned_0;\n    __local volatile char *restrict mem_5648 = mem_aligned_1;\n    int32_t wave_sizze_5816;\n    int32_t group_sizze_5817;\n    bool thread_active_5818;\n    int32_t global_tid_5429;\n    int32_t local_tid_5430;\n    int32_t group_id_5431;\n    \n    global_tid_5429 = get_global_id(0);\n    local_tid_5430 = get_local_id(0);\n    group_sizze_5817 = get_local_size(0);\n    wave_sizze_5816 = LOCKSTEP_WID",
+            "TH;\n    group_id_5431 = get_group_id(0);\n    thread_active_5818 = 1;\n    \n    int32_t chunk_sizze_5440 = smin32(per_thread_elements_5423,\n                                      squot32(sizze_4902 - global_tid_5429 +\n                                              num_threads_5420 - 1,\n                                              num_threads_5420));\n    double res_5444;\n    double res_5445;\n    \n    if (thread_active_5818) {\n        double acc_5448;\n        double acc_5449;\n        \n        acc_5448 = 0.0;\n        acc_5449 = 0.0;\n        for (int32_t i_5447 = 0; i_5447 < chunk_sizze_5440; i_5447++) {\n            int32_t j_t_s_5627 = num_threads_5420 * i_5447;\n            int32_t j_p_i_t_s_5628 = global_tid_5429 + j_t_s_5627;\n            double x_5451 = *(__global\n                              double *) &values_mem_5630[j_p_i_t_s_5628 * 8];\n            double res_5454 = x_5451 - res_4910;\n            double res_5455 = res_5454 * res_5454;\n            double x_5456 = res_5454 * res_5455;\n            double res_5457 = res_5454 * x_5456;\n            double res_5460 = acc_5448 + res_5455;\n            double res_5461 = acc_5449 + res_5457;\n            double acc_tmp_5819 = res_5460;\n            double acc_tmp_5820;\n            \n            acc_tmp_5820 = res_5461;\n            acc_5448 = acc_tmp_5819;\n            acc_5449 = acc_tmp_5820;\n        }\n        res_5444 = acc_5448;\n        res_5445 = acc_5449;\n    }\n    \n    double final_result_5466;\n    double final_result_5467;\n    \n    for (int32_t comb_iter_5821 = 0; comb_iter_5821 < squot32(group_sizze_5412 +\n                                                              group_sizze_5412 -\n                                                              1,\n                                                              group_sizze_5412);\n         comb_iter_5821++) {\n        int32_t combine_id_5436;\n        int32_t flat_comb_id_5822 = comb_iter_5821 * group_sizze_5412 +\n                local_tid_5430;\n        \n        combine_id_5436",
+            " = flat_comb_id_5822;\n        if (slt32(combine_id_5436, group_sizze_5412) && 1) {\n            *(__local double *) &mem_5645[combine_id_5436 * 8] = res_5444;\n        }\n    }\n    barrier(CLK_LOCAL_MEM_FENCE);\n    for (int32_t comb_iter_5823 = 0; comb_iter_5823 < squot32(group_sizze_5412 +\n                                                              group_sizze_5412 -\n                                                              1,\n                                                              group_sizze_5412);\n         comb_iter_5823++) {\n        int32_t combine_id_5437;\n        int32_t flat_comb_id_5824 = comb_iter_5823 * group_sizze_5412 +\n                local_tid_5430;\n        \n        combine_id_5437 = flat_comb_id_5824;\n        if (slt32(combine_id_5437, group_sizze_5412) && 1) {\n            *(__local double *) &mem_5648[combine_id_5437 * 8] = res_5445;\n        }\n    }\n    barrier(CLK_LOCAL_MEM_FENCE);\n    \n    int32_t offset_5826;\n    int32_t skip_waves_5825;\n    int32_t my_index_5468;\n    int32_t other_index_5469;\n    double x_5470;\n    double x_5471;\n    double x_5472;\n    double x_5473;\n    \n    my_index_5468 = local_tid_5430;\n    offset_5826 = 0;\n    other_index_5469 = local_tid_5430 + offset_5826;\n    if (slt32(local_tid_5430, group_sizze_5412)) {\n        x_5470 = *(__local double *) &mem_5645[(local_tid_5430 + offset_5826) *\n                                               8];\n        x_5471 = *(__local double *) &mem_5648[(local_tid_5430 + offset_5826) *\n                                               8];\n    }\n    offset_5826 = 1;\n    other_index_5469 = local_tid_5430 + offset_5826;\n    while (slt32(offset_5826, wave_sizze_5816)) {\n        if (slt32(other_index_5469, group_sizze_5412) && ((local_tid_5430 -\n                                                           squot32(local_tid_5430,\n                                                                   wave_sizze_5816) *\n                                                           wave_sizze_5816) &\n     ",
+            "                                                     (2 * offset_5826 -\n                                                           1)) == 0) {\n            // read array element\n            {\n                x_5472 = *(volatile __local\n                           double *) &mem_5645[(local_tid_5430 + offset_5826) *\n                                               8];\n                x_5473 = *(volatile __local\n                           double *) &mem_5648[(local_tid_5430 + offset_5826) *\n                                               8];\n            }\n            \n            double res_5474;\n            double res_5475;\n            \n            if (thread_active_5818) {\n                res_5474 = x_5470 + x_5472;\n                res_5475 = x_5471 + x_5473;\n            }\n            x_5470 = res_5474;\n            x_5471 = res_5475;\n            *(volatile __local double *) &mem_5645[local_tid_5430 * 8] = x_5470;\n            *(volatile __local double *) &mem_5648[local_tid_5430 * 8] = x_5471;\n        }\n        offset_5826 *= 2;\n        other_index_5469 = local_tid_5430 + offset_5826;\n    }\n    skip_waves_5825 = 1;\n    while (slt32(skip_waves_5825, squot32(group_sizze_5412 + wave_sizze_5816 -\n                                          1, wave_sizze_5816))) {\n        barrier(CLK_LOCAL_MEM_FENCE);\n        offset_5826 = skip_waves_5825 * wave_sizze_5816;\n        other_index_5469 = local_tid_5430 + offset_5826;\n        if (slt32(other_index_5469, group_sizze_5412) && ((local_tid_5430 -\n                                                           squot32(local_tid_5430,\n                                                                   wave_sizze_5816) *\n                                                           wave_sizze_5816) ==\n                                                          0 &&\n                                                          (squot32(local_tid_5430,\n                                                                   wave_sizze_5816) &\n                    ",
+            "                                       (2 *\n                                                            skip_waves_5825 -\n                                                            1)) == 0)) {\n            // read array element\n            {\n                x_5472 = *(__local double *) &mem_5645[(local_tid_5430 +\n                                                        offset_5826) * 8];\n                x_5473 = *(__local double *) &mem_5648[(local_tid_5430 +\n                                                        offset_5826) * 8];\n            }\n            \n            double res_5474;\n            double res_5475;\n            \n            if (thread_active_5818) {\n                res_5474 = x_5470 + x_5472;\n                res_5475 = x_5471 + x_5473;\n            }\n            x_5470 = res_5474;\n            x_5471 = res_5475;\n            *(__local double *) &mem_5645[local_tid_5430 * 8] = x_5470;\n            *(__local double *) &mem_5648[local_tid_5430 * 8] = x_5471;\n        }\n        skip_waves_5825 *= 2;\n    }\n    final_result_5466 = x_5470;\n    final_result_5467 = x_5471;\n    if (local_tid_5430 == 0) {\n        *(__global double *) &mem_5651[group_id_5431 * 8] = final_result_5466;\n    }\n    if (local_tid_5430 == 0) {\n        *(__global double *) &mem_5654[group_id_5431 * 8] = final_result_5467;\n    }\n}\n__kernel void chunked_reduce_kernel_5515(__local volatile\n                                         int64_t *mem_aligned_0,\n                                         int32_t sizze_4927,\n                                         int32_t num_threads_5507,\n                                         int32_t per_thread_elements_5510,\n                                         __global\n                                         unsigned char *values_mem_5630,\n                                         __global unsigned char *mem_5636)\n{\n    __local volatile char *restrict mem_5633 = mem_aligned_0;\n    int32_t wave_sizze_5839;\n    int32_t group_sizze_5840;\n    bool thread_active_584",
+            "1;\n    int32_t global_tid_5515;\n    int32_t local_tid_5516;\n    int32_t group_id_5517;\n    \n    global_tid_5515 = get_global_id(0);\n    local_tid_5516 = get_local_id(0);\n    group_sizze_5840 = get_local_size(0);\n    wave_sizze_5839 = LOCKSTEP_WIDTH;\n    group_id_5517 = get_group_id(0);\n    thread_active_5841 = 1;\n    \n    int32_t chunk_sizze_5522 = smin32(per_thread_elements_5510,\n                                      squot32(sizze_4927 - global_tid_5515 +\n                                              num_threads_5507 - 1,\n                                              num_threads_5507));\n    double res_5525;\n    \n    if (thread_active_5841) {\n        double acc_5528 = 0.0;\n        \n        for (int32_t i_5527 = 0; i_5527 < chunk_sizze_5522; i_5527++) {\n            int32_t j_t_s_5623 = num_threads_5507 * i_5527;\n            int32_t j_p_i_t_s_5624 = global_tid_5515 + j_t_s_5623;\n            double x_5530 = *(__global\n                              double *) &values_mem_5630[j_p_i_t_s_5624 * 8];\n            double res_5533 = acc_5528 + x_5530;\n            double acc_tmp_5842 = res_5533;\n            \n            acc_5528 = acc_tmp_5842;\n        }\n        res_5525 = acc_5528;\n    }\n    \n    double final_result_5536;\n    \n    for (int32_t comb_iter_5843 = 0; comb_iter_5843 < squot32(group_sizze_5499 +\n                                                              group_sizze_5499 -\n                                                              1,\n                                                              group_sizze_5499);\n         comb_iter_5843++) {\n        int32_t combine_id_5520;\n        int32_t flat_comb_id_5844 = comb_iter_5843 * group_sizze_5499 +\n                local_tid_5516;\n        \n        combine_id_5520 = flat_comb_id_5844;\n        if (slt32(combine_id_5520, group_sizze_5499) && 1) {\n            *(__local double *) &mem_5633[combine_id_5520 * 8] = res_5525;\n        }\n    }\n    barrier(CLK_LOCAL_MEM_FENCE);\n    \n    int32_t offset_5846;\n    int32_t skip_wave",
+            "s_5845;\n    int32_t my_index_5537;\n    int32_t other_index_5538;\n    double x_5539;\n    double x_5540;\n    \n    my_index_5537 = local_tid_5516;\n    offset_5846 = 0;\n    other_index_5538 = local_tid_5516 + offset_5846;\n    if (slt32(local_tid_5516, group_sizze_5499)) {\n        x_5539 = *(__local double *) &mem_5633[(local_tid_5516 + offset_5846) *\n                                               8];\n    }\n    offset_5846 = 1;\n    other_index_5538 = local_tid_5516 + offset_5846;\n    while (slt32(offset_5846, wave_sizze_5839)) {\n        if (slt32(other_index_5538, group_sizze_5499) && ((local_tid_5516 -\n                                                           squot32(local_tid_5516,\n                                                                   wave_sizze_5839) *\n                                                           wave_sizze_5839) &\n                                                          (2 * offset_5846 -\n                                                           1)) == 0) {\n            // read array element\n            {\n                x_5540 = *(volatile __local\n                           double *) &mem_5633[(local_tid_5516 + offset_5846) *\n                                               8];\n            }\n            \n            double res_5541;\n            \n            if (thread_active_5841) {\n                res_5541 = x_5539 + x_5540;\n            }\n            x_5539 = res_5541;\n            *(volatile __local double *) &mem_5633[local_tid_5516 * 8] = x_5539;\n        }\n        offset_5846 *= 2;\n        other_index_5538 = local_tid_5516 + offset_5846;\n    }\n    skip_waves_5845 = 1;\n    while (slt32(skip_waves_5845, squot32(group_sizze_5499 + wave_sizze_5839 -\n                                          1, wave_sizze_5839))) {\n        barrier(CLK_LOCAL_MEM_FENCE);\n        offset_5846 = skip_waves_5845 * wave_sizze_5839;\n        other_index_5538 = local_tid_5516 + offset_5846;\n        if (slt32(other_index_5538, group_sizze_5499) && ((local_tid_5516 -\n  ",
+            "                                                         squot32(local_tid_5516,\n                                                                   wave_sizze_5839) *\n                                                           wave_sizze_5839) ==\n                                                          0 &&\n                                                          (squot32(local_tid_5516,\n                                                                   wave_sizze_5839) &\n                                                           (2 *\n                                                            skip_waves_5845 -\n                                                            1)) == 0)) {\n            // read array element\n            {\n                x_5540 = *(__local double *) &mem_5633[(local_tid_5516 +\n                                                        offset_5846) * 8];\n            }\n            \n            double res_5541;\n            \n            if (thread_active_5841) {\n                res_5541 = x_5539 + x_5540;\n            }\n            x_5539 = res_5541;\n            *(__local double *) &mem_5633[local_tid_5516 * 8] = x_5539;\n        }\n        skip_waves_5845 *= 2;\n    }\n    final_result_5536 = x_5539;\n    if (local_tid_5516 == 0) {\n        *(__global double *) &mem_5636[group_id_5517 * 8] = final_result_5536;\n    }\n}\n__kernel void chunked_reduce_kernel_5576(__local volatile\n                                         int64_t *mem_aligned_0,\n                                         int32_t sizze_4927, double res_4935,\n                                         int32_t num_threads_5568,\n                                         int32_t per_thread_elements_5571,\n                                         __global\n                                         unsigned char *values_mem_5630,\n                                         __global unsigned char *mem_5648)\n{\n    __local volatile char *restrict mem_5645 = mem_aligned_0;\n    int32_t wave_sizze_5856;\n    int32_t g",
+            "roup_sizze_5857;\n    bool thread_active_5858;\n    int32_t global_tid_5576;\n    int32_t local_tid_5577;\n    int32_t group_id_5578;\n    \n    global_tid_5576 = get_global_id(0);\n    local_tid_5577 = get_local_id(0);\n    group_sizze_5857 = get_local_size(0);\n    wave_sizze_5856 = LOCKSTEP_WIDTH;\n    group_id_5578 = get_group_id(0);\n    thread_active_5858 = 1;\n    \n    int32_t chunk_sizze_5583 = smin32(per_thread_elements_5571,\n                                      squot32(sizze_4927 - global_tid_5576 +\n                                              num_threads_5568 - 1,\n                                              num_threads_5568));\n    double res_5586;\n    \n    if (thread_active_5858) {\n        double acc_5589 = 0.0;\n        \n        for (int32_t i_5588 = 0; i_5588 < chunk_sizze_5583; i_5588++) {\n            int32_t j_t_s_5627 = num_threads_5568 * i_5588;\n            int32_t j_p_i_t_s_5628 = global_tid_5576 + j_t_s_5627;\n            double x_5591 = *(__global\n                              double *) &values_mem_5630[j_p_i_t_s_5628 * 8];\n            double res_5593 = x_5591 - res_4935;\n            double res_5594 = res_5593 * res_5593;\n            double res_5596 = acc_5589 + res_5594;\n            double acc_tmp_5859 = res_5596;\n            \n            acc_5589 = acc_tmp_5859;\n        }\n        res_5586 = acc_5589;\n    }\n    \n    double final_result_5599;\n    \n    for (int32_t comb_iter_5860 = 0; comb_iter_5860 < squot32(group_sizze_5560 +\n                                                              group_sizze_5560 -\n                                                              1,\n                                                              group_sizze_5560);\n         comb_iter_5860++) {\n        int32_t combine_id_5581;\n        int32_t flat_comb_id_5861 = comb_iter_5860 * group_sizze_5560 +\n                local_tid_5577;\n        \n        combine_id_5581 = flat_comb_id_5861;\n        if (slt32(combine_id_5581, group_sizze_5560) && 1) {\n            *(__local double *)",
+            " &mem_5645[combine_id_5581 * 8] = res_5586;\n        }\n    }\n    barrier(CLK_LOCAL_MEM_FENCE);\n    \n    int32_t offset_5863;\n    int32_t skip_waves_5862;\n    int32_t my_index_5600;\n    int32_t other_index_5601;\n    double x_5602;\n    double x_5603;\n    \n    my_index_5600 = local_tid_5577;\n    offset_5863 = 0;\n    other_index_5601 = local_tid_5577 + offset_5863;\n    if (slt32(local_tid_5577, group_sizze_5560)) {\n        x_5602 = *(__local double *) &mem_5645[(local_tid_5577 + offset_5863) *\n                                               8];\n    }\n    offset_5863 = 1;\n    other_index_5601 = local_tid_5577 + offset_5863;\n    while (slt32(offset_5863, wave_sizze_5856)) {\n        if (slt32(other_index_5601, group_sizze_5560) && ((local_tid_5577 -\n                                                           squot32(local_tid_5577,\n                                                                   wave_sizze_5856) *\n                                                           wave_sizze_5856) &\n                                                          (2 * offset_5863 -\n                                                           1)) == 0) {\n            // read array element\n            {\n                x_5603 = *(volatile __local\n                           double *) &mem_5645[(local_tid_5577 + offset_5863) *\n                                               8];\n            }\n            \n            double res_5604;\n            \n            if (thread_active_5858) {\n                res_5604 = x_5602 + x_5603;\n            }\n            x_5602 = res_5604;\n            *(volatile __local double *) &mem_5645[local_tid_5577 * 8] = x_5602;\n        }\n        offset_5863 *= 2;\n        other_index_5601 = local_tid_5577 + offset_5863;\n    }\n    skip_waves_5862 = 1;\n    while (slt32(skip_waves_5862, squot32(group_sizze_5560 + wave_sizze_5856 -\n                                          1, wave_sizze_5856))) {\n        barrier(CLK_LOCAL_MEM_FENCE);\n        offset_5863 = skip_waves_5862 * wave_si",
+            "zze_5856;\n        other_index_5601 = local_tid_5577 + offset_5863;\n        if (slt32(other_index_5601, group_sizze_5560) && ((local_tid_5577 -\n                                                           squot32(local_tid_5577,\n                                                                   wave_sizze_5856) *\n                                                           wave_sizze_5856) ==\n                                                          0 &&\n                                                          (squot32(local_tid_5577,\n                                                                   wave_sizze_5856) &\n                                                           (2 *\n                                                            skip_waves_5862 -\n                                                            1)) == 0)) {\n            // read array element\n            {\n                x_5603 = *(__local double *) &mem_5645[(local_tid_5577 +\n                                                        offset_5863) * 8];\n            }\n            \n            double res_5604;\n            \n            if (thread_active_5858) {\n                res_5604 = x_5602 + x_5603;\n            }\n            x_5602 = res_5604;\n            *(__local double *) &mem_5645[local_tid_5577 * 8] = x_5602;\n        }\n        skip_waves_5862 *= 2;\n    }\n    final_result_5599 = x_5602;\n    if (local_tid_5577 == 0) {\n        *(__global double *) &mem_5648[group_id_5578 * 8] = final_result_5599;\n    }\n}\n__kernel void reduce_kernel_4998(__local volatile int64_t *mem_aligned_0,\n                                 int32_t num_groups_4961, __global\n                                 unsigned char *mem_5636, __global\n                                 unsigned char *mem_5642)\n{\n    __local volatile char *restrict mem_5639 = mem_aligned_0;\n    int32_t wave_sizze_5697;\n    int32_t group_sizze_5698;\n    bool thread_active_5699;\n    int32_t global_tid_4998;\n    int32_t local_tid_4999;\n    int32_t group_id_5000;\n",
+            "    \n    global_tid_4998 = get_global_id(0);\n    local_tid_4999 = get_local_id(0);\n    group_sizze_5698 = get_local_size(0);\n    wave_sizze_5697 = LOCKSTEP_WIDTH;\n    group_id_5000 = get_group_id(0);\n    thread_active_5699 = 1;\n    \n    bool in_bounds_5001;\n    double x_5615;\n    \n    if (thread_active_5699) {\n        in_bounds_5001 = slt32(local_tid_4999, num_groups_4961);\n        if (in_bounds_5001) {\n            double x_5002 = *(__global double *) &mem_5636[global_tid_4998 * 8];\n            \n            x_5615 = x_5002;\n        } else {\n            x_5615 = 0.0;\n        }\n    }\n    \n    double final_result_5006;\n    \n    for (int32_t comb_iter_5700 = 0; comb_iter_5700 <\n         squot32(max_num_groups_4956 + max_num_groups_4956 - 1,\n                 max_num_groups_4956); comb_iter_5700++) {\n        int32_t combine_id_5005;\n        int32_t flat_comb_id_5701 = comb_iter_5700 * max_num_groups_4956 +\n                local_tid_4999;\n        \n        combine_id_5005 = flat_comb_id_5701;\n        if (slt32(combine_id_5005, max_num_groups_4956) && 1) {\n            *(__local double *) &mem_5639[combine_id_5005 * 8] = x_5615;\n        }\n    }\n    barrier(CLK_LOCAL_MEM_FENCE);\n    \n    int32_t offset_5703;\n    int32_t skip_waves_5702;\n    double x_4844;\n    double x_4845;\n    int32_t my_index_4968;\n    int32_t other_index_4969;\n    \n    my_index_4968 = local_tid_4999;\n    offset_5703 = 0;\n    other_index_4969 = local_tid_4999 + offset_5703;\n    if (slt32(local_tid_4999, max_num_groups_4956)) {\n        x_4844 = *(__local double *) &mem_5639[(local_tid_4999 + offset_5703) *\n                                               8];\n    }\n    offset_5703 = 1;\n    other_index_4969 = local_tid_4999 + offset_5703;\n    while (slt32(offset_5703, wave_sizze_5697)) {\n        if (slt32(other_index_4969, max_num_groups_4956) && ((local_tid_4999 -\n                                                              squot32(local_tid_4999,\n                                                                ",
+            "      wave_sizze_5697) *\n                                                              wave_sizze_5697) &\n                                                             (2 * offset_5703 -\n                                                              1)) == 0) {\n            // read array element\n            {\n                x_4845 = *(volatile __local\n                           double *) &mem_5639[(local_tid_4999 + offset_5703) *\n                                               8];\n            }\n            \n            double res_4846;\n            \n            if (thread_active_5699) {\n                res_4846 = x_4844 + x_4845;\n            }\n            x_4844 = res_4846;\n            *(volatile __local double *) &mem_5639[local_tid_4999 * 8] = x_4844;\n        }\n        offset_5703 *= 2;\n        other_index_4969 = local_tid_4999 + offset_5703;\n    }\n    skip_waves_5702 = 1;\n    while (slt32(skip_waves_5702, squot32(max_num_groups_4956 +\n                                          wave_sizze_5697 - 1,\n                                          wave_sizze_5697))) {\n        barrier(CLK_LOCAL_MEM_FENCE);\n        offset_5703 = skip_waves_5702 * wave_sizze_5697;\n        other_index_4969 = local_tid_4999 + offset_5703;\n        if (slt32(other_index_4969, max_num_groups_4956) && ((local_tid_4999 -\n                                                              squot32(local_tid_4999,\n                                                                      wave_sizze_5697) *\n                                                              wave_sizze_5697) ==\n                                                             0 &&\n                                                             (squot32(local_tid_4999,\n                                                                      wave_sizze_5697) &\n                                                              (2 *\n                                                               skip_waves_5702 -\n                                                 ",
+            "              1)) == 0)) {\n            // read array element\n            {\n                x_4845 = *(__local double *) &mem_5639[(local_tid_4999 +\n                                                        offset_5703) * 8];\n            }\n            \n            double res_4846;\n            \n            if (thread_active_5699) {\n                res_4846 = x_4844 + x_4845;\n            }\n            x_4844 = res_4846;\n            *(__local double *) &mem_5639[local_tid_4999 * 8] = x_4844;\n        }\n        skip_waves_5702 *= 2;\n    }\n    final_result_5006 = x_4844;\n    if (local_tid_4999 == 0) {\n        *(__global double *) &mem_5642[group_id_5000 * 8] = final_result_5006;\n    }\n}\n__kernel void reduce_kernel_5059(__local volatile int64_t *mem_aligned_0,\n                                 int32_t num_groups_5022, __global\n                                 unsigned char *mem_5636, __global\n                                 unsigned char *mem_5642)\n{\n    __local volatile char *restrict mem_5639 = mem_aligned_0;\n    int32_t wave_sizze_5715;\n    int32_t group_sizze_5716;\n    bool thread_active_5717;\n    int32_t global_tid_5059;\n    int32_t local_tid_5060;\n    int32_t group_id_5061;\n    \n    global_tid_5059 = get_global_id(0);\n    local_tid_5060 = get_local_id(0);\n    group_sizze_5716 = get_local_size(0);\n    wave_sizze_5715 = LOCKSTEP_WIDTH;\n    group_id_5061 = get_group_id(0);\n    thread_active_5717 = 1;\n    \n    bool in_bounds_5062;\n    double x_5615;\n    \n    if (thread_active_5717) {\n        in_bounds_5062 = slt32(local_tid_5060, num_groups_5022);\n        if (in_bounds_5062) {\n            double x_5063 = *(__global double *) &mem_5636[global_tid_5059 * 8];\n            \n            x_5615 = x_5063;\n        } else {\n            x_5615 = 0.0;\n        }\n    }\n    \n    double final_result_5067;\n    \n    for (int32_t comb_iter_5718 = 0; comb_iter_5718 <\n         squot32(max_num_groups_5017 + max_num_groups_5017 - 1,\n                 max_num_groups_5017); comb_iter_5718++) {\n     ",
+            "   int32_t combine_id_5066;\n        int32_t flat_comb_id_5719 = comb_iter_5718 * max_num_groups_5017 +\n                local_tid_5060;\n        \n        combine_id_5066 = flat_comb_id_5719;\n        if (slt32(combine_id_5066, max_num_groups_5017) && 1) {\n            *(__local double *) &mem_5639[combine_id_5066 * 8] = x_5615;\n        }\n    }\n    barrier(CLK_LOCAL_MEM_FENCE);\n    \n    int32_t offset_5721;\n    int32_t skip_waves_5720;\n    double x_4851;\n    double x_4852;\n    int32_t my_index_5029;\n    int32_t other_index_5030;\n    \n    my_index_5029 = local_tid_5060;\n    offset_5721 = 0;\n    other_index_5030 = local_tid_5060 + offset_5721;\n    if (slt32(local_tid_5060, max_num_groups_5017)) {\n        x_4851 = *(__local double *) &mem_5639[(local_tid_5060 + offset_5721) *\n                                               8];\n    }\n    offset_5721 = 1;\n    other_index_5030 = local_tid_5060 + offset_5721;\n    while (slt32(offset_5721, wave_sizze_5715)) {\n        if (slt32(other_index_5030, max_num_groups_5017) && ((local_tid_5060 -\n                                                              squot32(local_tid_5060,\n                                                                      wave_sizze_5715) *\n                                                              wave_sizze_5715) &\n                                                             (2 * offset_5721 -\n                                                              1)) == 0) {\n            // read array element\n            {\n                x_4852 = *(volatile __local\n                           double *) &mem_5639[(local_tid_5060 + offset_5721) *\n                                               8];\n            }\n            \n            double res_4853;\n            \n            if (thread_active_5717) {\n                res_4853 = x_4851 + x_4852;\n            }\n            x_4851 = res_4853;\n            *(volatile __local double *) &mem_5639[local_tid_5060 * 8] = x_4851;\n        }\n        offset_5721 *= 2;\n        other_i",
+            "ndex_5030 = local_tid_5060 + offset_5721;\n    }\n    skip_waves_5720 = 1;\n    while (slt32(skip_waves_5720, squot32(max_num_groups_5017 +\n                                          wave_sizze_5715 - 1,\n                                          wave_sizze_5715))) {\n        barrier(CLK_LOCAL_MEM_FENCE);\n        offset_5721 = skip_waves_5720 * wave_sizze_5715;\n        other_index_5030 = local_tid_5060 + offset_5721;\n        if (slt32(other_index_5030, max_num_groups_5017) && ((local_tid_5060 -\n                                                              squot32(local_tid_5060,\n                                                                      wave_sizze_5715) *\n                                                              wave_sizze_5715) ==\n                                                             0 &&\n                                                             (squot32(local_tid_5060,\n                                                                      wave_sizze_5715) &\n                                                              (2 *\n                                                               skip_waves_5720 -\n                                                               1)) == 0)) {\n            // read array element\n            {\n                x_4852 = *(__local double *) &mem_5639[(local_tid_5060 +\n                                                        offset_5721) * 8];\n            }\n            \n            double res_4853;\n            \n            if (thread_active_5717) {\n                res_4853 = x_4851 + x_4852;\n            }\n            x_4851 = res_4853;\n            *(__local double *) &mem_5639[local_tid_5060 * 8] = x_4851;\n        }\n        skip_waves_5720 *= 2;\n    }\n    final_result_5067 = x_4851;\n    if (local_tid_5060 == 0) {\n        *(__global double *) &mem_5642[group_id_5061 * 8] = final_result_5067;\n    }\n}\n__kernel void reduce_kernel_5120(__local volatile int64_t *mem_aligned_0,\n                                 int32_t num_group",
+            "s_5083, __global\n                                 unsigned char *mem_5636, __global\n                                 unsigned char *mem_5642)\n{\n    __local volatile char *restrict mem_5639 = mem_aligned_0;\n    int32_t wave_sizze_5733;\n    int32_t group_sizze_5734;\n    bool thread_active_5735;\n    int32_t global_tid_5120;\n    int32_t local_tid_5121;\n    int32_t group_id_5122;\n    \n    global_tid_5120 = get_global_id(0);\n    local_tid_5121 = get_local_id(0);\n    group_sizze_5734 = get_local_size(0);\n    wave_sizze_5733 = LOCKSTEP_WIDTH;\n    group_id_5122 = get_group_id(0);\n    thread_active_5735 = 1;\n    \n    bool in_bounds_5123;\n    double x_5615;\n    \n    if (thread_active_5735) {\n        in_bounds_5123 = slt32(local_tid_5121, num_groups_5083);\n        if (in_bounds_5123) {\n            double x_5124 = *(__global double *) &mem_5636[global_tid_5120 * 8];\n            \n            x_5615 = x_5124;\n        } else {\n            x_5615 = 0.0;\n        }\n    }\n    \n    double final_result_5128;\n    \n    for (int32_t comb_iter_5736 = 0; comb_iter_5736 <\n         squot32(max_num_groups_5078 + max_num_groups_5078 - 1,\n                 max_num_groups_5078); comb_iter_5736++) {\n        int32_t combine_id_5127;\n        int32_t flat_comb_id_5737 = comb_iter_5736 * max_num_groups_5078 +\n                local_tid_5121;\n        \n        combine_id_5127 = flat_comb_id_5737;\n        if (slt32(combine_id_5127, max_num_groups_5078) && 1) {\n            *(__local double *) &mem_5639[combine_id_5127 * 8] = x_5615;\n        }\n    }\n    barrier(CLK_LOCAL_MEM_FENCE);\n    \n    int32_t offset_5739;\n    int32_t skip_waves_5738;\n    double x_4861;\n    double x_4862;\n    int32_t my_index_5090;\n    int32_t other_index_5091;\n    \n    my_index_5090 = local_tid_5121;\n    offset_5739 = 0;\n    other_index_5091 = local_tid_5121 + offset_5739;\n    if (slt32(local_tid_5121, max_num_groups_5078)) {\n        x_4861 = *(__local double *) &mem_5639[(local_tid_5121 + offset_5739) *\n                                ",
+            "               8];\n    }\n    offset_5739 = 1;\n    other_index_5091 = local_tid_5121 + offset_5739;\n    while (slt32(offset_5739, wave_sizze_5733)) {\n        if (slt32(other_index_5091, max_num_groups_5078) && ((local_tid_5121 -\n                                                              squot32(local_tid_5121,\n                                                                      wave_sizze_5733) *\n                                                              wave_sizze_5733) &\n                                                             (2 * offset_5739 -\n                                                              1)) == 0) {\n            // read array element\n            {\n                x_4862 = *(volatile __local\n                           double *) &mem_5639[(local_tid_5121 + offset_5739) *\n                                               8];\n            }\n            \n            double res_4863;\n            \n            if (thread_active_5735) {\n                res_4863 = x_4861 + x_4862;\n            }\n            x_4861 = res_4863;\n            *(volatile __local double *) &mem_5639[local_tid_5121 * 8] = x_4861;\n        }\n        offset_5739 *= 2;\n        other_index_5091 = local_tid_5121 + offset_5739;\n    }\n    skip_waves_5738 = 1;\n    while (slt32(skip_waves_5738, squot32(max_num_groups_5078 +\n                                          wave_sizze_5733 - 1,\n                                          wave_sizze_5733))) {\n        barrier(CLK_LOCAL_MEM_FENCE);\n        offset_5739 = skip_waves_5738 * wave_sizze_5733;\n        other_index_5091 = local_tid_5121 + offset_5739;\n        if (slt32(other_index_5091, max_num_groups_5078) && ((local_tid_5121 -\n                                                              squot32(local_tid_5121,\n                                                                      wave_sizze_5733) *\n                                                              wave_sizze_5733) ==\n                                                            ",
+            " 0 &&\n                                                             (squot32(local_tid_5121,\n                                                                      wave_sizze_5733) &\n                                                              (2 *\n                                                               skip_waves_5738 -\n                                                               1)) == 0)) {\n            // read array element\n            {\n                x_4862 = *(__local double *) &mem_5639[(local_tid_5121 +\n                                                        offset_5739) * 8];\n            }\n            \n            double res_4863;\n            \n            if (thread_active_5735) {\n                res_4863 = x_4861 + x_4862;\n            }\n            x_4861 = res_4863;\n            *(__local double *) &mem_5639[local_tid_5121 * 8] = x_4861;\n        }\n        skip_waves_5738 *= 2;\n    }\n    final_result_5128 = x_4861;\n    if (local_tid_5121 == 0) {\n        *(__global double *) &mem_5642[group_id_5122 * 8] = final_result_5128;\n    }\n}\n__kernel void reduce_kernel_5183(__local volatile int64_t *mem_aligned_0,\n                                 int32_t num_groups_5144, __global\n                                 unsigned char *mem_5648, __global\n                                 unsigned char *mem_5654)\n{\n    __local volatile char *restrict mem_5651 = mem_aligned_0;\n    int32_t wave_sizze_5750;\n    int32_t group_sizze_5751;\n    bool thread_active_5752;\n    int32_t global_tid_5183;\n    int32_t local_tid_5184;\n    int32_t group_id_5185;\n    \n    global_tid_5183 = get_global_id(0);\n    local_tid_5184 = get_local_id(0);\n    group_sizze_5751 = get_local_size(0);\n    wave_sizze_5750 = LOCKSTEP_WIDTH;\n    group_id_5185 = get_group_id(0);\n    thread_active_5752 = 1;\n    \n    bool in_bounds_5186;\n    double x_5617;\n    \n    if (thread_active_5752) {\n        in_bounds_5186 = slt32(local_tid_5184, num_groups_5144);\n        if (in_bounds_5186) {\n            double x_5187 ",
+            "= *(__global double *) &mem_5648[global_tid_5183 * 8];\n            \n            x_5617 = x_5187;\n        } else {\n            x_5617 = 0.0;\n        }\n    }\n    \n    double final_result_5191;\n    \n    for (int32_t comb_iter_5753 = 0; comb_iter_5753 <\n         squot32(max_num_groups_5139 + max_num_groups_5139 - 1,\n                 max_num_groups_5139); comb_iter_5753++) {\n        int32_t combine_id_5190;\n        int32_t flat_comb_id_5754 = comb_iter_5753 * max_num_groups_5139 +\n                local_tid_5184;\n        \n        combine_id_5190 = flat_comb_id_5754;\n        if (slt32(combine_id_5190, max_num_groups_5139) && 1) {\n            *(__local double *) &mem_5651[combine_id_5190 * 8] = x_5617;\n        }\n    }\n    barrier(CLK_LOCAL_MEM_FENCE);\n    \n    int32_t offset_5756;\n    int32_t skip_waves_5755;\n    double x_4867;\n    double x_4868;\n    int32_t my_index_5151;\n    int32_t other_index_5152;\n    \n    my_index_5151 = local_tid_5184;\n    offset_5756 = 0;\n    other_index_5152 = local_tid_5184 + offset_5756;\n    if (slt32(local_tid_5184, max_num_groups_5139)) {\n        x_4867 = *(__local double *) &mem_5651[(local_tid_5184 + offset_5756) *\n                                               8];\n    }\n    offset_5756 = 1;\n    other_index_5152 = local_tid_5184 + offset_5756;\n    while (slt32(offset_5756, wave_sizze_5750)) {\n        if (slt32(other_index_5152, max_num_groups_5139) && ((local_tid_5184 -\n                                                              squot32(local_tid_5184,\n                                                                      wave_sizze_5750) *\n                                                              wave_sizze_5750) &\n                                                             (2 * offset_5756 -\n                                                              1)) == 0) {\n            // read array element\n            {\n                x_4868 = *(volatile __local\n                           double *) &mem_5651[(local_tid_5184 + offset_5756) *\n ",
+            "                                              8];\n            }\n            \n            double res_4869;\n            \n            if (thread_active_5752) {\n                res_4869 = x_4867 + x_4868;\n            }\n            x_4867 = res_4869;\n            *(volatile __local double *) &mem_5651[local_tid_5184 * 8] = x_4867;\n        }\n        offset_5756 *= 2;\n        other_index_5152 = local_tid_5184 + offset_5756;\n    }\n    skip_waves_5755 = 1;\n    while (slt32(skip_waves_5755, squot32(max_num_groups_5139 +\n                                          wave_sizze_5750 - 1,\n                                          wave_sizze_5750))) {\n        barrier(CLK_LOCAL_MEM_FENCE);\n        offset_5756 = skip_waves_5755 * wave_sizze_5750;\n        other_index_5152 = local_tid_5184 + offset_5756;\n        if (slt32(other_index_5152, max_num_groups_5139) && ((local_tid_5184 -\n                                                              squot32(local_tid_5184,\n                                                                      wave_sizze_5750) *\n                                                              wave_sizze_5750) ==\n                                                             0 &&\n                                                             (squot32(local_tid_5184,\n                                                                      wave_sizze_5750) &\n                                                              (2 *\n                                                               skip_waves_5755 -\n                                                               1)) == 0)) {\n            // read array element\n            {\n                x_4868 = *(__local double *) &mem_5651[(local_tid_5184 +\n                                                        offset_5756) * 8];\n            }\n            \n            double res_4869;\n            \n            if (thread_active_5752) {\n                res_4869 = x_4867 + x_4868;\n            }\n            x_4867 = res_4869;\n            *(",
+            "__local double *) &mem_5651[local_tid_5184 * 8] = x_4867;\n        }\n        skip_waves_5755 *= 2;\n    }\n    final_result_5191 = x_4867;\n    if (local_tid_5184 == 0) {\n        *(__global double *) &mem_5654[group_id_5185 * 8] = final_result_5191;\n    }\n}\n__kernel void reduce_kernel_5244(__local volatile int64_t *mem_aligned_0,\n                                 int32_t num_groups_5207, __global\n                                 unsigned char *mem_5636, __global\n                                 unsigned char *mem_5642)\n{\n    __local volatile char *restrict mem_5639 = mem_aligned_0;\n    int32_t wave_sizze_5768;\n    int32_t group_sizze_5769;\n    bool thread_active_5770;\n    int32_t global_tid_5244;\n    int32_t local_tid_5245;\n    int32_t group_id_5246;\n    \n    global_tid_5244 = get_global_id(0);\n    local_tid_5245 = get_local_id(0);\n    group_sizze_5769 = get_local_size(0);\n    wave_sizze_5768 = LOCKSTEP_WIDTH;\n    group_id_5246 = get_group_id(0);\n    thread_active_5770 = 1;\n    \n    bool in_bounds_5247;\n    double x_5615;\n    \n    if (thread_active_5770) {\n        in_bounds_5247 = slt32(local_tid_5245, num_groups_5207);\n        if (in_bounds_5247) {\n            double x_5248 = *(__global double *) &mem_5636[global_tid_5244 * 8];\n            \n            x_5615 = x_5248;\n        } else {\n            x_5615 = 0.0;\n        }\n    }\n    \n    double final_result_5252;\n    \n    for (int32_t comb_iter_5771 = 0; comb_iter_5771 <\n         squot32(max_num_groups_5202 + max_num_groups_5202 - 1,\n                 max_num_groups_5202); comb_iter_5771++) {\n        int32_t combine_id_5251;\n        int32_t flat_comb_id_5772 = comb_iter_5771 * max_num_groups_5202 +\n                local_tid_5245;\n        \n        combine_id_5251 = flat_comb_id_5772;\n        if (slt32(combine_id_5251, max_num_groups_5202) && 1) {\n            *(__local double *) &mem_5639[combine_id_5251 * 8] = x_5615;\n        }\n    }\n    barrier(CLK_LOCAL_MEM_FENCE);\n    \n    int32_t offset_5774;\n    int32_t skip_waves_5773",
+            ";\n    double x_4879;\n    double x_4880;\n    int32_t my_index_5214;\n    int32_t other_index_5215;\n    \n    my_index_5214 = local_tid_5245;\n    offset_5774 = 0;\n    other_index_5215 = local_tid_5245 + offset_5774;\n    if (slt32(local_tid_5245, max_num_groups_5202)) {\n        x_4879 = *(__local double *) &mem_5639[(local_tid_5245 + offset_5774) *\n                                               8];\n    }\n    offset_5774 = 1;\n    other_index_5215 = local_tid_5245 + offset_5774;\n    while (slt32(offset_5774, wave_sizze_5768)) {\n        if (slt32(other_index_5215, max_num_groups_5202) && ((local_tid_5245 -\n                                                              squot32(local_tid_5245,\n                                                                      wave_sizze_5768) *\n                                                              wave_sizze_5768) &\n                                                             (2 * offset_5774 -\n                                                              1)) == 0) {\n            // read array element\n            {\n                x_4880 = *(volatile __local\n                           double *) &mem_5639[(local_tid_5245 + offset_5774) *\n                                               8];\n            }\n            \n            double res_4881;\n            \n            if (thread_active_5770) {\n                res_4881 = x_4879 + x_4880;\n            }\n            x_4879 = res_4881;\n            *(volatile __local double *) &mem_5639[local_tid_5245 * 8] = x_4879;\n        }\n        offset_5774 *= 2;\n        other_index_5215 = local_tid_5245 + offset_5774;\n    }\n    skip_waves_5773 = 1;\n    while (slt32(skip_waves_5773, squot32(max_num_groups_5202 +\n                                          wave_sizze_5768 - 1,\n                                          wave_sizze_5768))) {\n        barrier(CLK_LOCAL_MEM_FENCE);\n        offset_5774 = skip_waves_5773 * wave_sizze_5768;\n        other_index_5215 = local_tid_5245 + offset_5774;\n        if (slt32(",
+            "other_index_5215, max_num_groups_5202) && ((local_tid_5245 -\n                                                              squot32(local_tid_5245,\n                                                                      wave_sizze_5768) *\n                                                              wave_sizze_5768) ==\n                                                             0 &&\n                                                             (squot32(local_tid_5245,\n                                                                      wave_sizze_5768) &\n                                                              (2 *\n                                                               skip_waves_5773 -\n                                                               1)) == 0)) {\n            // read array element\n            {\n                x_4880 = *(__local double *) &mem_5639[(local_tid_5245 +\n                                                        offset_5774) * 8];\n            }\n            \n            double res_4881;\n            \n            if (thread_active_5770) {\n                res_4881 = x_4879 + x_4880;\n            }\n            x_4879 = res_4881;\n            *(__local double *) &mem_5639[local_tid_5245 * 8] = x_4879;\n        }\n        skip_waves_5773 *= 2;\n    }\n    final_result_5252 = x_4879;\n    if (local_tid_5245 == 0) {\n        *(__global double *) &mem_5642[group_id_5246 * 8] = final_result_5252;\n    }\n}\n__kernel void reduce_kernel_5328(__local volatile int64_t *mem_aligned_0,\n                                 __local volatile int64_t *mem_aligned_1,\n                                 int32_t num_groups_5270, __global\n                                 unsigned char *mem_5651, __global\n                                 unsigned char *mem_5654, __global\n                                 unsigned char *mem_5663, __global\n                                 unsigned char *mem_5666)\n{\n    __local volatile char *restrict mem_5657 = mem_aligned_0;\n    __local volatil",
+            "e char *restrict mem_5660 = mem_aligned_1;\n    int32_t wave_sizze_5789;\n    int32_t group_sizze_5790;\n    bool thread_active_5791;\n    int32_t global_tid_5328;\n    int32_t local_tid_5329;\n    int32_t group_id_5330;\n    \n    global_tid_5328 = get_global_id(0);\n    local_tid_5329 = get_local_id(0);\n    group_sizze_5790 = get_local_size(0);\n    wave_sizze_5789 = LOCKSTEP_WIDTH;\n    group_id_5330 = get_group_id(0);\n    thread_active_5791 = 1;\n    \n    bool in_bounds_5331;\n    double x_5617;\n    double x_5619;\n    \n    if (thread_active_5791) {\n        in_bounds_5331 = slt32(local_tid_5329, num_groups_5270);\n        if (in_bounds_5331) {\n            double x_5332 = *(__global double *) &mem_5651[global_tid_5328 * 8];\n            \n            x_5617 = x_5332;\n        } else {\n            x_5617 = 0.0;\n        }\n        if (in_bounds_5331) {\n            double x_5334 = *(__global double *) &mem_5654[global_tid_5328 * 8];\n            \n            x_5619 = x_5334;\n        } else {\n            x_5619 = 0.0;\n        }\n    }\n    \n    double final_result_5339;\n    double final_result_5340;\n    \n    for (int32_t comb_iter_5792 = 0; comb_iter_5792 <\n         squot32(max_num_groups_5265 + max_num_groups_5265 - 1,\n                 max_num_groups_5265); comb_iter_5792++) {\n        int32_t combine_id_5338;\n        int32_t flat_comb_id_5793 = comb_iter_5792 * max_num_groups_5265 +\n                local_tid_5329;\n        \n        combine_id_5338 = flat_comb_id_5793;\n        if (slt32(combine_id_5338, max_num_groups_5265) && 1) {\n            *(__local double *) &mem_5657[combine_id_5338 * 8] = x_5617;\n            *(__local double *) &mem_5660[combine_id_5338 * 8] = x_5619;\n        }\n    }\n    barrier(CLK_LOCAL_MEM_FENCE);\n    \n    int32_t offset_5795;\n    int32_t skip_waves_5794;\n    double x_4886;\n    double x_4887;\n    double x_4888;\n    double x_4889;\n    int32_t my_index_5278;\n    int32_t other_index_5279;\n    \n    my_index_5278 = local_tid_5329;\n    offset_5795 = 0;\n    other_index_",
+            "5279 = local_tid_5329 + offset_5795;\n    if (slt32(local_tid_5329, max_num_groups_5265)) {\n        x_4886 = *(__local double *) &mem_5657[(local_tid_5329 + offset_5795) *\n                                               8];\n        x_4887 = *(__local double *) &mem_5660[(local_tid_5329 + offset_5795) *\n                                               8];\n    }\n    offset_5795 = 1;\n    other_index_5279 = local_tid_5329 + offset_5795;\n    while (slt32(offset_5795, wave_sizze_5789)) {\n        if (slt32(other_index_5279, max_num_groups_5265) && ((local_tid_5329 -\n                                                              squot32(local_tid_5329,\n                                                                      wave_sizze_5789) *\n                                                              wave_sizze_5789) &\n                                                             (2 * offset_5795 -\n                                                              1)) == 0) {\n            // read array element\n            {\n                x_4888 = *(volatile __local\n                           double *) &mem_5657[(local_tid_5329 + offset_5795) *\n                                               8];\n                x_4889 = *(volatile __local\n                           double *) &mem_5660[(local_tid_5329 + offset_5795) *\n                                               8];\n            }\n            \n            double res_4890;\n            double res_4891;\n            \n            if (thread_active_5791) {\n                res_4890 = x_4886 + x_4888;\n                res_4891 = x_4887 + x_4889;\n            }\n            x_4886 = res_4890;\n            x_4887 = res_4891;\n            *(volatile __local double *) &mem_5657[local_tid_5329 * 8] = x_4886;\n            *(volatile __local double *) &mem_5660[local_tid_5329 * 8] = x_4887;\n        }\n        offset_5795 *= 2;\n        other_index_5279 = local_tid_5329 + offset_5795;\n    }\n    skip_waves_5794 = 1;\n    while (slt32(skip_waves_5794, squot32(ma",
+            "x_num_groups_5265 +\n                                          wave_sizze_5789 - 1,\n                                          wave_sizze_5789))) {\n        barrier(CLK_LOCAL_MEM_FENCE);\n        offset_5795 = skip_waves_5794 * wave_sizze_5789;\n        other_index_5279 = local_tid_5329 + offset_5795;\n        if (slt32(other_index_5279, max_num_groups_5265) && ((local_tid_5329 -\n                                                              squot32(local_tid_5329,\n                                                                      wave_sizze_5789) *\n                                                              wave_sizze_5789) ==\n                                                             0 &&\n                                                             (squot32(local_tid_5329,\n                                                                      wave_sizze_5789) &\n                                                              (2 *\n                                                               skip_waves_5794 -\n                                                               1)) == 0)) {\n            // read array element\n            {\n                x_4888 = *(__local double *) &mem_5657[(local_tid_5329 +\n                                                        offset_5795) * 8];\n                x_4889 = *(__local double *) &mem_5660[(local_tid_5329 +\n                                                        offset_5795) * 8];\n            }\n            \n            double res_4890;\n            double res_4891;\n            \n            if (thread_active_5791) {\n                res_4890 = x_4886 + x_4888;\n                res_4891 = x_4887 + x_4889;\n            }\n            x_4886 = res_4890;\n            x_4887 = res_4891;\n            *(__local double *) &mem_5657[local_tid_5329 * 8] = x_4886;\n            *(__local double *) &mem_5660[local_tid_5329 * 8] = x_4887;\n        }\n        skip_waves_5794 *= 2;\n    }\n    final_result_5339 = x_4886;\n    final_result_5340 = x_4887;\n   ",
+            " if (local_tid_5329 == 0) {\n        *(__global double *) &mem_5663[group_id_5330 * 8] = final_result_5339;\n    }\n    if (local_tid_5329 == 0) {\n        *(__global double *) &mem_5666[group_id_5330 * 8] = final_result_5340;\n    }\n}\n__kernel void reduce_kernel_5393(__local volatile int64_t *mem_aligned_0,\n                                 int32_t num_groups_5356, __global\n                                 unsigned char *mem_5636, __global\n                                 unsigned char *mem_5642)\n{\n    __local volatile char *restrict mem_5639 = mem_aligned_0;\n    int32_t wave_sizze_5808;\n    int32_t group_sizze_5809;\n    bool thread_active_5810;\n    int32_t global_tid_5393;\n    int32_t local_tid_5394;\n    int32_t group_id_5395;\n    \n    global_tid_5393 = get_global_id(0);\n    local_tid_5394 = get_local_id(0);\n    group_sizze_5809 = get_local_size(0);\n    wave_sizze_5808 = LOCKSTEP_WIDTH;\n    group_id_5395 = get_group_id(0);\n    thread_active_5810 = 1;\n    \n    bool in_bounds_5396;\n    double x_5615;\n    \n    if (thread_active_5810) {\n        in_bounds_5396 = slt32(local_tid_5394, num_groups_5356);\n        if (in_bounds_5396) {\n            double x_5397 = *(__global double *) &mem_5636[global_tid_5393 * 8];\n            \n            x_5615 = x_5397;\n        } else {\n            x_5615 = 0.0;\n        }\n    }\n    \n    double final_result_5401;\n    \n    for (int32_t comb_iter_5811 = 0; comb_iter_5811 <\n         squot32(max_num_groups_5351 + max_num_groups_5351 - 1,\n                 max_num_groups_5351); comb_iter_5811++) {\n        int32_t combine_id_5400;\n        int32_t flat_comb_id_5812 = comb_iter_5811 * max_num_groups_5351 +\n                local_tid_5394;\n        \n        combine_id_5400 = flat_comb_id_5812;\n        if (slt32(combine_id_5400, max_num_groups_5351) && 1) {\n            *(__local double *) &mem_5639[combine_id_5400 * 8] = x_5615;\n        }\n    }\n    barrier(CLK_LOCAL_MEM_FENCE);\n    \n    int32_t offset_5814;\n    int32_t skip_waves_5813;\n    double x_4906;\n  ",
+            "  double x_4907;\n    int32_t my_index_5363;\n    int32_t other_index_5364;\n    \n    my_index_5363 = local_tid_5394;\n    offset_5814 = 0;\n    other_index_5364 = local_tid_5394 + offset_5814;\n    if (slt32(local_tid_5394, max_num_groups_5351)) {\n        x_4906 = *(__local double *) &mem_5639[(local_tid_5394 + offset_5814) *\n                                               8];\n    }\n    offset_5814 = 1;\n    other_index_5364 = local_tid_5394 + offset_5814;\n    while (slt32(offset_5814, wave_sizze_5808)) {\n        if (slt32(other_index_5364, max_num_groups_5351) && ((local_tid_5394 -\n                                                              squot32(local_tid_5394,\n                                                                      wave_sizze_5808) *\n                                                              wave_sizze_5808) &\n                                                             (2 * offset_5814 -\n                                                              1)) == 0) {\n            // read array element\n            {\n                x_4907 = *(volatile __local\n                           double *) &mem_5639[(local_tid_5394 + offset_5814) *\n                                               8];\n            }\n            \n            double res_4908;\n            \n            if (thread_active_5810) {\n                res_4908 = x_4906 + x_4907;\n            }\n            x_4906 = res_4908;\n            *(volatile __local double *) &mem_5639[local_tid_5394 * 8] = x_4906;\n        }\n        offset_5814 *= 2;\n        other_index_5364 = local_tid_5394 + offset_5814;\n    }\n    skip_waves_5813 = 1;\n    while (slt32(skip_waves_5813, squot32(max_num_groups_5351 +\n                                          wave_sizze_5808 - 1,\n                                          wave_sizze_5808))) {\n        barrier(CLK_LOCAL_MEM_FENCE);\n        offset_5814 = skip_waves_5813 * wave_sizze_5808;\n        other_index_5364 = local_tid_5394 + offset_5814;\n        if (slt32(other_index_5364, max_n",
+            "um_groups_5351) && ((local_tid_5394 -\n                                                              squot32(local_tid_5394,\n                                                                      wave_sizze_5808) *\n                                                              wave_sizze_5808) ==\n                                                             0 &&\n                                                             (squot32(local_tid_5394,\n                                                                      wave_sizze_5808) &\n                                                              (2 *\n                                                               skip_waves_5813 -\n                                                               1)) == 0)) {\n            // read array element\n            {\n                x_4907 = *(__local double *) &mem_5639[(local_tid_5394 +\n                                                        offset_5814) * 8];\n            }\n            \n            double res_4908;\n            \n            if (thread_active_5810) {\n                res_4908 = x_4906 + x_4907;\n            }\n            x_4906 = res_4908;\n            *(__local double *) &mem_5639[local_tid_5394 * 8] = x_4906;\n        }\n        skip_waves_5813 *= 2;\n    }\n    final_result_5401 = x_4906;\n    if (local_tid_5394 == 0) {\n        *(__global double *) &mem_5642[group_id_5395 * 8] = final_result_5401;\n    }\n}\n__kernel void reduce_kernel_5478(__local volatile int64_t *mem_aligned_0,\n                                 __local volatile int64_t *mem_aligned_1,\n                                 int32_t num_groups_5419, __global\n                                 unsigned char *mem_5651, __global\n                                 unsigned char *mem_5654, __global\n                                 unsigned char *mem_5663, __global\n                                 unsigned char *mem_5666)\n{\n    __local volatile char *restrict mem_5657 = mem_aligned_0;\n    __local volatile char *restrict mem_56",
+            "60 = mem_aligned_1;\n    int32_t wave_sizze_5829;\n    int32_t group_sizze_5830;\n    bool thread_active_5831;\n    int32_t global_tid_5478;\n    int32_t local_tid_5479;\n    int32_t group_id_5480;\n    \n    global_tid_5478 = get_global_id(0);\n    local_tid_5479 = get_local_id(0);\n    group_sizze_5830 = get_local_size(0);\n    wave_sizze_5829 = LOCKSTEP_WIDTH;\n    group_id_5480 = get_group_id(0);\n    thread_active_5831 = 1;\n    \n    bool in_bounds_5481;\n    double x_5617;\n    double x_5619;\n    \n    if (thread_active_5831) {\n        in_bounds_5481 = slt32(local_tid_5479, num_groups_5419);\n        if (in_bounds_5481) {\n            double x_5482 = *(__global double *) &mem_5651[global_tid_5478 * 8];\n            \n            x_5617 = x_5482;\n        } else {\n            x_5617 = 0.0;\n        }\n        if (in_bounds_5481) {\n            double x_5484 = *(__global double *) &mem_5654[global_tid_5478 * 8];\n            \n            x_5619 = x_5484;\n        } else {\n            x_5619 = 0.0;\n        }\n    }\n    \n    double final_result_5489;\n    double final_result_5490;\n    \n    for (int32_t comb_iter_5832 = 0; comb_iter_5832 <\n         squot32(max_num_groups_5414 + max_num_groups_5414 - 1,\n                 max_num_groups_5414); comb_iter_5832++) {\n        int32_t combine_id_5488;\n        int32_t flat_comb_id_5833 = comb_iter_5832 * max_num_groups_5414 +\n                local_tid_5479;\n        \n        combine_id_5488 = flat_comb_id_5833;\n        if (slt32(combine_id_5488, max_num_groups_5414) && 1) {\n            *(__local double *) &mem_5657[combine_id_5488 * 8] = x_5617;\n            *(__local double *) &mem_5660[combine_id_5488 * 8] = x_5619;\n        }\n    }\n    barrier(CLK_LOCAL_MEM_FENCE);\n    \n    int32_t offset_5835;\n    int32_t skip_waves_5834;\n    double x_4913;\n    double x_4914;\n    double x_4915;\n    double x_4916;\n    int32_t my_index_5427;\n    int32_t other_index_5428;\n    \n    my_index_5427 = local_tid_5479;\n    offset_5835 = 0;\n    other_index_5428 = local_tid_5479 +",
+            " offset_5835;\n    if (slt32(local_tid_5479, max_num_groups_5414)) {\n        x_4913 = *(__local double *) &mem_5657[(local_tid_5479 + offset_5835) *\n                                               8];\n        x_4914 = *(__local double *) &mem_5660[(local_tid_5479 + offset_5835) *\n                                               8];\n    }\n    offset_5835 = 1;\n    other_index_5428 = local_tid_5479 + offset_5835;\n    while (slt32(offset_5835, wave_sizze_5829)) {\n        if (slt32(other_index_5428, max_num_groups_5414) && ((local_tid_5479 -\n                                                              squot32(local_tid_5479,\n                                                                      wave_sizze_5829) *\n                                                              wave_sizze_5829) &\n                                                             (2 * offset_5835 -\n                                                              1)) == 0) {\n            // read array element\n            {\n                x_4915 = *(volatile __local\n                           double *) &mem_5657[(local_tid_5479 + offset_5835) *\n                                               8];\n                x_4916 = *(volatile __local\n                           double *) &mem_5660[(local_tid_5479 + offset_5835) *\n                                               8];\n            }\n            \n            double res_4917;\n            double res_4918;\n            \n            if (thread_active_5831) {\n                res_4917 = x_4913 + x_4915;\n                res_4918 = x_4914 + x_4916;\n            }\n            x_4913 = res_4917;\n            x_4914 = res_4918;\n            *(volatile __local double *) &mem_5657[local_tid_5479 * 8] = x_4913;\n            *(volatile __local double *) &mem_5660[local_tid_5479 * 8] = x_4914;\n        }\n        offset_5835 *= 2;\n        other_index_5428 = local_tid_5479 + offset_5835;\n    }\n    skip_waves_5834 = 1;\n    while (slt32(skip_waves_5834, squot32(max_num_groups_5414 +\n   ",
+            "                                       wave_sizze_5829 - 1,\n                                          wave_sizze_5829))) {\n        barrier(CLK_LOCAL_MEM_FENCE);\n        offset_5835 = skip_waves_5834 * wave_sizze_5829;\n        other_index_5428 = local_tid_5479 + offset_5835;\n        if (slt32(other_index_5428, max_num_groups_5414) && ((local_tid_5479 -\n                                                              squot32(local_tid_5479,\n                                                                      wave_sizze_5829) *\n                                                              wave_sizze_5829) ==\n                                                             0 &&\n                                                             (squot32(local_tid_5479,\n                                                                      wave_sizze_5829) &\n                                                              (2 *\n                                                               skip_waves_5834 -\n                                                               1)) == 0)) {\n            // read array element\n            {\n                x_4915 = *(__local double *) &mem_5657[(local_tid_5479 +\n                                                        offset_5835) * 8];\n                x_4916 = *(__local double *) &mem_5660[(local_tid_5479 +\n                                                        offset_5835) * 8];\n            }\n            \n            double res_4917;\n            double res_4918;\n            \n            if (thread_active_5831) {\n                res_4917 = x_4913 + x_4915;\n                res_4918 = x_4914 + x_4916;\n            }\n            x_4913 = res_4917;\n            x_4914 = res_4918;\n            *(__local double *) &mem_5657[local_tid_5479 * 8] = x_4913;\n            *(__local double *) &mem_5660[local_tid_5479 * 8] = x_4914;\n        }\n        skip_waves_5834 *= 2;\n    }\n    final_result_5489 = x_4913;\n    final_result_5490 = x_4914;\n    if (local_tid_5479 == ",
+            "0) {\n        *(__global double *) &mem_5663[group_id_5480 * 8] = final_result_5489;\n    }\n    if (local_tid_5479 == 0) {\n        *(__global double *) &mem_5666[group_id_5480 * 8] = final_result_5490;\n    }\n}\n__kernel void reduce_kernel_5543(__local volatile int64_t *mem_aligned_0,\n                                 int32_t num_groups_5506, __global\n                                 unsigned char *mem_5636, __global\n                                 unsigned char *mem_5642)\n{\n    __local volatile char *restrict mem_5639 = mem_aligned_0;\n    int32_t wave_sizze_5848;\n    int32_t group_sizze_5849;\n    bool thread_active_5850;\n    int32_t global_tid_5543;\n    int32_t local_tid_5544;\n    int32_t group_id_5545;\n    \n    global_tid_5543 = get_global_id(0);\n    local_tid_5544 = get_local_id(0);\n    group_sizze_5849 = get_local_size(0);\n    wave_sizze_5848 = LOCKSTEP_WIDTH;\n    group_id_5545 = get_group_id(0);\n    thread_active_5850 = 1;\n    \n    bool in_bounds_5546;\n    double x_5615;\n    \n    if (thread_active_5850) {\n        in_bounds_5546 = slt32(local_tid_5544, num_groups_5506);\n        if (in_bounds_5546) {\n            double x_5547 = *(__global double *) &mem_5636[global_tid_5543 * 8];\n            \n            x_5615 = x_5547;\n        } else {\n            x_5615 = 0.0;\n        }\n    }\n    \n    double final_result_5551;\n    \n    for (int32_t comb_iter_5851 = 0; comb_iter_5851 <\n         squot32(max_num_groups_5501 + max_num_groups_5501 - 1,\n                 max_num_groups_5501); comb_iter_5851++) {\n        int32_t combine_id_5550;\n        int32_t flat_comb_id_5852 = comb_iter_5851 * max_num_groups_5501 +\n                local_tid_5544;\n        \n        combine_id_5550 = flat_comb_id_5852;\n        if (slt32(combine_id_5550, max_num_groups_5501) && 1) {\n            *(__local double *) &mem_5639[combine_id_5550 * 8] = x_5615;\n        }\n    }\n    barrier(CLK_LOCAL_MEM_FENCE);\n    \n    int32_t offset_5854;\n    int32_t skip_waves_5853;\n    double x_4931;\n    double x_4932;\n    in",
+            "t32_t my_index_5513;\n    int32_t other_index_5514;\n    \n    my_index_5513 = local_tid_5544;\n    offset_5854 = 0;\n    other_index_5514 = local_tid_5544 + offset_5854;\n    if (slt32(local_tid_5544, max_num_groups_5501)) {\n        x_4931 = *(__local double *) &mem_5639[(local_tid_5544 + offset_5854) *\n                                               8];\n    }\n    offset_5854 = 1;\n    other_index_5514 = local_tid_5544 + offset_5854;\n    while (slt32(offset_5854, wave_sizze_5848)) {\n        if (slt32(other_index_5514, max_num_groups_5501) && ((local_tid_5544 -\n                                                              squot32(local_tid_5544,\n                                                                      wave_sizze_5848) *\n                                                              wave_sizze_5848) &\n                                                             (2 * offset_5854 -\n                                                              1)) == 0) {\n            // read array element\n            {\n                x_4932 = *(volatile __local\n                           double *) &mem_5639[(local_tid_5544 + offset_5854) *\n                                               8];\n            }\n            \n            double res_4933;\n            \n            if (thread_active_5850) {\n                res_4933 = x_4931 + x_4932;\n            }\n            x_4931 = res_4933;\n            *(volatile __local double *) &mem_5639[local_tid_5544 * 8] = x_4931;\n        }\n        offset_5854 *= 2;\n        other_index_5514 = local_tid_5544 + offset_5854;\n    }\n    skip_waves_5853 = 1;\n    while (slt32(skip_waves_5853, squot32(max_num_groups_5501 +\n                                          wave_sizze_5848 - 1,\n                                          wave_sizze_5848))) {\n        barrier(CLK_LOCAL_MEM_FENCE);\n        offset_5854 = skip_waves_5853 * wave_sizze_5848;\n        other_index_5514 = local_tid_5544 + offset_5854;\n        if (slt32(other_index_5514, max_num_groups_5501) && ((lo",
+            "cal_tid_5544 -\n                                                              squot32(local_tid_5544,\n                                                                      wave_sizze_5848) *\n                                                              wave_sizze_5848) ==\n                                                             0 &&\n                                                             (squot32(local_tid_5544,\n                                                                      wave_sizze_5848) &\n                                                              (2 *\n                                                               skip_waves_5853 -\n                                                               1)) == 0)) {\n            // read array element\n            {\n                x_4932 = *(__local double *) &mem_5639[(local_tid_5544 +\n                                                        offset_5854) * 8];\n            }\n            \n            double res_4933;\n            \n            if (thread_active_5850) {\n                res_4933 = x_4931 + x_4932;\n            }\n            x_4931 = res_4933;\n            *(__local double *) &mem_5639[local_tid_5544 * 8] = x_4931;\n        }\n        skip_waves_5853 *= 2;\n    }\n    final_result_5551 = x_4931;\n    if (local_tid_5544 == 0) {\n        *(__global double *) &mem_5642[group_id_5545 * 8] = final_result_5551;\n    }\n}\n__kernel void reduce_kernel_5606(__local volatile int64_t *mem_aligned_0,\n                                 int32_t num_groups_5567, __global\n                                 unsigned char *mem_5648, __global\n                                 unsigned char *mem_5654)\n{\n    __local volatile char *restrict mem_5651 = mem_aligned_0;\n    int32_t wave_sizze_5865;\n    int32_t group_sizze_5866;\n    bool thread_active_5867;\n    int32_t global_tid_5606;\n    int32_t local_tid_5607;\n    int32_t group_id_5608;\n    \n    global_tid_5606 = get_global_id(0);\n    local_tid_5607 = get_local_id(0);\n    group_sizze_58",
+            "66 = get_local_size(0);\n    wave_sizze_5865 = LOCKSTEP_WIDTH;\n    group_id_5608 = get_group_id(0);\n    thread_active_5867 = 1;\n    \n    bool in_bounds_5609;\n    double x_5617;\n    \n    if (thread_active_5867) {\n        in_bounds_5609 = slt32(local_tid_5607, num_groups_5567);\n        if (in_bounds_5609) {\n            double x_5610 = *(__global double *) &mem_5648[global_tid_5606 * 8];\n            \n            x_5617 = x_5610;\n        } else {\n            x_5617 = 0.0;\n        }\n    }\n    \n    double final_result_5614;\n    \n    for (int32_t comb_iter_5868 = 0; comb_iter_5868 <\n         squot32(max_num_groups_5562 + max_num_groups_5562 - 1,\n                 max_num_groups_5562); comb_iter_5868++) {\n        int32_t combine_id_5613;\n        int32_t flat_comb_id_5869 = comb_iter_5868 * max_num_groups_5562 +\n                local_tid_5607;\n        \n        combine_id_5613 = flat_comb_id_5869;\n        if (slt32(combine_id_5613, max_num_groups_5562) && 1) {\n            *(__local double *) &mem_5651[combine_id_5613 * 8] = x_5617;\n        }\n    }\n    barrier(CLK_LOCAL_MEM_FENCE);\n    \n    int32_t offset_5871;\n    int32_t skip_waves_5870;\n    double x_4937;\n    double x_4938;\n    int32_t my_index_5574;\n    int32_t other_index_5575;\n    \n    my_index_5574 = local_tid_5607;\n    offset_5871 = 0;\n    other_index_5575 = local_tid_5607 + offset_5871;\n    if (slt32(local_tid_5607, max_num_groups_5562)) {\n        x_4937 = *(__local double *) &mem_5651[(local_tid_5607 + offset_5871) *\n                                               8];\n    }\n    offset_5871 = 1;\n    other_index_5575 = local_tid_5607 + offset_5871;\n    while (slt32(offset_5871, wave_sizze_5865)) {\n        if (slt32(other_index_5575, max_num_groups_5562) && ((local_tid_5607 -\n                                                              squot32(local_tid_5607,\n                                                                      wave_sizze_5865) *\n                                                              wave_sizze_586",
+            "5) &\n                                                             (2 * offset_5871 -\n                                                              1)) == 0) {\n            // read array element\n            {\n                x_4938 = *(volatile __local\n                           double *) &mem_5651[(local_tid_5607 + offset_5871) *\n                                               8];\n            }\n            \n            double res_4939;\n            \n            if (thread_active_5867) {\n                res_4939 = x_4937 + x_4938;\n            }\n            x_4937 = res_4939;\n            *(volatile __local double *) &mem_5651[local_tid_5607 * 8] = x_4937;\n        }\n        offset_5871 *= 2;\n        other_index_5575 = local_tid_5607 + offset_5871;\n    }\n    skip_waves_5870 = 1;\n    while (slt32(skip_waves_5870, squot32(max_num_groups_5562 +\n                                          wave_sizze_5865 - 1,\n                                          wave_sizze_5865))) {\n        barrier(CLK_LOCAL_MEM_FENCE);\n        offset_5871 = skip_waves_5870 * wave_sizze_5865;\n        other_index_5575 = local_tid_5607 + offset_5871;\n        if (slt32(other_index_5575, max_num_groups_5562) && ((local_tid_5607 -\n                                                              squot32(local_tid_5607,\n                                                                      wave_sizze_5865) *\n                                                              wave_sizze_5865) ==\n                                                             0 &&\n                                                             (squot32(local_tid_5607,\n                                                                      wave_sizze_5865) &\n                                                              (2 *\n                                                               skip_waves_5870 -\n                                                               1)) == 0)) {\n            // read array element\n            {\n                x_4938 = *",
+            "(__local double *) &mem_5651[(local_tid_5607 +\n                                                        offset_5871) * 8];\n            }\n            \n            double res_4939;\n            \n            if (thread_active_5867) {\n                res_4939 = x_4937 + x_4938;\n            }\n            x_4937 = res_4939;\n            *(__local double *) &mem_5651[local_tid_5607 * 8] = x_4937;\n        }\n        skip_waves_5870 *= 2;\n    }\n    final_result_5614 = x_4937;\n    if (local_tid_5607 == 0) {\n        *(__global double *) &mem_5654[group_id_5608 * 8] = final_result_5614;\n    }\n}\n",
             NULL};
 struct memblock_device {
     int *references;
@@ -1030,19 +1045,32 @@ struct memblock {
     int64_t size;
     const char *desc;
 } ;
-static const char *size_names[] = {"group_size_4951", "max_num_groups_4953",
-                                   "group_size_5012", "max_num_groups_5014",
-                                   "group_size_5084", "max_num_groups_5086",
-                                   "group_size_5243", "max_num_groups_5245"};
+static const char *size_names[] = {"group_size_4953", "max_num_groups_4955",
+                                   "group_size_5014", "max_num_groups_5016",
+                                   "group_size_5075", "max_num_groups_5077",
+                                   "group_size_5136", "max_num_groups_5138",
+                                   "group_size_5199", "max_num_groups_5201",
+                                   "group_size_5262", "max_num_groups_5264",
+                                   "group_size_5348", "max_num_groups_5350",
+                                   "group_size_5411", "max_num_groups_5413",
+                                   "group_size_5498", "max_num_groups_5500",
+                                   "group_size_5559", "max_num_groups_5561"};
 static const char *size_classes[] = {"group_size", "num_groups", "group_size",
+                                     "num_groups", "group_size", "num_groups",
+                                     "group_size", "num_groups", "group_size",
+                                     "num_groups", "group_size", "num_groups",
+                                     "group_size", "num_groups", "group_size",
                                      "num_groups", "group_size", "num_groups",
                                      "group_size", "num_groups"};
 static const char *size_entry_points[] = {"sum", "sum", "mean", "mean",
-                                          "variance", "variance", "stddev",
-                                          "stddev"};
+                                          "variance", "variance", "variance",
+                                          "variance", "skew", "skew", "skew",
+                                          "skew", "kurtosis", "kurtosis",
+                                          "kurtosis", "kurtosis", "stddev",
+                                          "stddev", "stddev", "stddev"};
 int futhark_get_num_sizes(void)
 {
-    return 8;
+    return 20;
 }
 const char *futhark_get_size_name(int i)
 {
@@ -1057,18 +1085,30 @@ const char *futhark_get_size_entry(int i)
     return size_entry_points[i];
 }
 struct sizes {
-    size_t group_sizze_4951;
-    size_t max_num_groups_4953;
-    size_t group_sizze_5012;
-    size_t max_num_groups_5014;
-    size_t group_sizze_5084;
-    size_t max_num_groups_5086;
-    size_t group_sizze_5243;
-    size_t max_num_groups_5245;
+    size_t group_sizze_4953;
+    size_t max_num_groups_4955;
+    size_t group_sizze_5014;
+    size_t max_num_groups_5016;
+    size_t group_sizze_5075;
+    size_t max_num_groups_5077;
+    size_t group_sizze_5136;
+    size_t max_num_groups_5138;
+    size_t group_sizze_5199;
+    size_t max_num_groups_5201;
+    size_t group_sizze_5262;
+    size_t max_num_groups_5264;
+    size_t group_sizze_5348;
+    size_t max_num_groups_5350;
+    size_t group_sizze_5411;
+    size_t max_num_groups_5413;
+    size_t group_sizze_5498;
+    size_t max_num_groups_5500;
+    size_t group_sizze_5559;
+    size_t max_num_groups_5561;
 } ;
 struct futhark_context_config {
     struct opencl_config opencl;
-    size_t sizes[8];
+    size_t sizes[20];
 } ;
 struct futhark_context_config *futhark_context_config_new(void)
 {
@@ -1085,7 +1125,19 @@ struct futhark_context_config *futhark_context_config_new(void)
     cfg->sizes[5] = 0;
     cfg->sizes[6] = 0;
     cfg->sizes[7] = 0;
-    opencl_config_init(&cfg->opencl, 8, size_names, cfg->sizes, size_classes,
+    cfg->sizes[8] = 0;
+    cfg->sizes[9] = 0;
+    cfg->sizes[10] = 0;
+    cfg->sizes[11] = 0;
+    cfg->sizes[12] = 0;
+    cfg->sizes[13] = 0;
+    cfg->sizes[14] = 0;
+    cfg->sizes[15] = 0;
+    cfg->sizes[16] = 0;
+    cfg->sizes[17] = 0;
+    cfg->sizes[18] = 0;
+    cfg->sizes[19] = 0;
+    opencl_config_init(&cfg->opencl, 20, size_names, cfg->sizes, size_classes,
                        size_entry_points);
     cfg->opencl.transpose_block_dim = 16;
     return cfg;
@@ -1149,7 +1201,7 @@ void futhark_context_config_set_default_threshold(struct futhark_context_config 
 int futhark_context_config_set_size(struct futhark_context_config *cfg, const
                                     char *size_name, size_t size_value)
 {
-    for (int i = 0; i < 8; i++) {
+    for (int i = 0; i < 20; i++) {
         if (strcmp(size_name, size_names[i]) == 0) {
             cfg->sizes[i] = size_value;
             return 0;
@@ -1171,42 +1223,66 @@ struct futhark_context {
     int64_t cur_mem_usage_default;
     int total_runs;
     long total_runtime;
-    cl_kernel chunked_reduce_kernel_4968;
-    int chunked_reduce_kernel_4968_total_runtime;
-    int chunked_reduce_kernel_4968_runs;
-    cl_kernel chunked_reduce_kernel_5029;
-    int chunked_reduce_kernel_5029_total_runtime;
-    int chunked_reduce_kernel_5029_runs;
-    cl_kernel chunked_reduce_kernel_5103;
-    int chunked_reduce_kernel_5103_total_runtime;
-    int chunked_reduce_kernel_5103_runs;
-    cl_kernel chunked_reduce_kernel_5262;
-    int chunked_reduce_kernel_5262_total_runtime;
-    int chunked_reduce_kernel_5262_runs;
-    cl_kernel fut_kernel_map_transpose_f64;
-    int fut_kernel_map_transpose_f64_total_runtime;
-    int fut_kernel_map_transpose_f64_runs;
-    cl_kernel fut_kernel_map_transpose_lowheight_f64;
-    int fut_kernel_map_transpose_lowheight_f64_total_runtime;
-    int fut_kernel_map_transpose_lowheight_f64_runs;
-    cl_kernel fut_kernel_map_transpose_lowwidth_f64;
-    int fut_kernel_map_transpose_lowwidth_f64_total_runtime;
-    int fut_kernel_map_transpose_lowwidth_f64_runs;
-    cl_kernel fut_kernel_map_transpose_small_f64;
-    int fut_kernel_map_transpose_small_f64_total_runtime;
-    int fut_kernel_map_transpose_small_f64_runs;
-    cl_kernel reduce_kernel_4996;
-    int reduce_kernel_4996_total_runtime;
-    int reduce_kernel_4996_runs;
-    cl_kernel reduce_kernel_5057;
-    int reduce_kernel_5057_total_runtime;
-    int reduce_kernel_5057_runs;
-    cl_kernel reduce_kernel_5208;
-    int reduce_kernel_5208_total_runtime;
-    int reduce_kernel_5208_runs;
-    cl_kernel reduce_kernel_5367;
-    int reduce_kernel_5367_total_runtime;
-    int reduce_kernel_5367_runs;
+    cl_kernel chunked_reduce_kernel_4970;
+    int chunked_reduce_kernel_4970_total_runtime;
+    int chunked_reduce_kernel_4970_runs;
+    cl_kernel chunked_reduce_kernel_5031;
+    int chunked_reduce_kernel_5031_total_runtime;
+    int chunked_reduce_kernel_5031_runs;
+    cl_kernel chunked_reduce_kernel_5092;
+    int chunked_reduce_kernel_5092_total_runtime;
+    int chunked_reduce_kernel_5092_runs;
+    cl_kernel chunked_reduce_kernel_5153;
+    int chunked_reduce_kernel_5153_total_runtime;
+    int chunked_reduce_kernel_5153_runs;
+    cl_kernel chunked_reduce_kernel_5216;
+    int chunked_reduce_kernel_5216_total_runtime;
+    int chunked_reduce_kernel_5216_runs;
+    cl_kernel chunked_reduce_kernel_5280;
+    int chunked_reduce_kernel_5280_total_runtime;
+    int chunked_reduce_kernel_5280_runs;
+    cl_kernel chunked_reduce_kernel_5365;
+    int chunked_reduce_kernel_5365_total_runtime;
+    int chunked_reduce_kernel_5365_runs;
+    cl_kernel chunked_reduce_kernel_5429;
+    int chunked_reduce_kernel_5429_total_runtime;
+    int chunked_reduce_kernel_5429_runs;
+    cl_kernel chunked_reduce_kernel_5515;
+    int chunked_reduce_kernel_5515_total_runtime;
+    int chunked_reduce_kernel_5515_runs;
+    cl_kernel chunked_reduce_kernel_5576;
+    int chunked_reduce_kernel_5576_total_runtime;
+    int chunked_reduce_kernel_5576_runs;
+    cl_kernel reduce_kernel_4998;
+    int reduce_kernel_4998_total_runtime;
+    int reduce_kernel_4998_runs;
+    cl_kernel reduce_kernel_5059;
+    int reduce_kernel_5059_total_runtime;
+    int reduce_kernel_5059_runs;
+    cl_kernel reduce_kernel_5120;
+    int reduce_kernel_5120_total_runtime;
+    int reduce_kernel_5120_runs;
+    cl_kernel reduce_kernel_5183;
+    int reduce_kernel_5183_total_runtime;
+    int reduce_kernel_5183_runs;
+    cl_kernel reduce_kernel_5244;
+    int reduce_kernel_5244_total_runtime;
+    int reduce_kernel_5244_runs;
+    cl_kernel reduce_kernel_5328;
+    int reduce_kernel_5328_total_runtime;
+    int reduce_kernel_5328_runs;
+    cl_kernel reduce_kernel_5393;
+    int reduce_kernel_5393_total_runtime;
+    int reduce_kernel_5393_runs;
+    cl_kernel reduce_kernel_5478;
+    int reduce_kernel_5478_total_runtime;
+    int reduce_kernel_5478_runs;
+    cl_kernel reduce_kernel_5543;
+    int reduce_kernel_5543_total_runtime;
+    int reduce_kernel_5543_runs;
+    cl_kernel reduce_kernel_5606;
+    int reduce_kernel_5606_total_runtime;
+    int reduce_kernel_5606_runs;
     struct opencl_context opencl;
     struct sizes sizes;
 } ;
@@ -1271,30 +1347,46 @@ static void init_context_early(struct futhark_context_config *cfg,
     ctx->cur_mem_usage_default = 0;
     ctx->total_runs = 0;
     ctx->total_runtime = 0;
-    ctx->chunked_reduce_kernel_4968_total_runtime = 0;
-    ctx->chunked_reduce_kernel_4968_runs = 0;
-    ctx->chunked_reduce_kernel_5029_total_runtime = 0;
-    ctx->chunked_reduce_kernel_5029_runs = 0;
-    ctx->chunked_reduce_kernel_5103_total_runtime = 0;
-    ctx->chunked_reduce_kernel_5103_runs = 0;
-    ctx->chunked_reduce_kernel_5262_total_runtime = 0;
-    ctx->chunked_reduce_kernel_5262_runs = 0;
-    ctx->fut_kernel_map_transpose_f64_total_runtime = 0;
-    ctx->fut_kernel_map_transpose_f64_runs = 0;
-    ctx->fut_kernel_map_transpose_lowheight_f64_total_runtime = 0;
-    ctx->fut_kernel_map_transpose_lowheight_f64_runs = 0;
-    ctx->fut_kernel_map_transpose_lowwidth_f64_total_runtime = 0;
-    ctx->fut_kernel_map_transpose_lowwidth_f64_runs = 0;
-    ctx->fut_kernel_map_transpose_small_f64_total_runtime = 0;
-    ctx->fut_kernel_map_transpose_small_f64_runs = 0;
-    ctx->reduce_kernel_4996_total_runtime = 0;
-    ctx->reduce_kernel_4996_runs = 0;
-    ctx->reduce_kernel_5057_total_runtime = 0;
-    ctx->reduce_kernel_5057_runs = 0;
-    ctx->reduce_kernel_5208_total_runtime = 0;
-    ctx->reduce_kernel_5208_runs = 0;
-    ctx->reduce_kernel_5367_total_runtime = 0;
-    ctx->reduce_kernel_5367_runs = 0;
+    ctx->chunked_reduce_kernel_4970_total_runtime = 0;
+    ctx->chunked_reduce_kernel_4970_runs = 0;
+    ctx->chunked_reduce_kernel_5031_total_runtime = 0;
+    ctx->chunked_reduce_kernel_5031_runs = 0;
+    ctx->chunked_reduce_kernel_5092_total_runtime = 0;
+    ctx->chunked_reduce_kernel_5092_runs = 0;
+    ctx->chunked_reduce_kernel_5153_total_runtime = 0;
+    ctx->chunked_reduce_kernel_5153_runs = 0;
+    ctx->chunked_reduce_kernel_5216_total_runtime = 0;
+    ctx->chunked_reduce_kernel_5216_runs = 0;
+    ctx->chunked_reduce_kernel_5280_total_runtime = 0;
+    ctx->chunked_reduce_kernel_5280_runs = 0;
+    ctx->chunked_reduce_kernel_5365_total_runtime = 0;
+    ctx->chunked_reduce_kernel_5365_runs = 0;
+    ctx->chunked_reduce_kernel_5429_total_runtime = 0;
+    ctx->chunked_reduce_kernel_5429_runs = 0;
+    ctx->chunked_reduce_kernel_5515_total_runtime = 0;
+    ctx->chunked_reduce_kernel_5515_runs = 0;
+    ctx->chunked_reduce_kernel_5576_total_runtime = 0;
+    ctx->chunked_reduce_kernel_5576_runs = 0;
+    ctx->reduce_kernel_4998_total_runtime = 0;
+    ctx->reduce_kernel_4998_runs = 0;
+    ctx->reduce_kernel_5059_total_runtime = 0;
+    ctx->reduce_kernel_5059_runs = 0;
+    ctx->reduce_kernel_5120_total_runtime = 0;
+    ctx->reduce_kernel_5120_runs = 0;
+    ctx->reduce_kernel_5183_total_runtime = 0;
+    ctx->reduce_kernel_5183_runs = 0;
+    ctx->reduce_kernel_5244_total_runtime = 0;
+    ctx->reduce_kernel_5244_runs = 0;
+    ctx->reduce_kernel_5328_total_runtime = 0;
+    ctx->reduce_kernel_5328_runs = 0;
+    ctx->reduce_kernel_5393_total_runtime = 0;
+    ctx->reduce_kernel_5393_runs = 0;
+    ctx->reduce_kernel_5478_total_runtime = 0;
+    ctx->reduce_kernel_5478_runs = 0;
+    ctx->reduce_kernel_5543_total_runtime = 0;
+    ctx->reduce_kernel_5543_runs = 0;
+    ctx->reduce_kernel_5606_total_runtime = 0;
+    ctx->reduce_kernel_5606_runs = 0;
 }
 static void init_context_late(struct futhark_context_config *cfg,
                               struct futhark_context *ctx, cl_program prog)
@@ -1302,113 +1394,185 @@ static void init_context_late(struct futhark_context_config *cfg,
     cl_int error;
     
     {
-        ctx->chunked_reduce_kernel_4968 = clCreateKernel(prog,
-                                                         "chunked_reduce_kernel_4968",
+        ctx->chunked_reduce_kernel_4970 = clCreateKernel(prog,
+                                                         "chunked_reduce_kernel_4970",
                                                          &error);
         assert(error == 0);
         if (ctx->debugging)
             fprintf(stderr, "Created kernel %s.\n",
-                    "chunked_reduce_kernel_4968");
+                    "chunked_reduce_kernel_4970");
     }
     {
-        ctx->chunked_reduce_kernel_5029 = clCreateKernel(prog,
-                                                         "chunked_reduce_kernel_5029",
+        ctx->chunked_reduce_kernel_5031 = clCreateKernel(prog,
+                                                         "chunked_reduce_kernel_5031",
                                                          &error);
         assert(error == 0);
         if (ctx->debugging)
             fprintf(stderr, "Created kernel %s.\n",
-                    "chunked_reduce_kernel_5029");
+                    "chunked_reduce_kernel_5031");
     }
     {
-        ctx->chunked_reduce_kernel_5103 = clCreateKernel(prog,
-                                                         "chunked_reduce_kernel_5103",
+        ctx->chunked_reduce_kernel_5092 = clCreateKernel(prog,
+                                                         "chunked_reduce_kernel_5092",
                                                          &error);
         assert(error == 0);
         if (ctx->debugging)
             fprintf(stderr, "Created kernel %s.\n",
-                    "chunked_reduce_kernel_5103");
+                    "chunked_reduce_kernel_5092");
     }
     {
-        ctx->chunked_reduce_kernel_5262 = clCreateKernel(prog,
-                                                         "chunked_reduce_kernel_5262",
+        ctx->chunked_reduce_kernel_5153 = clCreateKernel(prog,
+                                                         "chunked_reduce_kernel_5153",
                                                          &error);
         assert(error == 0);
         if (ctx->debugging)
             fprintf(stderr, "Created kernel %s.\n",
-                    "chunked_reduce_kernel_5262");
+                    "chunked_reduce_kernel_5153");
     }
     {
-        ctx->fut_kernel_map_transpose_f64 = clCreateKernel(prog,
-                                                           "fut_kernel_map_transpose_f64",
-                                                           &error);
+        ctx->chunked_reduce_kernel_5216 = clCreateKernel(prog,
+                                                         "chunked_reduce_kernel_5216",
+                                                         &error);
         assert(error == 0);
         if (ctx->debugging)
             fprintf(stderr, "Created kernel %s.\n",
-                    "fut_kernel_map_transpose_f64");
+                    "chunked_reduce_kernel_5216");
     }
     {
-        ctx->fut_kernel_map_transpose_lowheight_f64 = clCreateKernel(prog,
-                                                                     "fut_kernel_map_transpose_lowheight_f64",
-                                                                     &error);
+        ctx->chunked_reduce_kernel_5280 = clCreateKernel(prog,
+                                                         "chunked_reduce_kernel_5280",
+                                                         &error);
         assert(error == 0);
         if (ctx->debugging)
             fprintf(stderr, "Created kernel %s.\n",
-                    "fut_kernel_map_transpose_lowheight_f64");
+                    "chunked_reduce_kernel_5280");
     }
     {
-        ctx->fut_kernel_map_transpose_lowwidth_f64 = clCreateKernel(prog,
-                                                                    "fut_kernel_map_transpose_lowwidth_f64",
-                                                                    &error);
+        ctx->chunked_reduce_kernel_5365 = clCreateKernel(prog,
+                                                         "chunked_reduce_kernel_5365",
+                                                         &error);
         assert(error == 0);
         if (ctx->debugging)
             fprintf(stderr, "Created kernel %s.\n",
-                    "fut_kernel_map_transpose_lowwidth_f64");
+                    "chunked_reduce_kernel_5365");
     }
     {
-        ctx->fut_kernel_map_transpose_small_f64 = clCreateKernel(prog,
-                                                                 "fut_kernel_map_transpose_small_f64",
-                                                                 &error);
+        ctx->chunked_reduce_kernel_5429 = clCreateKernel(prog,
+                                                         "chunked_reduce_kernel_5429",
+                                                         &error);
         assert(error == 0);
         if (ctx->debugging)
             fprintf(stderr, "Created kernel %s.\n",
-                    "fut_kernel_map_transpose_small_f64");
+                    "chunked_reduce_kernel_5429");
     }
     {
-        ctx->reduce_kernel_4996 = clCreateKernel(prog, "reduce_kernel_4996",
+        ctx->chunked_reduce_kernel_5515 = clCreateKernel(prog,
+                                                         "chunked_reduce_kernel_5515",
+                                                         &error);
+        assert(error == 0);
+        if (ctx->debugging)
+            fprintf(stderr, "Created kernel %s.\n",
+                    "chunked_reduce_kernel_5515");
+    }
+    {
+        ctx->chunked_reduce_kernel_5576 = clCreateKernel(prog,
+                                                         "chunked_reduce_kernel_5576",
+                                                         &error);
+        assert(error == 0);
+        if (ctx->debugging)
+            fprintf(stderr, "Created kernel %s.\n",
+                    "chunked_reduce_kernel_5576");
+    }
+    {
+        ctx->reduce_kernel_4998 = clCreateKernel(prog, "reduce_kernel_4998",
                                                  &error);
         assert(error == 0);
         if (ctx->debugging)
-            fprintf(stderr, "Created kernel %s.\n", "reduce_kernel_4996");
+            fprintf(stderr, "Created kernel %s.\n", "reduce_kernel_4998");
     }
     {
-        ctx->reduce_kernel_5057 = clCreateKernel(prog, "reduce_kernel_5057",
+        ctx->reduce_kernel_5059 = clCreateKernel(prog, "reduce_kernel_5059",
                                                  &error);
         assert(error == 0);
         if (ctx->debugging)
-            fprintf(stderr, "Created kernel %s.\n", "reduce_kernel_5057");
+            fprintf(stderr, "Created kernel %s.\n", "reduce_kernel_5059");
     }
     {
-        ctx->reduce_kernel_5208 = clCreateKernel(prog, "reduce_kernel_5208",
+        ctx->reduce_kernel_5120 = clCreateKernel(prog, "reduce_kernel_5120",
                                                  &error);
         assert(error == 0);
         if (ctx->debugging)
-            fprintf(stderr, "Created kernel %s.\n", "reduce_kernel_5208");
+            fprintf(stderr, "Created kernel %s.\n", "reduce_kernel_5120");
     }
     {
-        ctx->reduce_kernel_5367 = clCreateKernel(prog, "reduce_kernel_5367",
+        ctx->reduce_kernel_5183 = clCreateKernel(prog, "reduce_kernel_5183",
                                                  &error);
         assert(error == 0);
         if (ctx->debugging)
-            fprintf(stderr, "Created kernel %s.\n", "reduce_kernel_5367");
+            fprintf(stderr, "Created kernel %s.\n", "reduce_kernel_5183");
     }
-    ctx->sizes.group_sizze_4951 = cfg->sizes[0];
-    ctx->sizes.max_num_groups_4953 = cfg->sizes[1];
-    ctx->sizes.group_sizze_5012 = cfg->sizes[2];
-    ctx->sizes.max_num_groups_5014 = cfg->sizes[3];
-    ctx->sizes.group_sizze_5084 = cfg->sizes[4];
-    ctx->sizes.max_num_groups_5086 = cfg->sizes[5];
-    ctx->sizes.group_sizze_5243 = cfg->sizes[6];
-    ctx->sizes.max_num_groups_5245 = cfg->sizes[7];
+    {
+        ctx->reduce_kernel_5244 = clCreateKernel(prog, "reduce_kernel_5244",
+                                                 &error);
+        assert(error == 0);
+        if (ctx->debugging)
+            fprintf(stderr, "Created kernel %s.\n", "reduce_kernel_5244");
+    }
+    {
+        ctx->reduce_kernel_5328 = clCreateKernel(prog, "reduce_kernel_5328",
+                                                 &error);
+        assert(error == 0);
+        if (ctx->debugging)
+            fprintf(stderr, "Created kernel %s.\n", "reduce_kernel_5328");
+    }
+    {
+        ctx->reduce_kernel_5393 = clCreateKernel(prog, "reduce_kernel_5393",
+                                                 &error);
+        assert(error == 0);
+        if (ctx->debugging)
+            fprintf(stderr, "Created kernel %s.\n", "reduce_kernel_5393");
+    }
+    {
+        ctx->reduce_kernel_5478 = clCreateKernel(prog, "reduce_kernel_5478",
+                                                 &error);
+        assert(error == 0);
+        if (ctx->debugging)
+            fprintf(stderr, "Created kernel %s.\n", "reduce_kernel_5478");
+    }
+    {
+        ctx->reduce_kernel_5543 = clCreateKernel(prog, "reduce_kernel_5543",
+                                                 &error);
+        assert(error == 0);
+        if (ctx->debugging)
+            fprintf(stderr, "Created kernel %s.\n", "reduce_kernel_5543");
+    }
+    {
+        ctx->reduce_kernel_5606 = clCreateKernel(prog, "reduce_kernel_5606",
+                                                 &error);
+        assert(error == 0);
+        if (ctx->debugging)
+            fprintf(stderr, "Created kernel %s.\n", "reduce_kernel_5606");
+    }
+    ctx->sizes.group_sizze_4953 = cfg->sizes[0];
+    ctx->sizes.max_num_groups_4955 = cfg->sizes[1];
+    ctx->sizes.group_sizze_5014 = cfg->sizes[2];
+    ctx->sizes.max_num_groups_5016 = cfg->sizes[3];
+    ctx->sizes.group_sizze_5075 = cfg->sizes[4];
+    ctx->sizes.max_num_groups_5077 = cfg->sizes[5];
+    ctx->sizes.group_sizze_5136 = cfg->sizes[6];
+    ctx->sizes.max_num_groups_5138 = cfg->sizes[7];
+    ctx->sizes.group_sizze_5199 = cfg->sizes[8];
+    ctx->sizes.max_num_groups_5201 = cfg->sizes[9];
+    ctx->sizes.group_sizze_5262 = cfg->sizes[10];
+    ctx->sizes.max_num_groups_5264 = cfg->sizes[11];
+    ctx->sizes.group_sizze_5348 = cfg->sizes[12];
+    ctx->sizes.max_num_groups_5350 = cfg->sizes[13];
+    ctx->sizes.group_sizze_5411 = cfg->sizes[14];
+    ctx->sizes.max_num_groups_5413 = cfg->sizes[15];
+    ctx->sizes.group_sizze_5498 = cfg->sizes[16];
+    ctx->sizes.max_num_groups_5500 = cfg->sizes[17];
+    ctx->sizes.group_sizze_5559 = cfg->sizes[18];
+    ctx->sizes.max_num_groups_5561 = cfg->sizes[19];
 }
 struct futhark_context *futhark_context_new(struct futhark_context_config *cfg)
 {
@@ -1655,146 +1819,215 @@ void futhark_debugging_report(struct futhark_context *ctx)
     }
     if (ctx->debugging) {
         fprintf(stderr,
-                "Kernel chunked_reduce_kernel_4968             executed %6d times, with average runtime: %6ldus\tand total runtime: %6ldus\n",
-                ctx->chunked_reduce_kernel_4968_runs,
-                (long) ctx->chunked_reduce_kernel_4968_total_runtime /
-                (ctx->chunked_reduce_kernel_4968_runs !=
-                 0 ? ctx->chunked_reduce_kernel_4968_runs : 1),
-                (long) ctx->chunked_reduce_kernel_4968_total_runtime);
-        ctx->total_runtime += ctx->chunked_reduce_kernel_4968_total_runtime;
-        ctx->total_runs += ctx->chunked_reduce_kernel_4968_runs;
+                "Kernel chunked_reduce_kernel_4970 executed %6d times, with average runtime: %6ldus\tand total runtime: %6ldus\n",
+                ctx->chunked_reduce_kernel_4970_runs,
+                (long) ctx->chunked_reduce_kernel_4970_total_runtime /
+                (ctx->chunked_reduce_kernel_4970_runs !=
+                 0 ? ctx->chunked_reduce_kernel_4970_runs : 1),
+                (long) ctx->chunked_reduce_kernel_4970_total_runtime);
+        ctx->total_runtime += ctx->chunked_reduce_kernel_4970_total_runtime;
+        ctx->total_runs += ctx->chunked_reduce_kernel_4970_runs;
         fprintf(stderr,
-                "Kernel chunked_reduce_kernel_5029             executed %6d times, with average runtime: %6ldus\tand total runtime: %6ldus\n",
-                ctx->chunked_reduce_kernel_5029_runs,
-                (long) ctx->chunked_reduce_kernel_5029_total_runtime /
-                (ctx->chunked_reduce_kernel_5029_runs !=
-                 0 ? ctx->chunked_reduce_kernel_5029_runs : 1),
-                (long) ctx->chunked_reduce_kernel_5029_total_runtime);
-        ctx->total_runtime += ctx->chunked_reduce_kernel_5029_total_runtime;
-        ctx->total_runs += ctx->chunked_reduce_kernel_5029_runs;
+                "Kernel chunked_reduce_kernel_5031 executed %6d times, with average runtime: %6ldus\tand total runtime: %6ldus\n",
+                ctx->chunked_reduce_kernel_5031_runs,
+                (long) ctx->chunked_reduce_kernel_5031_total_runtime /
+                (ctx->chunked_reduce_kernel_5031_runs !=
+                 0 ? ctx->chunked_reduce_kernel_5031_runs : 1),
+                (long) ctx->chunked_reduce_kernel_5031_total_runtime);
+        ctx->total_runtime += ctx->chunked_reduce_kernel_5031_total_runtime;
+        ctx->total_runs += ctx->chunked_reduce_kernel_5031_runs;
         fprintf(stderr,
-                "Kernel chunked_reduce_kernel_5103             executed %6d times, with average runtime: %6ldus\tand total runtime: %6ldus\n",
-                ctx->chunked_reduce_kernel_5103_runs,
-                (long) ctx->chunked_reduce_kernel_5103_total_runtime /
-                (ctx->chunked_reduce_kernel_5103_runs !=
-                 0 ? ctx->chunked_reduce_kernel_5103_runs : 1),
-                (long) ctx->chunked_reduce_kernel_5103_total_runtime);
-        ctx->total_runtime += ctx->chunked_reduce_kernel_5103_total_runtime;
-        ctx->total_runs += ctx->chunked_reduce_kernel_5103_runs;
+                "Kernel chunked_reduce_kernel_5092 executed %6d times, with average runtime: %6ldus\tand total runtime: %6ldus\n",
+                ctx->chunked_reduce_kernel_5092_runs,
+                (long) ctx->chunked_reduce_kernel_5092_total_runtime /
+                (ctx->chunked_reduce_kernel_5092_runs !=
+                 0 ? ctx->chunked_reduce_kernel_5092_runs : 1),
+                (long) ctx->chunked_reduce_kernel_5092_total_runtime);
+        ctx->total_runtime += ctx->chunked_reduce_kernel_5092_total_runtime;
+        ctx->total_runs += ctx->chunked_reduce_kernel_5092_runs;
         fprintf(stderr,
-                "Kernel chunked_reduce_kernel_5262             executed %6d times, with average runtime: %6ldus\tand total runtime: %6ldus\n",
-                ctx->chunked_reduce_kernel_5262_runs,
-                (long) ctx->chunked_reduce_kernel_5262_total_runtime /
-                (ctx->chunked_reduce_kernel_5262_runs !=
-                 0 ? ctx->chunked_reduce_kernel_5262_runs : 1),
-                (long) ctx->chunked_reduce_kernel_5262_total_runtime);
-        ctx->total_runtime += ctx->chunked_reduce_kernel_5262_total_runtime;
-        ctx->total_runs += ctx->chunked_reduce_kernel_5262_runs;
+                "Kernel chunked_reduce_kernel_5153 executed %6d times, with average runtime: %6ldus\tand total runtime: %6ldus\n",
+                ctx->chunked_reduce_kernel_5153_runs,
+                (long) ctx->chunked_reduce_kernel_5153_total_runtime /
+                (ctx->chunked_reduce_kernel_5153_runs !=
+                 0 ? ctx->chunked_reduce_kernel_5153_runs : 1),
+                (long) ctx->chunked_reduce_kernel_5153_total_runtime);
+        ctx->total_runtime += ctx->chunked_reduce_kernel_5153_total_runtime;
+        ctx->total_runs += ctx->chunked_reduce_kernel_5153_runs;
         fprintf(stderr,
-                "Kernel fut_kernel_map_transpose_f64           executed %6d times, with average runtime: %6ldus\tand total runtime: %6ldus\n",
-                ctx->fut_kernel_map_transpose_f64_runs,
-                (long) ctx->fut_kernel_map_transpose_f64_total_runtime /
-                (ctx->fut_kernel_map_transpose_f64_runs !=
-                 0 ? ctx->fut_kernel_map_transpose_f64_runs : 1),
-                (long) ctx->fut_kernel_map_transpose_f64_total_runtime);
-        ctx->total_runtime += ctx->fut_kernel_map_transpose_f64_total_runtime;
-        ctx->total_runs += ctx->fut_kernel_map_transpose_f64_runs;
+                "Kernel chunked_reduce_kernel_5216 executed %6d times, with average runtime: %6ldus\tand total runtime: %6ldus\n",
+                ctx->chunked_reduce_kernel_5216_runs,
+                (long) ctx->chunked_reduce_kernel_5216_total_runtime /
+                (ctx->chunked_reduce_kernel_5216_runs !=
+                 0 ? ctx->chunked_reduce_kernel_5216_runs : 1),
+                (long) ctx->chunked_reduce_kernel_5216_total_runtime);
+        ctx->total_runtime += ctx->chunked_reduce_kernel_5216_total_runtime;
+        ctx->total_runs += ctx->chunked_reduce_kernel_5216_runs;
         fprintf(stderr,
-                "Kernel fut_kernel_map_transpose_lowheight_f64 executed %6d times, with average runtime: %6ldus\tand total runtime: %6ldus\n",
-                ctx->fut_kernel_map_transpose_lowheight_f64_runs,
-                (long) ctx->fut_kernel_map_transpose_lowheight_f64_total_runtime /
-                (ctx->fut_kernel_map_transpose_lowheight_f64_runs !=
-                 0 ? ctx->fut_kernel_map_transpose_lowheight_f64_runs : 1),
-                (long) ctx->fut_kernel_map_transpose_lowheight_f64_total_runtime);
-        ctx->total_runtime +=
-            ctx->fut_kernel_map_transpose_lowheight_f64_total_runtime;
-        ctx->total_runs += ctx->fut_kernel_map_transpose_lowheight_f64_runs;
+                "Kernel chunked_reduce_kernel_5280 executed %6d times, with average runtime: %6ldus\tand total runtime: %6ldus\n",
+                ctx->chunked_reduce_kernel_5280_runs,
+                (long) ctx->chunked_reduce_kernel_5280_total_runtime /
+                (ctx->chunked_reduce_kernel_5280_runs !=
+                 0 ? ctx->chunked_reduce_kernel_5280_runs : 1),
+                (long) ctx->chunked_reduce_kernel_5280_total_runtime);
+        ctx->total_runtime += ctx->chunked_reduce_kernel_5280_total_runtime;
+        ctx->total_runs += ctx->chunked_reduce_kernel_5280_runs;
         fprintf(stderr,
-                "Kernel fut_kernel_map_transpose_lowwidth_f64  executed %6d times, with average runtime: %6ldus\tand total runtime: %6ldus\n",
-                ctx->fut_kernel_map_transpose_lowwidth_f64_runs,
-                (long) ctx->fut_kernel_map_transpose_lowwidth_f64_total_runtime /
-                (ctx->fut_kernel_map_transpose_lowwidth_f64_runs !=
-                 0 ? ctx->fut_kernel_map_transpose_lowwidth_f64_runs : 1),
-                (long) ctx->fut_kernel_map_transpose_lowwidth_f64_total_runtime);
-        ctx->total_runtime +=
-            ctx->fut_kernel_map_transpose_lowwidth_f64_total_runtime;
-        ctx->total_runs += ctx->fut_kernel_map_transpose_lowwidth_f64_runs;
+                "Kernel chunked_reduce_kernel_5365 executed %6d times, with average runtime: %6ldus\tand total runtime: %6ldus\n",
+                ctx->chunked_reduce_kernel_5365_runs,
+                (long) ctx->chunked_reduce_kernel_5365_total_runtime /
+                (ctx->chunked_reduce_kernel_5365_runs !=
+                 0 ? ctx->chunked_reduce_kernel_5365_runs : 1),
+                (long) ctx->chunked_reduce_kernel_5365_total_runtime);
+        ctx->total_runtime += ctx->chunked_reduce_kernel_5365_total_runtime;
+        ctx->total_runs += ctx->chunked_reduce_kernel_5365_runs;
         fprintf(stderr,
-                "Kernel fut_kernel_map_transpose_small_f64     executed %6d times, with average runtime: %6ldus\tand total runtime: %6ldus\n",
-                ctx->fut_kernel_map_transpose_small_f64_runs,
-                (long) ctx->fut_kernel_map_transpose_small_f64_total_runtime /
-                (ctx->fut_kernel_map_transpose_small_f64_runs !=
-                 0 ? ctx->fut_kernel_map_transpose_small_f64_runs : 1),
-                (long) ctx->fut_kernel_map_transpose_small_f64_total_runtime);
-        ctx->total_runtime +=
-            ctx->fut_kernel_map_transpose_small_f64_total_runtime;
-        ctx->total_runs += ctx->fut_kernel_map_transpose_small_f64_runs;
+                "Kernel chunked_reduce_kernel_5429 executed %6d times, with average runtime: %6ldus\tand total runtime: %6ldus\n",
+                ctx->chunked_reduce_kernel_5429_runs,
+                (long) ctx->chunked_reduce_kernel_5429_total_runtime /
+                (ctx->chunked_reduce_kernel_5429_runs !=
+                 0 ? ctx->chunked_reduce_kernel_5429_runs : 1),
+                (long) ctx->chunked_reduce_kernel_5429_total_runtime);
+        ctx->total_runtime += ctx->chunked_reduce_kernel_5429_total_runtime;
+        ctx->total_runs += ctx->chunked_reduce_kernel_5429_runs;
         fprintf(stderr,
-                "Kernel reduce_kernel_4996                     executed %6d times, with average runtime: %6ldus\tand total runtime: %6ldus\n",
-                ctx->reduce_kernel_4996_runs,
-                (long) ctx->reduce_kernel_4996_total_runtime /
-                (ctx->reduce_kernel_4996_runs !=
-                 0 ? ctx->reduce_kernel_4996_runs : 1),
-                (long) ctx->reduce_kernel_4996_total_runtime);
-        ctx->total_runtime += ctx->reduce_kernel_4996_total_runtime;
-        ctx->total_runs += ctx->reduce_kernel_4996_runs;
+                "Kernel chunked_reduce_kernel_5515 executed %6d times, with average runtime: %6ldus\tand total runtime: %6ldus\n",
+                ctx->chunked_reduce_kernel_5515_runs,
+                (long) ctx->chunked_reduce_kernel_5515_total_runtime /
+                (ctx->chunked_reduce_kernel_5515_runs !=
+                 0 ? ctx->chunked_reduce_kernel_5515_runs : 1),
+                (long) ctx->chunked_reduce_kernel_5515_total_runtime);
+        ctx->total_runtime += ctx->chunked_reduce_kernel_5515_total_runtime;
+        ctx->total_runs += ctx->chunked_reduce_kernel_5515_runs;
         fprintf(stderr,
-                "Kernel reduce_kernel_5057                     executed %6d times, with average runtime: %6ldus\tand total runtime: %6ldus\n",
-                ctx->reduce_kernel_5057_runs,
-                (long) ctx->reduce_kernel_5057_total_runtime /
-                (ctx->reduce_kernel_5057_runs !=
-                 0 ? ctx->reduce_kernel_5057_runs : 1),
-                (long) ctx->reduce_kernel_5057_total_runtime);
-        ctx->total_runtime += ctx->reduce_kernel_5057_total_runtime;
-        ctx->total_runs += ctx->reduce_kernel_5057_runs;
+                "Kernel chunked_reduce_kernel_5576 executed %6d times, with average runtime: %6ldus\tand total runtime: %6ldus\n",
+                ctx->chunked_reduce_kernel_5576_runs,
+                (long) ctx->chunked_reduce_kernel_5576_total_runtime /
+                (ctx->chunked_reduce_kernel_5576_runs !=
+                 0 ? ctx->chunked_reduce_kernel_5576_runs : 1),
+                (long) ctx->chunked_reduce_kernel_5576_total_runtime);
+        ctx->total_runtime += ctx->chunked_reduce_kernel_5576_total_runtime;
+        ctx->total_runs += ctx->chunked_reduce_kernel_5576_runs;
         fprintf(stderr,
-                "Kernel reduce_kernel_5208                     executed %6d times, with average runtime: %6ldus\tand total runtime: %6ldus\n",
-                ctx->reduce_kernel_5208_runs,
-                (long) ctx->reduce_kernel_5208_total_runtime /
-                (ctx->reduce_kernel_5208_runs !=
-                 0 ? ctx->reduce_kernel_5208_runs : 1),
-                (long) ctx->reduce_kernel_5208_total_runtime);
-        ctx->total_runtime += ctx->reduce_kernel_5208_total_runtime;
-        ctx->total_runs += ctx->reduce_kernel_5208_runs;
+                "Kernel reduce_kernel_4998         executed %6d times, with average runtime: %6ldus\tand total runtime: %6ldus\n",
+                ctx->reduce_kernel_4998_runs,
+                (long) ctx->reduce_kernel_4998_total_runtime /
+                (ctx->reduce_kernel_4998_runs !=
+                 0 ? ctx->reduce_kernel_4998_runs : 1),
+                (long) ctx->reduce_kernel_4998_total_runtime);
+        ctx->total_runtime += ctx->reduce_kernel_4998_total_runtime;
+        ctx->total_runs += ctx->reduce_kernel_4998_runs;
         fprintf(stderr,
-                "Kernel reduce_kernel_5367                     executed %6d times, with average runtime: %6ldus\tand total runtime: %6ldus\n",
-                ctx->reduce_kernel_5367_runs,
-                (long) ctx->reduce_kernel_5367_total_runtime /
-                (ctx->reduce_kernel_5367_runs !=
-                 0 ? ctx->reduce_kernel_5367_runs : 1),
-                (long) ctx->reduce_kernel_5367_total_runtime);
-        ctx->total_runtime += ctx->reduce_kernel_5367_total_runtime;
-        ctx->total_runs += ctx->reduce_kernel_5367_runs;
+                "Kernel reduce_kernel_5059         executed %6d times, with average runtime: %6ldus\tand total runtime: %6ldus\n",
+                ctx->reduce_kernel_5059_runs,
+                (long) ctx->reduce_kernel_5059_total_runtime /
+                (ctx->reduce_kernel_5059_runs !=
+                 0 ? ctx->reduce_kernel_5059_runs : 1),
+                (long) ctx->reduce_kernel_5059_total_runtime);
+        ctx->total_runtime += ctx->reduce_kernel_5059_total_runtime;
+        ctx->total_runs += ctx->reduce_kernel_5059_runs;
+        fprintf(stderr,
+                "Kernel reduce_kernel_5120         executed %6d times, with average runtime: %6ldus\tand total runtime: %6ldus\n",
+                ctx->reduce_kernel_5120_runs,
+                (long) ctx->reduce_kernel_5120_total_runtime /
+                (ctx->reduce_kernel_5120_runs !=
+                 0 ? ctx->reduce_kernel_5120_runs : 1),
+                (long) ctx->reduce_kernel_5120_total_runtime);
+        ctx->total_runtime += ctx->reduce_kernel_5120_total_runtime;
+        ctx->total_runs += ctx->reduce_kernel_5120_runs;
+        fprintf(stderr,
+                "Kernel reduce_kernel_5183         executed %6d times, with average runtime: %6ldus\tand total runtime: %6ldus\n",
+                ctx->reduce_kernel_5183_runs,
+                (long) ctx->reduce_kernel_5183_total_runtime /
+                (ctx->reduce_kernel_5183_runs !=
+                 0 ? ctx->reduce_kernel_5183_runs : 1),
+                (long) ctx->reduce_kernel_5183_total_runtime);
+        ctx->total_runtime += ctx->reduce_kernel_5183_total_runtime;
+        ctx->total_runs += ctx->reduce_kernel_5183_runs;
+        fprintf(stderr,
+                "Kernel reduce_kernel_5244         executed %6d times, with average runtime: %6ldus\tand total runtime: %6ldus\n",
+                ctx->reduce_kernel_5244_runs,
+                (long) ctx->reduce_kernel_5244_total_runtime /
+                (ctx->reduce_kernel_5244_runs !=
+                 0 ? ctx->reduce_kernel_5244_runs : 1),
+                (long) ctx->reduce_kernel_5244_total_runtime);
+        ctx->total_runtime += ctx->reduce_kernel_5244_total_runtime;
+        ctx->total_runs += ctx->reduce_kernel_5244_runs;
+        fprintf(stderr,
+                "Kernel reduce_kernel_5328         executed %6d times, with average runtime: %6ldus\tand total runtime: %6ldus\n",
+                ctx->reduce_kernel_5328_runs,
+                (long) ctx->reduce_kernel_5328_total_runtime /
+                (ctx->reduce_kernel_5328_runs !=
+                 0 ? ctx->reduce_kernel_5328_runs : 1),
+                (long) ctx->reduce_kernel_5328_total_runtime);
+        ctx->total_runtime += ctx->reduce_kernel_5328_total_runtime;
+        ctx->total_runs += ctx->reduce_kernel_5328_runs;
+        fprintf(stderr,
+                "Kernel reduce_kernel_5393         executed %6d times, with average runtime: %6ldus\tand total runtime: %6ldus\n",
+                ctx->reduce_kernel_5393_runs,
+                (long) ctx->reduce_kernel_5393_total_runtime /
+                (ctx->reduce_kernel_5393_runs !=
+                 0 ? ctx->reduce_kernel_5393_runs : 1),
+                (long) ctx->reduce_kernel_5393_total_runtime);
+        ctx->total_runtime += ctx->reduce_kernel_5393_total_runtime;
+        ctx->total_runs += ctx->reduce_kernel_5393_runs;
+        fprintf(stderr,
+                "Kernel reduce_kernel_5478         executed %6d times, with average runtime: %6ldus\tand total runtime: %6ldus\n",
+                ctx->reduce_kernel_5478_runs,
+                (long) ctx->reduce_kernel_5478_total_runtime /
+                (ctx->reduce_kernel_5478_runs !=
+                 0 ? ctx->reduce_kernel_5478_runs : 1),
+                (long) ctx->reduce_kernel_5478_total_runtime);
+        ctx->total_runtime += ctx->reduce_kernel_5478_total_runtime;
+        ctx->total_runs += ctx->reduce_kernel_5478_runs;
+        fprintf(stderr,
+                "Kernel reduce_kernel_5543         executed %6d times, with average runtime: %6ldus\tand total runtime: %6ldus\n",
+                ctx->reduce_kernel_5543_runs,
+                (long) ctx->reduce_kernel_5543_total_runtime /
+                (ctx->reduce_kernel_5543_runs !=
+                 0 ? ctx->reduce_kernel_5543_runs : 1),
+                (long) ctx->reduce_kernel_5543_total_runtime);
+        ctx->total_runtime += ctx->reduce_kernel_5543_total_runtime;
+        ctx->total_runs += ctx->reduce_kernel_5543_runs;
+        fprintf(stderr,
+                "Kernel reduce_kernel_5606         executed %6d times, with average runtime: %6ldus\tand total runtime: %6ldus\n",
+                ctx->reduce_kernel_5606_runs,
+                (long) ctx->reduce_kernel_5606_total_runtime /
+                (ctx->reduce_kernel_5606_runs !=
+                 0 ? ctx->reduce_kernel_5606_runs : 1),
+                (long) ctx->reduce_kernel_5606_total_runtime);
+        ctx->total_runtime += ctx->reduce_kernel_5606_total_runtime;
+        ctx->total_runs += ctx->reduce_kernel_5606_runs;
         if (ctx->debugging)
             fprintf(stderr, "Ran %d kernels with cumulative runtime: %6ldus\n",
                     ctx->total_runs, ctx->total_runtime);
     }
 }
-static int futrts_map_transpose_opencl_f64(struct futhark_context *ctx,
-                                           struct memblock_device destmem_0,
-                                           int32_t destoffset_1,
-                                           struct memblock_device srcmem_2,
-                                           int32_t srcoffset_3,
-                                           int32_t num_arrays_4,
-                                           int32_t x_elems_5, int32_t y_elems_6,
-                                           int32_t in_elems_7,
-                                           int32_t out_elems_8);
-static int futrts_sum(struct futhark_context *ctx, double *out_scalar_out_5596,
-                      int64_t col_mem_sizze_5424,
-                      struct memblock_device col_mem_5425, int32_t sizze_4805);
-static int futrts_mean(struct futhark_context *ctx, double *out_scalar_out_5608,
-                       int64_t col_mem_sizze_5424,
-                       struct memblock_device col_mem_5425, int32_t sizze_4812);
+static int futrts_sum(struct futhark_context *ctx, double *out_scalar_out_5873,
+                      int64_t col_mem_sizze_5629,
+                      struct memblock_device col_mem_5630, int32_t sizze_4841);
+static int futrts_mean(struct futhark_context *ctx, double *out_scalar_out_5885,
+                       int64_t col_mem_sizze_5629,
+                       struct memblock_device col_mem_5630, int32_t sizze_4848);
 static int futrts_variance(struct futhark_context *ctx,
-                           double *out_scalar_out_5620,
-                           int64_t values_mem_sizze_5424,
-                           struct memblock_device values_mem_5425,
-                           int32_t sizze_4821);
+                           double *out_scalar_out_5897,
+                           int64_t values_mem_sizze_5629,
+                           struct memblock_device values_mem_5630,
+                           int32_t sizze_4857);
+static int futrts_skew(struct futhark_context *ctx, double *out_scalar_out_5920,
+                       int64_t values_mem_sizze_5629,
+                       struct memblock_device values_mem_5630,
+                       int32_t sizze_4875);
+static int futrts_kurtosis(struct futhark_context *ctx,
+                           double *out_scalar_out_5944,
+                           int64_t values_mem_sizze_5629,
+                           struct memblock_device values_mem_5630,
+                           int32_t sizze_4902);
 static int futrts_stddev(struct futhark_context *ctx,
-                         double *out_scalar_out_5633,
-                         int64_t values_mem_sizze_5424,
-                         struct memblock_device values_mem_5425,
-                         int32_t sizze_4882);
+                         double *out_scalar_out_5968,
+                         int64_t values_mem_sizze_5629,
+                         struct memblock_device values_mem_5630,
+                         int32_t sizze_4927);
 static inline int8_t add8(int8_t x, int8_t y)
 {
     return x + y;
@@ -2735,1287 +2968,1656 @@ static inline double futrts_from_bits64(int64_t x)
     p.f = x;
     return p.t;
 }
-static int futrts_map_transpose_opencl_f64(struct futhark_context *ctx,
-                                           struct memblock_device destmem_0,
-                                           int32_t destoffset_1,
-                                           struct memblock_device srcmem_2,
-                                           int32_t srcoffset_3,
-                                           int32_t num_arrays_4,
-                                           int32_t x_elems_5, int32_t y_elems_6,
-                                           int32_t in_elems_7,
-                                           int32_t out_elems_8)
+static int futrts_sum(struct futhark_context *ctx, double *out_scalar_out_5873,
+                      int64_t col_mem_sizze_5629,
+                      struct memblock_device col_mem_5630, int32_t sizze_4841)
 {
-    if (!(num_arrays_4 * x_elems_5 * y_elems_6 == 0)) {
-        if (in_elems_7 == out_elems_8 && ((num_arrays_4 == 1 || x_elems_5 *
-                                           y_elems_6 == in_elems_7) &&
-                                          (x_elems_5 == 1 || y_elems_6 == 1))) {
-            if (in_elems_7 * sizeof(double) > 0) {
-                OPENCL_SUCCEED(clEnqueueCopyBuffer(ctx->opencl.queue,
-                                                   srcmem_2.mem, destmem_0.mem,
-                                                   srcoffset_3, destoffset_1,
-                                                   in_elems_7 * sizeof(double),
-                                                   0, NULL, NULL));
-                if (ctx->debugging)
-                    OPENCL_SUCCEED(clFinish(ctx->opencl.queue));
-            }
-        } else {
-            if (sle32(x_elems_5, squot32(16, 2)) && slt32(16, y_elems_6)) {
-                int32_t muly_9 = squot32(16, x_elems_5);
-                int32_t new_height_10;
-                
-                new_height_10 = squot32(y_elems_6 + muly_9 - 1, muly_9);
-                OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_lowwidth_f64,
-                                              0, sizeof(destmem_0.mem),
-                                              &destmem_0.mem));
-                OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_lowwidth_f64,
-                                              1, sizeof(destoffset_1),
-                                              &destoffset_1));
-                OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_lowwidth_f64,
-                                              2, sizeof(srcmem_2.mem),
-                                              &srcmem_2.mem));
-                OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_lowwidth_f64,
-                                              3, sizeof(srcoffset_3),
-                                              &srcoffset_3));
-                OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_lowwidth_f64,
-                                              4, sizeof(x_elems_5),
-                                              &x_elems_5));
-                OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_lowwidth_f64,
-                                              5, sizeof(y_elems_6),
-                                              &y_elems_6));
-                OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_lowwidth_f64,
-                                              6, sizeof(in_elems_7),
-                                              &in_elems_7));
-                OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_lowwidth_f64,
-                                              7, sizeof(out_elems_8),
-                                              &out_elems_8));
-                OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_lowwidth_f64,
-                                              8, sizeof(muly_9), &muly_9));
-                OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_lowwidth_f64,
-                                              9, 272 * sizeof(double), NULL));
-                if (1 * (x_elems_5 + srem32(16 - srem32(x_elems_5, 16), 16)) *
-                    (new_height_10 + srem32(16 - srem32(new_height_10, 16),
-                                            16)) * num_arrays_4 != 0) {
-                    const size_t global_work_sizze_5576[3] = {x_elems_5 +
-                                                              srem32(16 -
-                                                                     srem32(x_elems_5,
-                                                                            16),
-                                                                     16),
-                                                              new_height_10 +
-                                                              srem32(16 -
-                                                                     srem32(new_height_10,
-                                                                            16),
-                                                                     16),
-                                                              num_arrays_4};
-                    const size_t local_work_sizze_5580[3] = {16, 16, 1};
-                    int64_t time_start_5577 = 0, time_end_5578 = 0;
-                    
-                    if (ctx->debugging) {
-                        fprintf(stderr, "Launching %s with global work size [",
-                                "fut_kernel_map_transpose_lowwidth_f64");
-                        fprintf(stderr, "%zu", global_work_sizze_5576[0]);
-                        fprintf(stderr, ", ");
-                        fprintf(stderr, "%zu", global_work_sizze_5576[1]);
-                        fprintf(stderr, ", ");
-                        fprintf(stderr, "%zu", global_work_sizze_5576[2]);
-                        fprintf(stderr, "] and local work size [");
-                        fprintf(stderr, "%zu", local_work_sizze_5580[0]);
-                        fprintf(stderr, ", ");
-                        fprintf(stderr, "%zu", local_work_sizze_5580[1]);
-                        fprintf(stderr, ", ");
-                        fprintf(stderr, "%zu", local_work_sizze_5580[2]);
-                        fprintf(stderr, "].\n");
-                        time_start_5577 = get_wall_time();
-                    }
-                    OPENCL_SUCCEED(clEnqueueNDRangeKernel(ctx->opencl.queue,
-                                                          ctx->fut_kernel_map_transpose_lowwidth_f64,
-                                                          3, NULL,
-                                                          global_work_sizze_5576,
-                                                          local_work_sizze_5580,
-                                                          0, NULL, NULL));
-                    if (ctx->debugging) {
-                        OPENCL_SUCCEED(clFinish(ctx->opencl.queue));
-                        time_end_5578 = get_wall_time();
-                        
-                        long time_diff_5579 = time_end_5578 - time_start_5577;
-                        
-                        ctx->fut_kernel_map_transpose_lowwidth_f64_total_runtime +=
-                            time_diff_5579;
-                        ctx->fut_kernel_map_transpose_lowwidth_f64_runs++;
-                        fprintf(stderr, "kernel %s runtime: %ldus\n",
-                                "fut_kernel_map_transpose_lowwidth_f64",
-                                time_diff_5579);
-                    }
-                }
-            } else {
-                if (sle32(y_elems_6, squot32(16, 2)) && slt32(16, x_elems_5)) {
-                    int32_t mulx_11 = squot32(16, y_elems_6);
-                    int32_t new_width_12;
-                    
-                    new_width_12 = squot32(x_elems_5 + mulx_11 - 1, mulx_11);
-                    OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_lowheight_f64,
-                                                  0, sizeof(destmem_0.mem),
-                                                  &destmem_0.mem));
-                    OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_lowheight_f64,
-                                                  1, sizeof(destoffset_1),
-                                                  &destoffset_1));
-                    OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_lowheight_f64,
-                                                  2, sizeof(srcmem_2.mem),
-                                                  &srcmem_2.mem));
-                    OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_lowheight_f64,
-                                                  3, sizeof(srcoffset_3),
-                                                  &srcoffset_3));
-                    OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_lowheight_f64,
-                                                  4, sizeof(x_elems_5),
-                                                  &x_elems_5));
-                    OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_lowheight_f64,
-                                                  5, sizeof(y_elems_6),
-                                                  &y_elems_6));
-                    OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_lowheight_f64,
-                                                  6, sizeof(in_elems_7),
-                                                  &in_elems_7));
-                    OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_lowheight_f64,
-                                                  7, sizeof(out_elems_8),
-                                                  &out_elems_8));
-                    OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_lowheight_f64,
-                                                  8, sizeof(mulx_11),
-                                                  &mulx_11));
-                    OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_lowheight_f64,
-                                                  9, 272 * sizeof(double),
-                                                  NULL));
-                    if (1 * (new_width_12 + srem32(16 - srem32(new_width_12,
-                                                               16), 16)) *
-                        (y_elems_6 + srem32(16 - srem32(y_elems_6, 16), 16)) *
-                        num_arrays_4 != 0) {
-                        const size_t global_work_sizze_5581[3] = {new_width_12 +
-                                                                  srem32(16 -
-                                                                         srem32(new_width_12,
-                                                                                16),
-                                                                         16),
-                                                                  y_elems_6 +
-                                                                  srem32(16 -
-                                                                         srem32(y_elems_6,
-                                                                                16),
-                                                                         16),
-                                                                  num_arrays_4};
-                        const size_t local_work_sizze_5585[3] = {16, 16, 1};
-                        int64_t time_start_5582 = 0, time_end_5583 = 0;
-                        
-                        if (ctx->debugging) {
-                            fprintf(stderr,
-                                    "Launching %s with global work size [",
-                                    "fut_kernel_map_transpose_lowheight_f64");
-                            fprintf(stderr, "%zu", global_work_sizze_5581[0]);
-                            fprintf(stderr, ", ");
-                            fprintf(stderr, "%zu", global_work_sizze_5581[1]);
-                            fprintf(stderr, ", ");
-                            fprintf(stderr, "%zu", global_work_sizze_5581[2]);
-                            fprintf(stderr, "] and local work size [");
-                            fprintf(stderr, "%zu", local_work_sizze_5585[0]);
-                            fprintf(stderr, ", ");
-                            fprintf(stderr, "%zu", local_work_sizze_5585[1]);
-                            fprintf(stderr, ", ");
-                            fprintf(stderr, "%zu", local_work_sizze_5585[2]);
-                            fprintf(stderr, "].\n");
-                            time_start_5582 = get_wall_time();
-                        }
-                        OPENCL_SUCCEED(clEnqueueNDRangeKernel(ctx->opencl.queue,
-                                                              ctx->fut_kernel_map_transpose_lowheight_f64,
-                                                              3, NULL,
-                                                              global_work_sizze_5581,
-                                                              local_work_sizze_5585,
-                                                              0, NULL, NULL));
-                        if (ctx->debugging) {
-                            OPENCL_SUCCEED(clFinish(ctx->opencl.queue));
-                            time_end_5583 = get_wall_time();
-                            
-                            long time_diff_5584 = time_end_5583 -
-                                 time_start_5582;
-                            
-                            ctx->fut_kernel_map_transpose_lowheight_f64_total_runtime +=
-                                time_diff_5584;
-                            ctx->fut_kernel_map_transpose_lowheight_f64_runs++;
-                            fprintf(stderr, "kernel %s runtime: %ldus\n",
-                                    "fut_kernel_map_transpose_lowheight_f64",
-                                    time_diff_5584);
-                        }
-                    }
-                } else {
-                    if (sle32(x_elems_5, squot32(16, 2)) && sle32(y_elems_6,
-                                                                  squot32(16,
-                                                                          2))) {
-                        OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_small_f64,
-                                                      0, sizeof(destmem_0.mem),
-                                                      &destmem_0.mem));
-                        OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_small_f64,
-                                                      1, sizeof(destoffset_1),
-                                                      &destoffset_1));
-                        OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_small_f64,
-                                                      2, sizeof(srcmem_2.mem),
-                                                      &srcmem_2.mem));
-                        OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_small_f64,
-                                                      3, sizeof(srcoffset_3),
-                                                      &srcoffset_3));
-                        OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_small_f64,
-                                                      4, sizeof(num_arrays_4),
-                                                      &num_arrays_4));
-                        OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_small_f64,
-                                                      5, sizeof(x_elems_5),
-                                                      &x_elems_5));
-                        OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_small_f64,
-                                                      6, sizeof(y_elems_6),
-                                                      &y_elems_6));
-                        OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_small_f64,
-                                                      7, sizeof(in_elems_7),
-                                                      &in_elems_7));
-                        OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_small_f64,
-                                                      8, sizeof(out_elems_8),
-                                                      &out_elems_8));
-                        if (1 * (num_arrays_4 * x_elems_5 * y_elems_6 +
-                                 srem32(256 - srem32(num_arrays_4 * x_elems_5 *
-                                                     y_elems_6, 256), 256)) !=
-                            0) {
-                            const size_t global_work_sizze_5586[1] =
-                                         {num_arrays_4 * x_elems_5 * y_elems_6 +
-                                         srem32(256 - srem32(num_arrays_4 *
-                                                             x_elems_5 *
-                                                             y_elems_6, 256),
-                                                256)};
-                            const size_t local_work_sizze_5590[1] = {256};
-                            int64_t time_start_5587 = 0, time_end_5588 = 0;
-                            
-                            if (ctx->debugging) {
-                                fprintf(stderr,
-                                        "Launching %s with global work size [",
-                                        "fut_kernel_map_transpose_small_f64");
-                                fprintf(stderr, "%zu",
-                                        global_work_sizze_5586[0]);
-                                fprintf(stderr, "] and local work size [");
-                                fprintf(stderr, "%zu",
-                                        local_work_sizze_5590[0]);
-                                fprintf(stderr, "].\n");
-                                time_start_5587 = get_wall_time();
-                            }
-                            OPENCL_SUCCEED(clEnqueueNDRangeKernel(ctx->opencl.queue,
-                                                                  ctx->fut_kernel_map_transpose_small_f64,
-                                                                  1, NULL,
-                                                                  global_work_sizze_5586,
-                                                                  local_work_sizze_5590,
-                                                                  0, NULL,
-                                                                  NULL));
-                            if (ctx->debugging) {
-                                OPENCL_SUCCEED(clFinish(ctx->opencl.queue));
-                                time_end_5588 = get_wall_time();
-                                
-                                long time_diff_5589 = time_end_5588 -
-                                     time_start_5587;
-                                
-                                ctx->fut_kernel_map_transpose_small_f64_total_runtime +=
-                                    time_diff_5589;
-                                ctx->fut_kernel_map_transpose_small_f64_runs++;
-                                fprintf(stderr, "kernel %s runtime: %ldus\n",
-                                        "fut_kernel_map_transpose_small_f64",
-                                        time_diff_5589);
-                            }
-                        }
-                    } else {
-                        OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_f64,
-                                                      0, sizeof(destmem_0.mem),
-                                                      &destmem_0.mem));
-                        OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_f64,
-                                                      1, sizeof(destoffset_1),
-                                                      &destoffset_1));
-                        OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_f64,
-                                                      2, sizeof(srcmem_2.mem),
-                                                      &srcmem_2.mem));
-                        OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_f64,
-                                                      3, sizeof(srcoffset_3),
-                                                      &srcoffset_3));
-                        OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_f64,
-                                                      4, sizeof(x_elems_5),
-                                                      &x_elems_5));
-                        OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_f64,
-                                                      5, sizeof(y_elems_6),
-                                                      &y_elems_6));
-                        OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_f64,
-                                                      6, sizeof(in_elems_7),
-                                                      &in_elems_7));
-                        OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_f64,
-                                                      7, sizeof(out_elems_8),
-                                                      &out_elems_8));
-                        OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_f64,
-                                                      8, 272 * sizeof(double),
-                                                      NULL));
-                        if (1 * (x_elems_5 + srem32(16 - srem32(x_elems_5, 16),
-                                                    16)) * (y_elems_6 +
-                                                            srem32(16 -
-                                                                   srem32(y_elems_6,
-                                                                          16),
-                                                                   16)) *
-                            num_arrays_4 != 0) {
-                            const size_t global_work_sizze_5591[3] =
-                                         {x_elems_5 + srem32(16 -
-                                                             srem32(x_elems_5,
-                                                                    16), 16),
-                                          y_elems_6 + srem32(16 -
-                                                             srem32(y_elems_6,
-                                                                    16), 16),
-                                          num_arrays_4};
-                            const size_t local_work_sizze_5595[3] = {16, 16, 1};
-                            int64_t time_start_5592 = 0, time_end_5593 = 0;
-                            
-                            if (ctx->debugging) {
-                                fprintf(stderr,
-                                        "Launching %s with global work size [",
-                                        "fut_kernel_map_transpose_f64");
-                                fprintf(stderr, "%zu",
-                                        global_work_sizze_5591[0]);
-                                fprintf(stderr, ", ");
-                                fprintf(stderr, "%zu",
-                                        global_work_sizze_5591[1]);
-                                fprintf(stderr, ", ");
-                                fprintf(stderr, "%zu",
-                                        global_work_sizze_5591[2]);
-                                fprintf(stderr, "] and local work size [");
-                                fprintf(stderr, "%zu",
-                                        local_work_sizze_5595[0]);
-                                fprintf(stderr, ", ");
-                                fprintf(stderr, "%zu",
-                                        local_work_sizze_5595[1]);
-                                fprintf(stderr, ", ");
-                                fprintf(stderr, "%zu",
-                                        local_work_sizze_5595[2]);
-                                fprintf(stderr, "].\n");
-                                time_start_5592 = get_wall_time();
-                            }
-                            OPENCL_SUCCEED(clEnqueueNDRangeKernel(ctx->opencl.queue,
-                                                                  ctx->fut_kernel_map_transpose_f64,
-                                                                  3, NULL,
-                                                                  global_work_sizze_5591,
-                                                                  local_work_sizze_5595,
-                                                                  0, NULL,
-                                                                  NULL));
-                            if (ctx->debugging) {
-                                OPENCL_SUCCEED(clFinish(ctx->opencl.queue));
-                                time_end_5593 = get_wall_time();
-                                
-                                long time_diff_5594 = time_end_5593 -
-                                     time_start_5592;
-                                
-                                ctx->fut_kernel_map_transpose_f64_total_runtime +=
-                                    time_diff_5594;
-                                ctx->fut_kernel_map_transpose_f64_runs++;
-                                fprintf(stderr, "kernel %s runtime: %ldus\n",
-                                        "fut_kernel_map_transpose_f64",
-                                        time_diff_5594);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-    return 0;
-}
-static int futrts_sum(struct futhark_context *ctx, double *out_scalar_out_5596,
-                      int64_t col_mem_sizze_5424,
-                      struct memblock_device col_mem_5425, int32_t sizze_4805)
-{
-    double scalar_out_5480;
-    int32_t group_sizze_4952;
+    double scalar_out_5687;
+    int32_t group_sizze_4954;
     
-    group_sizze_4952 = ctx->sizes.group_sizze_4951;
+    group_sizze_4954 = ctx->sizes.group_sizze_4953;
     
-    int32_t max_num_groups_4954;
+    int32_t max_num_groups_4956;
     
-    max_num_groups_4954 = ctx->sizes.max_num_groups_4953;
+    max_num_groups_4956 = ctx->sizes.max_num_groups_4955;
     
-    int32_t y_4955 = group_sizze_4952 - 1;
-    int32_t x_4956 = sizze_4805 + y_4955;
-    int32_t w_div_group_sizze_4957 = squot32(x_4956, group_sizze_4952);
-    int32_t num_groups_maybe_zzero_4958 = smin32(max_num_groups_4954,
-                                                 w_div_group_sizze_4957);
-    int32_t num_groups_4959 = smax32(1, num_groups_maybe_zzero_4958);
-    int32_t num_threads_4960 = group_sizze_4952 * num_groups_4959;
-    int32_t y_4961 = num_threads_4960 - 1;
-    int32_t x_4962 = sizze_4805 + y_4961;
-    int32_t per_thread_elements_4963 = squot32(x_4962, num_threads_4960);
-    int64_t binop_x_5430 = sext_i32_i64(num_groups_4959);
-    int64_t bytes_5429 = 8 * binop_x_5430;
-    struct memblock_device mem_5431;
+    int32_t y_4957 = group_sizze_4954 - 1;
+    int32_t x_4958 = sizze_4841 + y_4957;
+    int32_t w_div_group_sizze_4959 = squot32(x_4958, group_sizze_4954);
+    int32_t num_groups_maybe_zzero_4960 = smin32(max_num_groups_4956,
+                                                 w_div_group_sizze_4959);
+    int32_t num_groups_4961 = smax32(1, num_groups_maybe_zzero_4960);
+    int32_t num_threads_4962 = group_sizze_4954 * num_groups_4961;
+    int32_t y_4963 = num_threads_4962 - 1;
+    int32_t x_4964 = sizze_4841 + y_4963;
+    int32_t per_thread_elements_4965 = squot32(x_4964, num_threads_4962);
+    int64_t binop_x_5635 = sext_i32_i64(num_groups_4961);
+    int64_t bytes_5634 = 8 * binop_x_5635;
+    struct memblock_device mem_5636;
     
-    mem_5431.references = NULL;
-    memblock_alloc_device(ctx, &mem_5431, bytes_5429, "mem_5431");
+    mem_5636.references = NULL;
+    memblock_alloc_device(ctx, &mem_5636, bytes_5634, "mem_5636");
     
-    int64_t binop_x_5427 = sext_i32_i64(group_sizze_4952);
-    int64_t bytes_5426 = 8 * binop_x_5427;
-    struct memblock_local mem_5428;
+    int64_t binop_x_5632 = sext_i32_i64(group_sizze_4954);
+    int64_t bytes_5631 = 8 * binop_x_5632;
+    struct memblock_local mem_5633;
     
-    mem_5428.references = NULL;
+    mem_5633.references = NULL;
     if (ctx->debugging)
-        fprintf(stderr, "%s: %d\n", "input size", (int) sizze_4805);
-    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_4968, 0,
-                                  bytes_5426, NULL));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_4968, 1,
-                                  sizeof(sizze_4805), &sizze_4805));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_4968, 2,
-                                  sizeof(num_threads_4960), &num_threads_4960));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_4968, 3,
-                                  sizeof(per_thread_elements_4963),
-                                  &per_thread_elements_4963));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_4968, 4,
-                                  sizeof(col_mem_5425.mem), &col_mem_5425.mem));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_4968, 5,
-                                  sizeof(mem_5431.mem), &mem_5431.mem));
-    if (1 * (num_groups_4959 * group_sizze_4952) != 0) {
-        const size_t global_work_sizze_5597[1] = {num_groups_4959 *
-                     group_sizze_4952};
-        const size_t local_work_sizze_5601[1] = {group_sizze_4952};
-        int64_t time_start_5598 = 0, time_end_5599 = 0;
+        fprintf(stderr, "%s: %d\n", "input size", (int) sizze_4841);
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_4970, 0,
+                                  bytes_5631, NULL));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_4970, 1,
+                                  sizeof(sizze_4841), &sizze_4841));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_4970, 2,
+                                  sizeof(num_threads_4962), &num_threads_4962));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_4970, 3,
+                                  sizeof(per_thread_elements_4965),
+                                  &per_thread_elements_4965));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_4970, 4,
+                                  sizeof(col_mem_5630.mem), &col_mem_5630.mem));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_4970, 5,
+                                  sizeof(mem_5636.mem), &mem_5636.mem));
+    if (1 * (num_groups_4961 * group_sizze_4954) != 0) {
+        const size_t global_work_sizze_5874[1] = {num_groups_4961 *
+                     group_sizze_4954};
+        const size_t local_work_sizze_5878[1] = {group_sizze_4954};
+        int64_t time_start_5875 = 0, time_end_5876 = 0;
         
         if (ctx->debugging) {
             fprintf(stderr, "Launching %s with global work size [",
-                    "chunked_reduce_kernel_4968");
-            fprintf(stderr, "%zu", global_work_sizze_5597[0]);
+                    "chunked_reduce_kernel_4970");
+            fprintf(stderr, "%zu", global_work_sizze_5874[0]);
             fprintf(stderr, "] and local work size [");
-            fprintf(stderr, "%zu", local_work_sizze_5601[0]);
+            fprintf(stderr, "%zu", local_work_sizze_5878[0]);
             fprintf(stderr, "].\n");
-            time_start_5598 = get_wall_time();
+            time_start_5875 = get_wall_time();
         }
         OPENCL_SUCCEED(clEnqueueNDRangeKernel(ctx->opencl.queue,
-                                              ctx->chunked_reduce_kernel_4968,
-                                              1, NULL, global_work_sizze_5597,
-                                              local_work_sizze_5601, 0, NULL,
+                                              ctx->chunked_reduce_kernel_4970,
+                                              1, NULL, global_work_sizze_5874,
+                                              local_work_sizze_5878, 0, NULL,
                                               NULL));
         if (ctx->debugging) {
             OPENCL_SUCCEED(clFinish(ctx->opencl.queue));
-            time_end_5599 = get_wall_time();
+            time_end_5876 = get_wall_time();
             
-            long time_diff_5600 = time_end_5599 - time_start_5598;
+            long time_diff_5877 = time_end_5876 - time_start_5875;
             
-            ctx->chunked_reduce_kernel_4968_total_runtime += time_diff_5600;
-            ctx->chunked_reduce_kernel_4968_runs++;
+            ctx->chunked_reduce_kernel_4970_total_runtime += time_diff_5877;
+            ctx->chunked_reduce_kernel_4970_runs++;
             fprintf(stderr, "kernel %s runtime: %ldus\n",
-                    "chunked_reduce_kernel_4968", time_diff_5600);
+                    "chunked_reduce_kernel_4970", time_diff_5877);
         }
     }
-    memblock_unref_local(ctx, &mem_5428, "mem_5428");
+    memblock_unref_local(ctx, &mem_5633, "mem_5633");
     
-    struct memblock_device mem_5437;
+    struct memblock_device mem_5642;
     
-    mem_5437.references = NULL;
-    memblock_alloc_device(ctx, &mem_5437, 8, "mem_5437");
+    mem_5642.references = NULL;
+    memblock_alloc_device(ctx, &mem_5642, 8, "mem_5642");
     
-    int64_t binop_x_5433 = sext_i32_i64(max_num_groups_4954);
-    int64_t bytes_5432 = 8 * binop_x_5433;
-    struct memblock_local mem_5434;
+    int64_t binop_x_5638 = sext_i32_i64(max_num_groups_4956);
+    int64_t bytes_5637 = 8 * binop_x_5638;
+    struct memblock_local mem_5639;
     
-    mem_5434.references = NULL;
-    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_4996, 0, bytes_5432,
+    mem_5639.references = NULL;
+    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_4998, 0, bytes_5637,
                                   NULL));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_4996, 1,
-                                  sizeof(num_groups_4959), &num_groups_4959));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_4996, 2,
-                                  sizeof(mem_5431.mem), &mem_5431.mem));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_4996, 3,
-                                  sizeof(mem_5437.mem), &mem_5437.mem));
-    if (1 * max_num_groups_4954 != 0) {
-        const size_t global_work_sizze_5602[1] = {max_num_groups_4954};
-        const size_t local_work_sizze_5606[1] = {max_num_groups_4954};
-        int64_t time_start_5603 = 0, time_end_5604 = 0;
+    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_4998, 1,
+                                  sizeof(num_groups_4961), &num_groups_4961));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_4998, 2,
+                                  sizeof(mem_5636.mem), &mem_5636.mem));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_4998, 3,
+                                  sizeof(mem_5642.mem), &mem_5642.mem));
+    if (1 * max_num_groups_4956 != 0) {
+        const size_t global_work_sizze_5879[1] = {max_num_groups_4956};
+        const size_t local_work_sizze_5883[1] = {max_num_groups_4956};
+        int64_t time_start_5880 = 0, time_end_5881 = 0;
         
         if (ctx->debugging) {
             fprintf(stderr, "Launching %s with global work size [",
-                    "reduce_kernel_4996");
-            fprintf(stderr, "%zu", global_work_sizze_5602[0]);
+                    "reduce_kernel_4998");
+            fprintf(stderr, "%zu", global_work_sizze_5879[0]);
             fprintf(stderr, "] and local work size [");
-            fprintf(stderr, "%zu", local_work_sizze_5606[0]);
+            fprintf(stderr, "%zu", local_work_sizze_5883[0]);
             fprintf(stderr, "].\n");
-            time_start_5603 = get_wall_time();
+            time_start_5880 = get_wall_time();
         }
         OPENCL_SUCCEED(clEnqueueNDRangeKernel(ctx->opencl.queue,
-                                              ctx->reduce_kernel_4996, 1, NULL,
-                                              global_work_sizze_5602,
-                                              local_work_sizze_5606, 0, NULL,
+                                              ctx->reduce_kernel_4998, 1, NULL,
+                                              global_work_sizze_5879,
+                                              local_work_sizze_5883, 0, NULL,
                                               NULL));
         if (ctx->debugging) {
             OPENCL_SUCCEED(clFinish(ctx->opencl.queue));
-            time_end_5604 = get_wall_time();
+            time_end_5881 = get_wall_time();
             
-            long time_diff_5605 = time_end_5604 - time_start_5603;
+            long time_diff_5882 = time_end_5881 - time_start_5880;
             
-            ctx->reduce_kernel_4996_total_runtime += time_diff_5605;
-            ctx->reduce_kernel_4996_runs++;
-            fprintf(stderr, "kernel %s runtime: %ldus\n", "reduce_kernel_4996",
-                    time_diff_5605);
+            ctx->reduce_kernel_4998_total_runtime += time_diff_5882;
+            ctx->reduce_kernel_4998_runs++;
+            fprintf(stderr, "kernel %s runtime: %ldus\n", "reduce_kernel_4998",
+                    time_diff_5882);
         }
     }
-    memblock_unref_device(ctx, &mem_5431, "mem_5431");
-    memblock_unref_local(ctx, &mem_5434, "mem_5434");
+    memblock_unref_device(ctx, &mem_5636, "mem_5636");
+    memblock_unref_local(ctx, &mem_5639, "mem_5639");
     
-    double read_res_5607;
+    double read_res_5884;
     
-    OPENCL_SUCCEED(clEnqueueReadBuffer(ctx->opencl.queue, mem_5437.mem, CL_TRUE,
-                                       0, sizeof(double), &read_res_5607, 0,
+    OPENCL_SUCCEED(clEnqueueReadBuffer(ctx->opencl.queue, mem_5642.mem, CL_TRUE,
+                                       0, sizeof(double), &read_res_5884, 0,
                                        NULL, NULL));
     
-    double res_4807 = read_res_5607;
+    double res_4843 = read_res_5884;
     
-    memblock_unref_device(ctx, &mem_5437, "mem_5437");
-    scalar_out_5480 = res_4807;
-    *out_scalar_out_5596 = scalar_out_5480;
-    memblock_unref_local(ctx, &mem_5434, "mem_5434");
-    memblock_unref_device(ctx, &mem_5437, "mem_5437");
-    memblock_unref_local(ctx, &mem_5428, "mem_5428");
-    memblock_unref_device(ctx, &mem_5431, "mem_5431");
+    memblock_unref_device(ctx, &mem_5642, "mem_5642");
+    scalar_out_5687 = res_4843;
+    *out_scalar_out_5873 = scalar_out_5687;
+    memblock_unref_local(ctx, &mem_5639, "mem_5639");
+    memblock_unref_device(ctx, &mem_5642, "mem_5642");
+    memblock_unref_local(ctx, &mem_5633, "mem_5633");
+    memblock_unref_device(ctx, &mem_5636, "mem_5636");
     return 0;
 }
-static int futrts_mean(struct futhark_context *ctx, double *out_scalar_out_5608,
-                       int64_t col_mem_sizze_5424,
-                       struct memblock_device col_mem_5425, int32_t sizze_4812)
+static int futrts_mean(struct futhark_context *ctx, double *out_scalar_out_5885,
+                       int64_t col_mem_sizze_5629,
+                       struct memblock_device col_mem_5630, int32_t sizze_4848)
 {
-    double scalar_out_5498;
-    int32_t group_sizze_5013;
+    double scalar_out_5705;
+    int32_t group_sizze_5015;
     
-    group_sizze_5013 = ctx->sizes.group_sizze_5012;
+    group_sizze_5015 = ctx->sizes.group_sizze_5014;
     
-    int32_t max_num_groups_5015;
+    int32_t max_num_groups_5017;
     
-    max_num_groups_5015 = ctx->sizes.max_num_groups_5014;
+    max_num_groups_5017 = ctx->sizes.max_num_groups_5016;
     
-    int32_t y_5016 = group_sizze_5013 - 1;
-    int32_t x_5017 = sizze_4812 + y_5016;
-    int32_t w_div_group_sizze_5018 = squot32(x_5017, group_sizze_5013);
-    int32_t num_groups_maybe_zzero_5019 = smin32(max_num_groups_5015,
-                                                 w_div_group_sizze_5018);
-    int32_t num_groups_5020 = smax32(1, num_groups_maybe_zzero_5019);
-    int32_t num_threads_5021 = group_sizze_5013 * num_groups_5020;
-    int32_t y_5022 = num_threads_5021 - 1;
-    int32_t x_5023 = sizze_4812 + y_5022;
-    int32_t per_thread_elements_5024 = squot32(x_5023, num_threads_5021);
-    int64_t binop_x_5430 = sext_i32_i64(num_groups_5020);
-    int64_t bytes_5429 = 8 * binop_x_5430;
-    struct memblock_device mem_5431;
+    int32_t y_5018 = group_sizze_5015 - 1;
+    int32_t x_5019 = sizze_4848 + y_5018;
+    int32_t w_div_group_sizze_5020 = squot32(x_5019, group_sizze_5015);
+    int32_t num_groups_maybe_zzero_5021 = smin32(max_num_groups_5017,
+                                                 w_div_group_sizze_5020);
+    int32_t num_groups_5022 = smax32(1, num_groups_maybe_zzero_5021);
+    int32_t num_threads_5023 = group_sizze_5015 * num_groups_5022;
+    int32_t y_5024 = num_threads_5023 - 1;
+    int32_t x_5025 = sizze_4848 + y_5024;
+    int32_t per_thread_elements_5026 = squot32(x_5025, num_threads_5023);
+    int64_t binop_x_5635 = sext_i32_i64(num_groups_5022);
+    int64_t bytes_5634 = 8 * binop_x_5635;
+    struct memblock_device mem_5636;
     
-    mem_5431.references = NULL;
-    memblock_alloc_device(ctx, &mem_5431, bytes_5429, "mem_5431");
+    mem_5636.references = NULL;
+    memblock_alloc_device(ctx, &mem_5636, bytes_5634, "mem_5636");
     
-    int64_t binop_x_5427 = sext_i32_i64(group_sizze_5013);
-    int64_t bytes_5426 = 8 * binop_x_5427;
-    struct memblock_local mem_5428;
+    int64_t binop_x_5632 = sext_i32_i64(group_sizze_5015);
+    int64_t bytes_5631 = 8 * binop_x_5632;
+    struct memblock_local mem_5633;
     
-    mem_5428.references = NULL;
+    mem_5633.references = NULL;
     if (ctx->debugging)
-        fprintf(stderr, "%s: %d\n", "input size", (int) sizze_4812);
-    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5029, 0,
-                                  bytes_5426, NULL));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5029, 1,
-                                  sizeof(sizze_4812), &sizze_4812));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5029, 2,
-                                  sizeof(num_threads_5021), &num_threads_5021));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5029, 3,
-                                  sizeof(per_thread_elements_5024),
-                                  &per_thread_elements_5024));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5029, 4,
-                                  sizeof(col_mem_5425.mem), &col_mem_5425.mem));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5029, 5,
-                                  sizeof(mem_5431.mem), &mem_5431.mem));
-    if (1 * (num_groups_5020 * group_sizze_5013) != 0) {
-        const size_t global_work_sizze_5609[1] = {num_groups_5020 *
-                     group_sizze_5013};
-        const size_t local_work_sizze_5613[1] = {group_sizze_5013};
-        int64_t time_start_5610 = 0, time_end_5611 = 0;
+        fprintf(stderr, "%s: %d\n", "input size", (int) sizze_4848);
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5031, 0,
+                                  bytes_5631, NULL));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5031, 1,
+                                  sizeof(sizze_4848), &sizze_4848));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5031, 2,
+                                  sizeof(num_threads_5023), &num_threads_5023));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5031, 3,
+                                  sizeof(per_thread_elements_5026),
+                                  &per_thread_elements_5026));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5031, 4,
+                                  sizeof(col_mem_5630.mem), &col_mem_5630.mem));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5031, 5,
+                                  sizeof(mem_5636.mem), &mem_5636.mem));
+    if (1 * (num_groups_5022 * group_sizze_5015) != 0) {
+        const size_t global_work_sizze_5886[1] = {num_groups_5022 *
+                     group_sizze_5015};
+        const size_t local_work_sizze_5890[1] = {group_sizze_5015};
+        int64_t time_start_5887 = 0, time_end_5888 = 0;
         
         if (ctx->debugging) {
             fprintf(stderr, "Launching %s with global work size [",
-                    "chunked_reduce_kernel_5029");
-            fprintf(stderr, "%zu", global_work_sizze_5609[0]);
+                    "chunked_reduce_kernel_5031");
+            fprintf(stderr, "%zu", global_work_sizze_5886[0]);
             fprintf(stderr, "] and local work size [");
-            fprintf(stderr, "%zu", local_work_sizze_5613[0]);
+            fprintf(stderr, "%zu", local_work_sizze_5890[0]);
             fprintf(stderr, "].\n");
-            time_start_5610 = get_wall_time();
+            time_start_5887 = get_wall_time();
         }
         OPENCL_SUCCEED(clEnqueueNDRangeKernel(ctx->opencl.queue,
-                                              ctx->chunked_reduce_kernel_5029,
-                                              1, NULL, global_work_sizze_5609,
-                                              local_work_sizze_5613, 0, NULL,
+                                              ctx->chunked_reduce_kernel_5031,
+                                              1, NULL, global_work_sizze_5886,
+                                              local_work_sizze_5890, 0, NULL,
                                               NULL));
         if (ctx->debugging) {
             OPENCL_SUCCEED(clFinish(ctx->opencl.queue));
-            time_end_5611 = get_wall_time();
+            time_end_5888 = get_wall_time();
             
-            long time_diff_5612 = time_end_5611 - time_start_5610;
+            long time_diff_5889 = time_end_5888 - time_start_5887;
             
-            ctx->chunked_reduce_kernel_5029_total_runtime += time_diff_5612;
-            ctx->chunked_reduce_kernel_5029_runs++;
+            ctx->chunked_reduce_kernel_5031_total_runtime += time_diff_5889;
+            ctx->chunked_reduce_kernel_5031_runs++;
             fprintf(stderr, "kernel %s runtime: %ldus\n",
-                    "chunked_reduce_kernel_5029", time_diff_5612);
+                    "chunked_reduce_kernel_5031", time_diff_5889);
         }
     }
-    memblock_unref_local(ctx, &mem_5428, "mem_5428");
+    memblock_unref_local(ctx, &mem_5633, "mem_5633");
     
-    struct memblock_device mem_5437;
+    struct memblock_device mem_5642;
     
-    mem_5437.references = NULL;
-    memblock_alloc_device(ctx, &mem_5437, 8, "mem_5437");
+    mem_5642.references = NULL;
+    memblock_alloc_device(ctx, &mem_5642, 8, "mem_5642");
     
-    int64_t binop_x_5433 = sext_i32_i64(max_num_groups_5015);
-    int64_t bytes_5432 = 8 * binop_x_5433;
-    struct memblock_local mem_5434;
+    int64_t binop_x_5638 = sext_i32_i64(max_num_groups_5017);
+    int64_t bytes_5637 = 8 * binop_x_5638;
+    struct memblock_local mem_5639;
     
-    mem_5434.references = NULL;
-    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5057, 0, bytes_5432,
+    mem_5639.references = NULL;
+    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5059, 0, bytes_5637,
                                   NULL));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5057, 1,
-                                  sizeof(num_groups_5020), &num_groups_5020));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5057, 2,
-                                  sizeof(mem_5431.mem), &mem_5431.mem));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5057, 3,
-                                  sizeof(mem_5437.mem), &mem_5437.mem));
-    if (1 * max_num_groups_5015 != 0) {
-        const size_t global_work_sizze_5614[1] = {max_num_groups_5015};
-        const size_t local_work_sizze_5618[1] = {max_num_groups_5015};
-        int64_t time_start_5615 = 0, time_end_5616 = 0;
+    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5059, 1,
+                                  sizeof(num_groups_5022), &num_groups_5022));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5059, 2,
+                                  sizeof(mem_5636.mem), &mem_5636.mem));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5059, 3,
+                                  sizeof(mem_5642.mem), &mem_5642.mem));
+    if (1 * max_num_groups_5017 != 0) {
+        const size_t global_work_sizze_5891[1] = {max_num_groups_5017};
+        const size_t local_work_sizze_5895[1] = {max_num_groups_5017};
+        int64_t time_start_5892 = 0, time_end_5893 = 0;
         
         if (ctx->debugging) {
             fprintf(stderr, "Launching %s with global work size [",
-                    "reduce_kernel_5057");
-            fprintf(stderr, "%zu", global_work_sizze_5614[0]);
+                    "reduce_kernel_5059");
+            fprintf(stderr, "%zu", global_work_sizze_5891[0]);
             fprintf(stderr, "] and local work size [");
-            fprintf(stderr, "%zu", local_work_sizze_5618[0]);
+            fprintf(stderr, "%zu", local_work_sizze_5895[0]);
             fprintf(stderr, "].\n");
-            time_start_5615 = get_wall_time();
+            time_start_5892 = get_wall_time();
         }
         OPENCL_SUCCEED(clEnqueueNDRangeKernel(ctx->opencl.queue,
-                                              ctx->reduce_kernel_5057, 1, NULL,
-                                              global_work_sizze_5614,
-                                              local_work_sizze_5618, 0, NULL,
+                                              ctx->reduce_kernel_5059, 1, NULL,
+                                              global_work_sizze_5891,
+                                              local_work_sizze_5895, 0, NULL,
                                               NULL));
         if (ctx->debugging) {
             OPENCL_SUCCEED(clFinish(ctx->opencl.queue));
-            time_end_5616 = get_wall_time();
+            time_end_5893 = get_wall_time();
             
-            long time_diff_5617 = time_end_5616 - time_start_5615;
+            long time_diff_5894 = time_end_5893 - time_start_5892;
             
-            ctx->reduce_kernel_5057_total_runtime += time_diff_5617;
-            ctx->reduce_kernel_5057_runs++;
-            fprintf(stderr, "kernel %s runtime: %ldus\n", "reduce_kernel_5057",
-                    time_diff_5617);
+            ctx->reduce_kernel_5059_total_runtime += time_diff_5894;
+            ctx->reduce_kernel_5059_runs++;
+            fprintf(stderr, "kernel %s runtime: %ldus\n", "reduce_kernel_5059",
+                    time_diff_5894);
         }
     }
-    memblock_unref_device(ctx, &mem_5431, "mem_5431");
-    memblock_unref_local(ctx, &mem_5434, "mem_5434");
+    memblock_unref_device(ctx, &mem_5636, "mem_5636");
+    memblock_unref_local(ctx, &mem_5639, "mem_5639");
     
-    double read_res_5619;
+    double read_res_5896;
     
-    OPENCL_SUCCEED(clEnqueueReadBuffer(ctx->opencl.queue, mem_5437.mem, CL_TRUE,
-                                       0, sizeof(double), &read_res_5619, 0,
+    OPENCL_SUCCEED(clEnqueueReadBuffer(ctx->opencl.queue, mem_5642.mem, CL_TRUE,
+                                       0, sizeof(double), &read_res_5896, 0,
                                        NULL, NULL));
     
-    double res_4814 = read_res_5619;
+    double res_4850 = read_res_5896;
     
-    memblock_unref_device(ctx, &mem_5437, "mem_5437");
+    memblock_unref_device(ctx, &mem_5642, "mem_5642");
     
-    double res_4819 = sitofp_i32_f64(sizze_4812);
-    double res_4820 = res_4814 / res_4819;
+    double res_4855 = sitofp_i32_f64(sizze_4848);
+    double res_4856 = res_4850 / res_4855;
     
-    scalar_out_5498 = res_4820;
-    *out_scalar_out_5608 = scalar_out_5498;
-    memblock_unref_local(ctx, &mem_5434, "mem_5434");
-    memblock_unref_device(ctx, &mem_5437, "mem_5437");
-    memblock_unref_local(ctx, &mem_5428, "mem_5428");
-    memblock_unref_device(ctx, &mem_5431, "mem_5431");
+    scalar_out_5705 = res_4856;
+    *out_scalar_out_5885 = scalar_out_5705;
+    memblock_unref_local(ctx, &mem_5639, "mem_5639");
+    memblock_unref_device(ctx, &mem_5642, "mem_5642");
+    memblock_unref_local(ctx, &mem_5633, "mem_5633");
+    memblock_unref_device(ctx, &mem_5636, "mem_5636");
     return 0;
 }
 static int futrts_variance(struct futhark_context *ctx,
-                           double *out_scalar_out_5620,
-                           int64_t values_mem_sizze_5424,
-                           struct memblock_device values_mem_5425,
-                           int32_t sizze_4821)
+                           double *out_scalar_out_5897,
+                           int64_t values_mem_sizze_5629,
+                           struct memblock_device values_mem_5630,
+                           int32_t sizze_4857)
 {
-    double scalar_out_5516;
-    int32_t group_sizze_5085;
+    double scalar_out_5723;
+    double res_4859 = sitofp_i32_f64(sizze_4857);
+    int32_t group_sizze_5076;
     
-    group_sizze_5085 = ctx->sizes.group_sizze_5084;
+    group_sizze_5076 = ctx->sizes.group_sizze_5075;
     
-    int32_t max_num_groups_5087;
+    int32_t max_num_groups_5078;
     
-    max_num_groups_5087 = ctx->sizes.max_num_groups_5086;
+    max_num_groups_5078 = ctx->sizes.max_num_groups_5077;
     
-    int32_t y_5088 = group_sizze_5085 - 1;
-    int32_t x_5089 = sizze_4821 + y_5088;
-    int32_t w_div_group_sizze_5090 = squot32(x_5089, group_sizze_5085);
-    int32_t num_groups_maybe_zzero_5091 = smin32(max_num_groups_5087,
-                                                 w_div_group_sizze_5090);
-    int32_t num_groups_5092 = smax32(1, num_groups_maybe_zzero_5091);
-    int32_t num_threads_5093 = group_sizze_5085 * num_groups_5092;
-    int32_t y_5094 = num_threads_5093 - 1;
-    int32_t x_5095 = sizze_4821 + y_5094;
-    int32_t per_thread_elements_5096 = squot32(x_5095, num_threads_5093);
-    int32_t y_5390 = smod32(sizze_4821, num_threads_5093);
-    int32_t x_5391 = num_threads_5093 - y_5390;
-    int32_t y_5392 = smod32(x_5391, num_threads_5093);
-    int32_t padded_sizze_5393 = sizze_4821 + y_5392;
-    int32_t per_chunk_5395 = squot32(padded_sizze_5393, num_threads_5093);
-    int64_t binop_x_5427 = sext_i32_i64(y_5392);
-    int64_t bytes_5426 = 8 * binop_x_5427;
-    struct memblock_device mem_5428;
+    int32_t y_5079 = group_sizze_5076 - 1;
+    int32_t x_5080 = sizze_4857 + y_5079;
+    int32_t w_div_group_sizze_5081 = squot32(x_5080, group_sizze_5076);
+    int32_t num_groups_maybe_zzero_5082 = smin32(max_num_groups_5078,
+                                                 w_div_group_sizze_5081);
+    int32_t num_groups_5083 = smax32(1, num_groups_maybe_zzero_5082);
+    int32_t num_threads_5084 = group_sizze_5076 * num_groups_5083;
+    int32_t y_5085 = num_threads_5084 - 1;
+    int32_t x_5086 = sizze_4857 + y_5085;
+    int32_t per_thread_elements_5087 = squot32(x_5086, num_threads_5084);
+    int64_t binop_x_5635 = sext_i32_i64(num_groups_5083);
+    int64_t bytes_5634 = 8 * binop_x_5635;
+    struct memblock_device mem_5636;
     
-    mem_5428.references = NULL;
-    memblock_alloc_device(ctx, &mem_5428, bytes_5426, "mem_5428");
+    mem_5636.references = NULL;
+    memblock_alloc_device(ctx, &mem_5636, bytes_5634, "mem_5636");
     
-    int64_t binop_x_5430 = sext_i32_i64(padded_sizze_5393);
-    int64_t bytes_5429 = 8 * binop_x_5430;
-    struct memblock_device mem_5431;
+    int64_t binop_x_5632 = sext_i32_i64(group_sizze_5076);
+    int64_t bytes_5631 = 8 * binop_x_5632;
+    struct memblock_local mem_5633;
     
-    mem_5431.references = NULL;
-    memblock_alloc_device(ctx, &mem_5431, bytes_5429, "mem_5431");
-    
-    int32_t tmp_offs_5517 = 0;
-    
-    if (sizze_4821 * sizeof(double) > 0) {
-        OPENCL_SUCCEED(clEnqueueCopyBuffer(ctx->opencl.queue,
-                                           values_mem_5425.mem, mem_5431.mem, 0,
-                                           tmp_offs_5517 * 8, sizze_4821 *
-                                           sizeof(double), 0, NULL, NULL));
-        if (ctx->debugging)
-            OPENCL_SUCCEED(clFinish(ctx->opencl.queue));
-    }
-    tmp_offs_5517 += sizze_4821;
-    if (y_5392 * sizeof(double) > 0) {
-        OPENCL_SUCCEED(clEnqueueCopyBuffer(ctx->opencl.queue, mem_5428.mem,
-                                           mem_5431.mem, 0, tmp_offs_5517 * 8,
-                                           y_5392 * sizeof(double), 0, NULL,
-                                           NULL));
-        if (ctx->debugging)
-            OPENCL_SUCCEED(clFinish(ctx->opencl.queue));
-    }
-    tmp_offs_5517 += y_5392;
-    memblock_unref_device(ctx, &mem_5428, "mem_5428");
-    
-    int32_t convop_x_5433 = num_threads_5093 * per_chunk_5395;
-    int64_t binop_x_5434 = sext_i32_i64(convop_x_5433);
-    int64_t bytes_5432 = 8 * binop_x_5434;
-    struct memblock_device mem_5435;
-    
-    mem_5435.references = NULL;
-    memblock_alloc_device(ctx, &mem_5435, bytes_5432, "mem_5435");
-    
-    int call_ret_5621 = futrts_map_transpose_opencl_f64(ctx, mem_5435, 0,
-                                                        mem_5431, 0, 1,
-                                                        per_chunk_5395,
-                                                        num_threads_5093,
-                                                        num_threads_5093 *
-                                                        per_chunk_5395,
-                                                        num_threads_5093 *
-                                                        per_chunk_5395);
-    
-    assert(call_ret_5621 == 0);
-    memblock_unref_device(ctx, &mem_5431, "mem_5431");
-    
-    int64_t binop_x_5446 = sext_i32_i64(num_groups_5092);
-    int64_t bytes_5445 = 8 * binop_x_5446;
-    struct memblock_device mem_5447;
-    
-    mem_5447.references = NULL;
-    memblock_alloc_device(ctx, &mem_5447, bytes_5445, "mem_5447");
-    
-    struct memblock_device mem_5450;
-    
-    mem_5450.references = NULL;
-    memblock_alloc_device(ctx, &mem_5450, bytes_5445, "mem_5450");
-    
-    struct memblock_device mem_5453;
-    
-    mem_5453.references = NULL;
-    memblock_alloc_device(ctx, &mem_5453, bytes_5445, "mem_5453");
-    
-    int64_t binop_x_5437 = sext_i32_i64(group_sizze_5085);
-    int64_t bytes_5436 = 8 * binop_x_5437;
-    struct memblock_local mem_5438;
-    
-    mem_5438.references = NULL;
-    
-    struct memblock_local mem_5441;
-    
-    mem_5441.references = NULL;
-    
-    struct memblock_local mem_5444;
-    
-    mem_5444.references = NULL;
+    mem_5633.references = NULL;
     if (ctx->debugging)
-        fprintf(stderr, "%s: %d\n", "input size", (int) sizze_4821);
-    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5103, 0,
-                                  bytes_5436, NULL));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5103, 1,
-                                  bytes_5436, NULL));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5103, 2,
-                                  bytes_5436, NULL));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5103, 3,
-                                  sizeof(sizze_4821), &sizze_4821));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5103, 4,
-                                  sizeof(num_threads_5093), &num_threads_5093));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5103, 5,
-                                  sizeof(per_thread_elements_5096),
-                                  &per_thread_elements_5096));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5103, 6,
-                                  sizeof(per_chunk_5395), &per_chunk_5395));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5103, 7,
-                                  sizeof(mem_5435.mem), &mem_5435.mem));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5103, 8,
-                                  sizeof(mem_5447.mem), &mem_5447.mem));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5103, 9,
-                                  sizeof(mem_5450.mem), &mem_5450.mem));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5103, 10,
-                                  sizeof(mem_5453.mem), &mem_5453.mem));
-    if (1 * (num_groups_5092 * group_sizze_5085) != 0) {
-        const size_t global_work_sizze_5622[1] = {num_groups_5092 *
-                     group_sizze_5085};
-        const size_t local_work_sizze_5626[1] = {group_sizze_5085};
-        int64_t time_start_5623 = 0, time_end_5624 = 0;
+        fprintf(stderr, "%s: %d\n", "input size", (int) sizze_4857);
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5092, 0,
+                                  bytes_5631, NULL));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5092, 1,
+                                  sizeof(sizze_4857), &sizze_4857));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5092, 2,
+                                  sizeof(num_threads_5084), &num_threads_5084));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5092, 3,
+                                  sizeof(per_thread_elements_5087),
+                                  &per_thread_elements_5087));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5092, 4,
+                                  sizeof(values_mem_5630.mem),
+                                  &values_mem_5630.mem));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5092, 5,
+                                  sizeof(mem_5636.mem), &mem_5636.mem));
+    if (1 * (num_groups_5083 * group_sizze_5076) != 0) {
+        const size_t global_work_sizze_5898[1] = {num_groups_5083 *
+                     group_sizze_5076};
+        const size_t local_work_sizze_5902[1] = {group_sizze_5076};
+        int64_t time_start_5899 = 0, time_end_5900 = 0;
         
         if (ctx->debugging) {
             fprintf(stderr, "Launching %s with global work size [",
-                    "chunked_reduce_kernel_5103");
-            fprintf(stderr, "%zu", global_work_sizze_5622[0]);
+                    "chunked_reduce_kernel_5092");
+            fprintf(stderr, "%zu", global_work_sizze_5898[0]);
             fprintf(stderr, "] and local work size [");
-            fprintf(stderr, "%zu", local_work_sizze_5626[0]);
+            fprintf(stderr, "%zu", local_work_sizze_5902[0]);
             fprintf(stderr, "].\n");
-            time_start_5623 = get_wall_time();
+            time_start_5899 = get_wall_time();
         }
         OPENCL_SUCCEED(clEnqueueNDRangeKernel(ctx->opencl.queue,
-                                              ctx->chunked_reduce_kernel_5103,
-                                              1, NULL, global_work_sizze_5622,
-                                              local_work_sizze_5626, 0, NULL,
+                                              ctx->chunked_reduce_kernel_5092,
+                                              1, NULL, global_work_sizze_5898,
+                                              local_work_sizze_5902, 0, NULL,
                                               NULL));
         if (ctx->debugging) {
             OPENCL_SUCCEED(clFinish(ctx->opencl.queue));
-            time_end_5624 = get_wall_time();
+            time_end_5900 = get_wall_time();
             
-            long time_diff_5625 = time_end_5624 - time_start_5623;
+            long time_diff_5901 = time_end_5900 - time_start_5899;
             
-            ctx->chunked_reduce_kernel_5103_total_runtime += time_diff_5625;
-            ctx->chunked_reduce_kernel_5103_runs++;
+            ctx->chunked_reduce_kernel_5092_total_runtime += time_diff_5901;
+            ctx->chunked_reduce_kernel_5092_runs++;
             fprintf(stderr, "kernel %s runtime: %ldus\n",
-                    "chunked_reduce_kernel_5103", time_diff_5625);
+                    "chunked_reduce_kernel_5092", time_diff_5901);
         }
     }
-    memblock_unref_device(ctx, &mem_5435, "mem_5435");
-    memblock_unref_local(ctx, &mem_5438, "mem_5438");
-    memblock_unref_local(ctx, &mem_5441, "mem_5441");
-    memblock_unref_local(ctx, &mem_5444, "mem_5444");
+    memblock_unref_local(ctx, &mem_5633, "mem_5633");
     
-    struct memblock_device mem_5465;
+    struct memblock_device mem_5642;
     
-    mem_5465.references = NULL;
-    memblock_alloc_device(ctx, &mem_5465, 8, "mem_5465");
+    mem_5642.references = NULL;
+    memblock_alloc_device(ctx, &mem_5642, 8, "mem_5642");
     
-    struct memblock_device mem_5468;
+    int64_t binop_x_5638 = sext_i32_i64(max_num_groups_5078);
+    int64_t bytes_5637 = 8 * binop_x_5638;
+    struct memblock_local mem_5639;
     
-    mem_5468.references = NULL;
-    memblock_alloc_device(ctx, &mem_5468, 8, "mem_5468");
-    
-    struct memblock_device mem_5471;
-    
-    mem_5471.references = NULL;
-    memblock_alloc_device(ctx, &mem_5471, 8, "mem_5471");
-    
-    int64_t binop_x_5455 = sext_i32_i64(max_num_groups_5087);
-    int64_t bytes_5454 = 8 * binop_x_5455;
-    struct memblock_local mem_5456;
-    
-    mem_5456.references = NULL;
-    
-    struct memblock_local mem_5459;
-    
-    mem_5459.references = NULL;
-    
-    struct memblock_local mem_5462;
-    
-    mem_5462.references = NULL;
-    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5208, 0, bytes_5454,
+    mem_5639.references = NULL;
+    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5120, 0, bytes_5637,
                                   NULL));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5208, 1, bytes_5454,
-                                  NULL));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5208, 2, bytes_5454,
-                                  NULL));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5208, 3,
-                                  sizeof(num_groups_5092), &num_groups_5092));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5208, 4,
-                                  sizeof(mem_5447.mem), &mem_5447.mem));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5208, 5,
-                                  sizeof(mem_5450.mem), &mem_5450.mem));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5208, 6,
-                                  sizeof(mem_5453.mem), &mem_5453.mem));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5208, 7,
-                                  sizeof(mem_5465.mem), &mem_5465.mem));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5208, 8,
-                                  sizeof(mem_5468.mem), &mem_5468.mem));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5208, 9,
-                                  sizeof(mem_5471.mem), &mem_5471.mem));
-    if (1 * max_num_groups_5087 != 0) {
-        const size_t global_work_sizze_5627[1] = {max_num_groups_5087};
-        const size_t local_work_sizze_5631[1] = {max_num_groups_5087};
-        int64_t time_start_5628 = 0, time_end_5629 = 0;
+    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5120, 1,
+                                  sizeof(num_groups_5083), &num_groups_5083));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5120, 2,
+                                  sizeof(mem_5636.mem), &mem_5636.mem));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5120, 3,
+                                  sizeof(mem_5642.mem), &mem_5642.mem));
+    if (1 * max_num_groups_5078 != 0) {
+        const size_t global_work_sizze_5903[1] = {max_num_groups_5078};
+        const size_t local_work_sizze_5907[1] = {max_num_groups_5078};
+        int64_t time_start_5904 = 0, time_end_5905 = 0;
         
         if (ctx->debugging) {
             fprintf(stderr, "Launching %s with global work size [",
-                    "reduce_kernel_5208");
-            fprintf(stderr, "%zu", global_work_sizze_5627[0]);
+                    "reduce_kernel_5120");
+            fprintf(stderr, "%zu", global_work_sizze_5903[0]);
             fprintf(stderr, "] and local work size [");
-            fprintf(stderr, "%zu", local_work_sizze_5631[0]);
+            fprintf(stderr, "%zu", local_work_sizze_5907[0]);
             fprintf(stderr, "].\n");
-            time_start_5628 = get_wall_time();
+            time_start_5904 = get_wall_time();
         }
         OPENCL_SUCCEED(clEnqueueNDRangeKernel(ctx->opencl.queue,
-                                              ctx->reduce_kernel_5208, 1, NULL,
-                                              global_work_sizze_5627,
-                                              local_work_sizze_5631, 0, NULL,
+                                              ctx->reduce_kernel_5120, 1, NULL,
+                                              global_work_sizze_5903,
+                                              local_work_sizze_5907, 0, NULL,
                                               NULL));
         if (ctx->debugging) {
             OPENCL_SUCCEED(clFinish(ctx->opencl.queue));
-            time_end_5629 = get_wall_time();
+            time_end_5905 = get_wall_time();
             
-            long time_diff_5630 = time_end_5629 - time_start_5628;
+            long time_diff_5906 = time_end_5905 - time_start_5904;
             
-            ctx->reduce_kernel_5208_total_runtime += time_diff_5630;
-            ctx->reduce_kernel_5208_runs++;
-            fprintf(stderr, "kernel %s runtime: %ldus\n", "reduce_kernel_5208",
-                    time_diff_5630);
+            ctx->reduce_kernel_5120_total_runtime += time_diff_5906;
+            ctx->reduce_kernel_5120_runs++;
+            fprintf(stderr, "kernel %s runtime: %ldus\n", "reduce_kernel_5120",
+                    time_diff_5906);
         }
     }
-    memblock_unref_device(ctx, &mem_5447, "mem_5447");
-    memblock_unref_device(ctx, &mem_5450, "mem_5450");
-    memblock_unref_device(ctx, &mem_5453, "mem_5453");
-    memblock_unref_local(ctx, &mem_5456, "mem_5456");
-    memblock_unref_local(ctx, &mem_5459, "mem_5459");
-    memblock_unref_local(ctx, &mem_5462, "mem_5462");
-    memblock_unref_device(ctx, &mem_5465, "mem_5465");
-    memblock_unref_device(ctx, &mem_5468, "mem_5468");
+    memblock_unref_device(ctx, &mem_5636, "mem_5636");
+    memblock_unref_local(ctx, &mem_5639, "mem_5639");
     
-    double read_res_5632;
+    double read_res_5908;
     
-    OPENCL_SUCCEED(clEnqueueReadBuffer(ctx->opencl.queue, mem_5471.mem, CL_TRUE,
-                                       0, sizeof(double), &read_res_5632, 0,
+    OPENCL_SUCCEED(clEnqueueReadBuffer(ctx->opencl.queue, mem_5642.mem, CL_TRUE,
+                                       0, sizeof(double), &read_res_5908, 0,
                                        NULL, NULL));
     
-    double res_4825 = read_res_5632;
+    double res_4860 = read_res_5908;
     
-    memblock_unref_device(ctx, &mem_5471, "mem_5471");
-    scalar_out_5516 = res_4825;
-    *out_scalar_out_5620 = scalar_out_5516;
-    memblock_unref_local(ctx, &mem_5462, "mem_5462");
-    memblock_unref_local(ctx, &mem_5459, "mem_5459");
-    memblock_unref_local(ctx, &mem_5456, "mem_5456");
-    memblock_unref_device(ctx, &mem_5471, "mem_5471");
-    memblock_unref_device(ctx, &mem_5468, "mem_5468");
-    memblock_unref_device(ctx, &mem_5465, "mem_5465");
-    memblock_unref_local(ctx, &mem_5444, "mem_5444");
-    memblock_unref_local(ctx, &mem_5441, "mem_5441");
-    memblock_unref_local(ctx, &mem_5438, "mem_5438");
-    memblock_unref_device(ctx, &mem_5453, "mem_5453");
-    memblock_unref_device(ctx, &mem_5450, "mem_5450");
-    memblock_unref_device(ctx, &mem_5447, "mem_5447");
-    memblock_unref_device(ctx, &mem_5435, "mem_5435");
-    memblock_unref_device(ctx, &mem_5431, "mem_5431");
-    memblock_unref_device(ctx, &mem_5428, "mem_5428");
+    memblock_unref_device(ctx, &mem_5642, "mem_5642");
+    
+    double res_4865 = res_4860 / res_4859;
+    int32_t group_sizze_5137;
+    
+    group_sizze_5137 = ctx->sizes.group_sizze_5136;
+    
+    int32_t max_num_groups_5139;
+    
+    max_num_groups_5139 = ctx->sizes.max_num_groups_5138;
+    
+    int32_t y_5140 = group_sizze_5137 - 1;
+    int32_t x_5141 = sizze_4857 + y_5140;
+    int32_t w_div_group_sizze_5142 = squot32(x_5141, group_sizze_5137);
+    int32_t num_groups_maybe_zzero_5143 = smin32(max_num_groups_5139,
+                                                 w_div_group_sizze_5142);
+    int32_t num_groups_5144 = smax32(1, num_groups_maybe_zzero_5143);
+    int32_t num_threads_5145 = group_sizze_5137 * num_groups_5144;
+    int32_t y_5146 = num_threads_5145 - 1;
+    int32_t x_5147 = sizze_4857 + y_5146;
+    int32_t per_thread_elements_5148 = squot32(x_5147, num_threads_5145);
+    int64_t binop_x_5647 = sext_i32_i64(num_groups_5144);
+    int64_t bytes_5646 = 8 * binop_x_5647;
+    struct memblock_device mem_5648;
+    
+    mem_5648.references = NULL;
+    memblock_alloc_device(ctx, &mem_5648, bytes_5646, "mem_5648");
+    
+    int64_t binop_x_5644 = sext_i32_i64(group_sizze_5137);
+    int64_t bytes_5643 = 8 * binop_x_5644;
+    struct memblock_local mem_5645;
+    
+    mem_5645.references = NULL;
+    if (ctx->debugging)
+        fprintf(stderr, "%s: %d\n", "input size", (int) sizze_4857);
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5153, 0,
+                                  bytes_5643, NULL));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5153, 1,
+                                  sizeof(sizze_4857), &sizze_4857));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5153, 2,
+                                  sizeof(res_4865), &res_4865));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5153, 3,
+                                  sizeof(num_threads_5145), &num_threads_5145));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5153, 4,
+                                  sizeof(per_thread_elements_5148),
+                                  &per_thread_elements_5148));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5153, 5,
+                                  sizeof(values_mem_5630.mem),
+                                  &values_mem_5630.mem));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5153, 6,
+                                  sizeof(mem_5648.mem), &mem_5648.mem));
+    if (1 * (num_groups_5144 * group_sizze_5137) != 0) {
+        const size_t global_work_sizze_5909[1] = {num_groups_5144 *
+                     group_sizze_5137};
+        const size_t local_work_sizze_5913[1] = {group_sizze_5137};
+        int64_t time_start_5910 = 0, time_end_5911 = 0;
+        
+        if (ctx->debugging) {
+            fprintf(stderr, "Launching %s with global work size [",
+                    "chunked_reduce_kernel_5153");
+            fprintf(stderr, "%zu", global_work_sizze_5909[0]);
+            fprintf(stderr, "] and local work size [");
+            fprintf(stderr, "%zu", local_work_sizze_5913[0]);
+            fprintf(stderr, "].\n");
+            time_start_5910 = get_wall_time();
+        }
+        OPENCL_SUCCEED(clEnqueueNDRangeKernel(ctx->opencl.queue,
+                                              ctx->chunked_reduce_kernel_5153,
+                                              1, NULL, global_work_sizze_5909,
+                                              local_work_sizze_5913, 0, NULL,
+                                              NULL));
+        if (ctx->debugging) {
+            OPENCL_SUCCEED(clFinish(ctx->opencl.queue));
+            time_end_5911 = get_wall_time();
+            
+            long time_diff_5912 = time_end_5911 - time_start_5910;
+            
+            ctx->chunked_reduce_kernel_5153_total_runtime += time_diff_5912;
+            ctx->chunked_reduce_kernel_5153_runs++;
+            fprintf(stderr, "kernel %s runtime: %ldus\n",
+                    "chunked_reduce_kernel_5153", time_diff_5912);
+        }
+    }
+    memblock_unref_local(ctx, &mem_5645, "mem_5645");
+    
+    struct memblock_device mem_5654;
+    
+    mem_5654.references = NULL;
+    memblock_alloc_device(ctx, &mem_5654, 8, "mem_5654");
+    
+    int64_t binop_x_5650 = sext_i32_i64(max_num_groups_5139);
+    int64_t bytes_5649 = 8 * binop_x_5650;
+    struct memblock_local mem_5651;
+    
+    mem_5651.references = NULL;
+    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5183, 0, bytes_5649,
+                                  NULL));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5183, 1,
+                                  sizeof(num_groups_5144), &num_groups_5144));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5183, 2,
+                                  sizeof(mem_5648.mem), &mem_5648.mem));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5183, 3,
+                                  sizeof(mem_5654.mem), &mem_5654.mem));
+    if (1 * max_num_groups_5139 != 0) {
+        const size_t global_work_sizze_5914[1] = {max_num_groups_5139};
+        const size_t local_work_sizze_5918[1] = {max_num_groups_5139};
+        int64_t time_start_5915 = 0, time_end_5916 = 0;
+        
+        if (ctx->debugging) {
+            fprintf(stderr, "Launching %s with global work size [",
+                    "reduce_kernel_5183");
+            fprintf(stderr, "%zu", global_work_sizze_5914[0]);
+            fprintf(stderr, "] and local work size [");
+            fprintf(stderr, "%zu", local_work_sizze_5918[0]);
+            fprintf(stderr, "].\n");
+            time_start_5915 = get_wall_time();
+        }
+        OPENCL_SUCCEED(clEnqueueNDRangeKernel(ctx->opencl.queue,
+                                              ctx->reduce_kernel_5183, 1, NULL,
+                                              global_work_sizze_5914,
+                                              local_work_sizze_5918, 0, NULL,
+                                              NULL));
+        if (ctx->debugging) {
+            OPENCL_SUCCEED(clFinish(ctx->opencl.queue));
+            time_end_5916 = get_wall_time();
+            
+            long time_diff_5917 = time_end_5916 - time_start_5915;
+            
+            ctx->reduce_kernel_5183_total_runtime += time_diff_5917;
+            ctx->reduce_kernel_5183_runs++;
+            fprintf(stderr, "kernel %s runtime: %ldus\n", "reduce_kernel_5183",
+                    time_diff_5917);
+        }
+    }
+    memblock_unref_device(ctx, &mem_5648, "mem_5648");
+    memblock_unref_local(ctx, &mem_5651, "mem_5651");
+    
+    double read_res_5919;
+    
+    OPENCL_SUCCEED(clEnqueueReadBuffer(ctx->opencl.queue, mem_5654.mem, CL_TRUE,
+                                       0, sizeof(double), &read_res_5919, 0,
+                                       NULL, NULL));
+    
+    double res_4866 = read_res_5919;
+    
+    memblock_unref_device(ctx, &mem_5654, "mem_5654");
+    
+    double y_4873 = res_4859 - 1.0;
+    double res_4874 = res_4866 / y_4873;
+    
+    scalar_out_5723 = res_4874;
+    *out_scalar_out_5897 = scalar_out_5723;
+    memblock_unref_local(ctx, &mem_5651, "mem_5651");
+    memblock_unref_device(ctx, &mem_5654, "mem_5654");
+    memblock_unref_local(ctx, &mem_5645, "mem_5645");
+    memblock_unref_device(ctx, &mem_5648, "mem_5648");
+    memblock_unref_local(ctx, &mem_5639, "mem_5639");
+    memblock_unref_device(ctx, &mem_5642, "mem_5642");
+    memblock_unref_local(ctx, &mem_5633, "mem_5633");
+    memblock_unref_device(ctx, &mem_5636, "mem_5636");
+    return 0;
+}
+static int futrts_skew(struct futhark_context *ctx, double *out_scalar_out_5920,
+                       int64_t values_mem_sizze_5629,
+                       struct memblock_device values_mem_5630,
+                       int32_t sizze_4875)
+{
+    double scalar_out_5758;
+    double res_4877 = sitofp_i32_f64(sizze_4875);
+    int32_t group_sizze_5200;
+    
+    group_sizze_5200 = ctx->sizes.group_sizze_5199;
+    
+    int32_t max_num_groups_5202;
+    
+    max_num_groups_5202 = ctx->sizes.max_num_groups_5201;
+    
+    int32_t y_5203 = group_sizze_5200 - 1;
+    int32_t x_5204 = sizze_4875 + y_5203;
+    int32_t w_div_group_sizze_5205 = squot32(x_5204, group_sizze_5200);
+    int32_t num_groups_maybe_zzero_5206 = smin32(max_num_groups_5202,
+                                                 w_div_group_sizze_5205);
+    int32_t num_groups_5207 = smax32(1, num_groups_maybe_zzero_5206);
+    int32_t num_threads_5208 = group_sizze_5200 * num_groups_5207;
+    int32_t y_5209 = num_threads_5208 - 1;
+    int32_t x_5210 = sizze_4875 + y_5209;
+    int32_t per_thread_elements_5211 = squot32(x_5210, num_threads_5208);
+    int64_t binop_x_5635 = sext_i32_i64(num_groups_5207);
+    int64_t bytes_5634 = 8 * binop_x_5635;
+    struct memblock_device mem_5636;
+    
+    mem_5636.references = NULL;
+    memblock_alloc_device(ctx, &mem_5636, bytes_5634, "mem_5636");
+    
+    int64_t binop_x_5632 = sext_i32_i64(group_sizze_5200);
+    int64_t bytes_5631 = 8 * binop_x_5632;
+    struct memblock_local mem_5633;
+    
+    mem_5633.references = NULL;
+    if (ctx->debugging)
+        fprintf(stderr, "%s: %d\n", "input size", (int) sizze_4875);
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5216, 0,
+                                  bytes_5631, NULL));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5216, 1,
+                                  sizeof(sizze_4875), &sizze_4875));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5216, 2,
+                                  sizeof(num_threads_5208), &num_threads_5208));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5216, 3,
+                                  sizeof(per_thread_elements_5211),
+                                  &per_thread_elements_5211));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5216, 4,
+                                  sizeof(values_mem_5630.mem),
+                                  &values_mem_5630.mem));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5216, 5,
+                                  sizeof(mem_5636.mem), &mem_5636.mem));
+    if (1 * (num_groups_5207 * group_sizze_5200) != 0) {
+        const size_t global_work_sizze_5921[1] = {num_groups_5207 *
+                     group_sizze_5200};
+        const size_t local_work_sizze_5925[1] = {group_sizze_5200};
+        int64_t time_start_5922 = 0, time_end_5923 = 0;
+        
+        if (ctx->debugging) {
+            fprintf(stderr, "Launching %s with global work size [",
+                    "chunked_reduce_kernel_5216");
+            fprintf(stderr, "%zu", global_work_sizze_5921[0]);
+            fprintf(stderr, "] and local work size [");
+            fprintf(stderr, "%zu", local_work_sizze_5925[0]);
+            fprintf(stderr, "].\n");
+            time_start_5922 = get_wall_time();
+        }
+        OPENCL_SUCCEED(clEnqueueNDRangeKernel(ctx->opencl.queue,
+                                              ctx->chunked_reduce_kernel_5216,
+                                              1, NULL, global_work_sizze_5921,
+                                              local_work_sizze_5925, 0, NULL,
+                                              NULL));
+        if (ctx->debugging) {
+            OPENCL_SUCCEED(clFinish(ctx->opencl.queue));
+            time_end_5923 = get_wall_time();
+            
+            long time_diff_5924 = time_end_5923 - time_start_5922;
+            
+            ctx->chunked_reduce_kernel_5216_total_runtime += time_diff_5924;
+            ctx->chunked_reduce_kernel_5216_runs++;
+            fprintf(stderr, "kernel %s runtime: %ldus\n",
+                    "chunked_reduce_kernel_5216", time_diff_5924);
+        }
+    }
+    memblock_unref_local(ctx, &mem_5633, "mem_5633");
+    
+    struct memblock_device mem_5642;
+    
+    mem_5642.references = NULL;
+    memblock_alloc_device(ctx, &mem_5642, 8, "mem_5642");
+    
+    int64_t binop_x_5638 = sext_i32_i64(max_num_groups_5202);
+    int64_t bytes_5637 = 8 * binop_x_5638;
+    struct memblock_local mem_5639;
+    
+    mem_5639.references = NULL;
+    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5244, 0, bytes_5637,
+                                  NULL));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5244, 1,
+                                  sizeof(num_groups_5207), &num_groups_5207));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5244, 2,
+                                  sizeof(mem_5636.mem), &mem_5636.mem));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5244, 3,
+                                  sizeof(mem_5642.mem), &mem_5642.mem));
+    if (1 * max_num_groups_5202 != 0) {
+        const size_t global_work_sizze_5926[1] = {max_num_groups_5202};
+        const size_t local_work_sizze_5930[1] = {max_num_groups_5202};
+        int64_t time_start_5927 = 0, time_end_5928 = 0;
+        
+        if (ctx->debugging) {
+            fprintf(stderr, "Launching %s with global work size [",
+                    "reduce_kernel_5244");
+            fprintf(stderr, "%zu", global_work_sizze_5926[0]);
+            fprintf(stderr, "] and local work size [");
+            fprintf(stderr, "%zu", local_work_sizze_5930[0]);
+            fprintf(stderr, "].\n");
+            time_start_5927 = get_wall_time();
+        }
+        OPENCL_SUCCEED(clEnqueueNDRangeKernel(ctx->opencl.queue,
+                                              ctx->reduce_kernel_5244, 1, NULL,
+                                              global_work_sizze_5926,
+                                              local_work_sizze_5930, 0, NULL,
+                                              NULL));
+        if (ctx->debugging) {
+            OPENCL_SUCCEED(clFinish(ctx->opencl.queue));
+            time_end_5928 = get_wall_time();
+            
+            long time_diff_5929 = time_end_5928 - time_start_5927;
+            
+            ctx->reduce_kernel_5244_total_runtime += time_diff_5929;
+            ctx->reduce_kernel_5244_runs++;
+            fprintf(stderr, "kernel %s runtime: %ldus\n", "reduce_kernel_5244",
+                    time_diff_5929);
+        }
+    }
+    memblock_unref_device(ctx, &mem_5636, "mem_5636");
+    memblock_unref_local(ctx, &mem_5639, "mem_5639");
+    
+    double read_res_5931;
+    
+    OPENCL_SUCCEED(clEnqueueReadBuffer(ctx->opencl.queue, mem_5642.mem, CL_TRUE,
+                                       0, sizeof(double), &read_res_5931, 0,
+                                       NULL, NULL));
+    
+    double res_4878 = read_res_5931;
+    
+    memblock_unref_device(ctx, &mem_5642, "mem_5642");
+    
+    double res_4883 = res_4878 / res_4877;
+    int32_t group_sizze_5263;
+    
+    group_sizze_5263 = ctx->sizes.group_sizze_5262;
+    
+    int32_t max_num_groups_5265;
+    
+    max_num_groups_5265 = ctx->sizes.max_num_groups_5264;
+    
+    int32_t y_5266 = group_sizze_5263 - 1;
+    int32_t x_5267 = sizze_4875 + y_5266;
+    int32_t w_div_group_sizze_5268 = squot32(x_5267, group_sizze_5263);
+    int32_t num_groups_maybe_zzero_5269 = smin32(max_num_groups_5265,
+                                                 w_div_group_sizze_5268);
+    int32_t num_groups_5270 = smax32(1, num_groups_maybe_zzero_5269);
+    int32_t num_threads_5271 = group_sizze_5263 * num_groups_5270;
+    int32_t y_5272 = num_threads_5271 - 1;
+    int32_t x_5273 = sizze_4875 + y_5272;
+    int32_t per_thread_elements_5274 = squot32(x_5273, num_threads_5271);
+    int64_t binop_x_5650 = sext_i32_i64(num_groups_5270);
+    int64_t bytes_5649 = 8 * binop_x_5650;
+    struct memblock_device mem_5651;
+    
+    mem_5651.references = NULL;
+    memblock_alloc_device(ctx, &mem_5651, bytes_5649, "mem_5651");
+    
+    struct memblock_device mem_5654;
+    
+    mem_5654.references = NULL;
+    memblock_alloc_device(ctx, &mem_5654, bytes_5649, "mem_5654");
+    
+    int64_t binop_x_5644 = sext_i32_i64(group_sizze_5263);
+    int64_t bytes_5643 = 8 * binop_x_5644;
+    struct memblock_local mem_5645;
+    
+    mem_5645.references = NULL;
+    
+    struct memblock_local mem_5648;
+    
+    mem_5648.references = NULL;
+    if (ctx->debugging)
+        fprintf(stderr, "%s: %d\n", "input size", (int) sizze_4875);
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5280, 0,
+                                  bytes_5643, NULL));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5280, 1,
+                                  bytes_5643, NULL));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5280, 2,
+                                  sizeof(sizze_4875), &sizze_4875));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5280, 3,
+                                  sizeof(res_4883), &res_4883));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5280, 4,
+                                  sizeof(num_threads_5271), &num_threads_5271));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5280, 5,
+                                  sizeof(per_thread_elements_5274),
+                                  &per_thread_elements_5274));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5280, 6,
+                                  sizeof(values_mem_5630.mem),
+                                  &values_mem_5630.mem));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5280, 7,
+                                  sizeof(mem_5651.mem), &mem_5651.mem));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5280, 8,
+                                  sizeof(mem_5654.mem), &mem_5654.mem));
+    if (1 * (num_groups_5270 * group_sizze_5263) != 0) {
+        const size_t global_work_sizze_5932[1] = {num_groups_5270 *
+                     group_sizze_5263};
+        const size_t local_work_sizze_5936[1] = {group_sizze_5263};
+        int64_t time_start_5933 = 0, time_end_5934 = 0;
+        
+        if (ctx->debugging) {
+            fprintf(stderr, "Launching %s with global work size [",
+                    "chunked_reduce_kernel_5280");
+            fprintf(stderr, "%zu", global_work_sizze_5932[0]);
+            fprintf(stderr, "] and local work size [");
+            fprintf(stderr, "%zu", local_work_sizze_5936[0]);
+            fprintf(stderr, "].\n");
+            time_start_5933 = get_wall_time();
+        }
+        OPENCL_SUCCEED(clEnqueueNDRangeKernel(ctx->opencl.queue,
+                                              ctx->chunked_reduce_kernel_5280,
+                                              1, NULL, global_work_sizze_5932,
+                                              local_work_sizze_5936, 0, NULL,
+                                              NULL));
+        if (ctx->debugging) {
+            OPENCL_SUCCEED(clFinish(ctx->opencl.queue));
+            time_end_5934 = get_wall_time();
+            
+            long time_diff_5935 = time_end_5934 - time_start_5933;
+            
+            ctx->chunked_reduce_kernel_5280_total_runtime += time_diff_5935;
+            ctx->chunked_reduce_kernel_5280_runs++;
+            fprintf(stderr, "kernel %s runtime: %ldus\n",
+                    "chunked_reduce_kernel_5280", time_diff_5935);
+        }
+    }
+    memblock_unref_local(ctx, &mem_5645, "mem_5645");
+    memblock_unref_local(ctx, &mem_5648, "mem_5648");
+    
+    struct memblock_device mem_5663;
+    
+    mem_5663.references = NULL;
+    memblock_alloc_device(ctx, &mem_5663, 8, "mem_5663");
+    
+    struct memblock_device mem_5666;
+    
+    mem_5666.references = NULL;
+    memblock_alloc_device(ctx, &mem_5666, 8, "mem_5666");
+    
+    int64_t binop_x_5656 = sext_i32_i64(max_num_groups_5265);
+    int64_t bytes_5655 = 8 * binop_x_5656;
+    struct memblock_local mem_5657;
+    
+    mem_5657.references = NULL;
+    
+    struct memblock_local mem_5660;
+    
+    mem_5660.references = NULL;
+    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5328, 0, bytes_5655,
+                                  NULL));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5328, 1, bytes_5655,
+                                  NULL));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5328, 2,
+                                  sizeof(num_groups_5270), &num_groups_5270));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5328, 3,
+                                  sizeof(mem_5651.mem), &mem_5651.mem));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5328, 4,
+                                  sizeof(mem_5654.mem), &mem_5654.mem));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5328, 5,
+                                  sizeof(mem_5663.mem), &mem_5663.mem));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5328, 6,
+                                  sizeof(mem_5666.mem), &mem_5666.mem));
+    if (1 * max_num_groups_5265 != 0) {
+        const size_t global_work_sizze_5937[1] = {max_num_groups_5265};
+        const size_t local_work_sizze_5941[1] = {max_num_groups_5265};
+        int64_t time_start_5938 = 0, time_end_5939 = 0;
+        
+        if (ctx->debugging) {
+            fprintf(stderr, "Launching %s with global work size [",
+                    "reduce_kernel_5328");
+            fprintf(stderr, "%zu", global_work_sizze_5937[0]);
+            fprintf(stderr, "] and local work size [");
+            fprintf(stderr, "%zu", local_work_sizze_5941[0]);
+            fprintf(stderr, "].\n");
+            time_start_5938 = get_wall_time();
+        }
+        OPENCL_SUCCEED(clEnqueueNDRangeKernel(ctx->opencl.queue,
+                                              ctx->reduce_kernel_5328, 1, NULL,
+                                              global_work_sizze_5937,
+                                              local_work_sizze_5941, 0, NULL,
+                                              NULL));
+        if (ctx->debugging) {
+            OPENCL_SUCCEED(clFinish(ctx->opencl.queue));
+            time_end_5939 = get_wall_time();
+            
+            long time_diff_5940 = time_end_5939 - time_start_5938;
+            
+            ctx->reduce_kernel_5328_total_runtime += time_diff_5940;
+            ctx->reduce_kernel_5328_runs++;
+            fprintf(stderr, "kernel %s runtime: %ldus\n", "reduce_kernel_5328",
+                    time_diff_5940);
+        }
+    }
+    memblock_unref_device(ctx, &mem_5651, "mem_5651");
+    memblock_unref_device(ctx, &mem_5654, "mem_5654");
+    memblock_unref_local(ctx, &mem_5657, "mem_5657");
+    memblock_unref_local(ctx, &mem_5660, "mem_5660");
+    
+    double read_res_5942;
+    
+    OPENCL_SUCCEED(clEnqueueReadBuffer(ctx->opencl.queue, mem_5663.mem, CL_TRUE,
+                                       0, sizeof(double), &read_res_5942, 0,
+                                       NULL, NULL));
+    
+    double res_4884 = read_res_5942;
+    
+    memblock_unref_device(ctx, &mem_5663, "mem_5663");
+    
+    double read_res_5943;
+    
+    OPENCL_SUCCEED(clEnqueueReadBuffer(ctx->opencl.queue, mem_5666.mem, CL_TRUE,
+                                       0, sizeof(double), &read_res_5943, 0,
+                                       NULL, NULL));
+    
+    double res_4885 = read_res_5943;
+    
+    memblock_unref_device(ctx, &mem_5666, "mem_5666");
+    
+    double res_4896;
+    
+    res_4896 = futrts_sqrt64(res_4884);
+    
+    double res_4897;
+    
+    res_4897 = futrts_sqrt64(res_4877);
+    
+    double x_4898 = res_4885 * res_4897;
+    double x_4899 = res_4896 * res_4896;
+    double y_4900 = res_4896 * x_4899;
+    double res_4901 = x_4898 / y_4900;
+    
+    scalar_out_5758 = res_4901;
+    *out_scalar_out_5920 = scalar_out_5758;
+    memblock_unref_local(ctx, &mem_5660, "mem_5660");
+    memblock_unref_local(ctx, &mem_5657, "mem_5657");
+    memblock_unref_device(ctx, &mem_5666, "mem_5666");
+    memblock_unref_device(ctx, &mem_5663, "mem_5663");
+    memblock_unref_local(ctx, &mem_5648, "mem_5648");
+    memblock_unref_local(ctx, &mem_5645, "mem_5645");
+    memblock_unref_device(ctx, &mem_5654, "mem_5654");
+    memblock_unref_device(ctx, &mem_5651, "mem_5651");
+    memblock_unref_local(ctx, &mem_5639, "mem_5639");
+    memblock_unref_device(ctx, &mem_5642, "mem_5642");
+    memblock_unref_local(ctx, &mem_5633, "mem_5633");
+    memblock_unref_device(ctx, &mem_5636, "mem_5636");
+    return 0;
+}
+static int futrts_kurtosis(struct futhark_context *ctx,
+                           double *out_scalar_out_5944,
+                           int64_t values_mem_sizze_5629,
+                           struct memblock_device values_mem_5630,
+                           int32_t sizze_4902)
+{
+    double scalar_out_5798;
+    double res_4904 = sitofp_i32_f64(sizze_4902);
+    int32_t group_sizze_5349;
+    
+    group_sizze_5349 = ctx->sizes.group_sizze_5348;
+    
+    int32_t max_num_groups_5351;
+    
+    max_num_groups_5351 = ctx->sizes.max_num_groups_5350;
+    
+    int32_t y_5352 = group_sizze_5349 - 1;
+    int32_t x_5353 = sizze_4902 + y_5352;
+    int32_t w_div_group_sizze_5354 = squot32(x_5353, group_sizze_5349);
+    int32_t num_groups_maybe_zzero_5355 = smin32(max_num_groups_5351,
+                                                 w_div_group_sizze_5354);
+    int32_t num_groups_5356 = smax32(1, num_groups_maybe_zzero_5355);
+    int32_t num_threads_5357 = group_sizze_5349 * num_groups_5356;
+    int32_t y_5358 = num_threads_5357 - 1;
+    int32_t x_5359 = sizze_4902 + y_5358;
+    int32_t per_thread_elements_5360 = squot32(x_5359, num_threads_5357);
+    int64_t binop_x_5635 = sext_i32_i64(num_groups_5356);
+    int64_t bytes_5634 = 8 * binop_x_5635;
+    struct memblock_device mem_5636;
+    
+    mem_5636.references = NULL;
+    memblock_alloc_device(ctx, &mem_5636, bytes_5634, "mem_5636");
+    
+    int64_t binop_x_5632 = sext_i32_i64(group_sizze_5349);
+    int64_t bytes_5631 = 8 * binop_x_5632;
+    struct memblock_local mem_5633;
+    
+    mem_5633.references = NULL;
+    if (ctx->debugging)
+        fprintf(stderr, "%s: %d\n", "input size", (int) sizze_4902);
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5365, 0,
+                                  bytes_5631, NULL));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5365, 1,
+                                  sizeof(sizze_4902), &sizze_4902));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5365, 2,
+                                  sizeof(num_threads_5357), &num_threads_5357));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5365, 3,
+                                  sizeof(per_thread_elements_5360),
+                                  &per_thread_elements_5360));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5365, 4,
+                                  sizeof(values_mem_5630.mem),
+                                  &values_mem_5630.mem));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5365, 5,
+                                  sizeof(mem_5636.mem), &mem_5636.mem));
+    if (1 * (num_groups_5356 * group_sizze_5349) != 0) {
+        const size_t global_work_sizze_5945[1] = {num_groups_5356 *
+                     group_sizze_5349};
+        const size_t local_work_sizze_5949[1] = {group_sizze_5349};
+        int64_t time_start_5946 = 0, time_end_5947 = 0;
+        
+        if (ctx->debugging) {
+            fprintf(stderr, "Launching %s with global work size [",
+                    "chunked_reduce_kernel_5365");
+            fprintf(stderr, "%zu", global_work_sizze_5945[0]);
+            fprintf(stderr, "] and local work size [");
+            fprintf(stderr, "%zu", local_work_sizze_5949[0]);
+            fprintf(stderr, "].\n");
+            time_start_5946 = get_wall_time();
+        }
+        OPENCL_SUCCEED(clEnqueueNDRangeKernel(ctx->opencl.queue,
+                                              ctx->chunked_reduce_kernel_5365,
+                                              1, NULL, global_work_sizze_5945,
+                                              local_work_sizze_5949, 0, NULL,
+                                              NULL));
+        if (ctx->debugging) {
+            OPENCL_SUCCEED(clFinish(ctx->opencl.queue));
+            time_end_5947 = get_wall_time();
+            
+            long time_diff_5948 = time_end_5947 - time_start_5946;
+            
+            ctx->chunked_reduce_kernel_5365_total_runtime += time_diff_5948;
+            ctx->chunked_reduce_kernel_5365_runs++;
+            fprintf(stderr, "kernel %s runtime: %ldus\n",
+                    "chunked_reduce_kernel_5365", time_diff_5948);
+        }
+    }
+    memblock_unref_local(ctx, &mem_5633, "mem_5633");
+    
+    struct memblock_device mem_5642;
+    
+    mem_5642.references = NULL;
+    memblock_alloc_device(ctx, &mem_5642, 8, "mem_5642");
+    
+    int64_t binop_x_5638 = sext_i32_i64(max_num_groups_5351);
+    int64_t bytes_5637 = 8 * binop_x_5638;
+    struct memblock_local mem_5639;
+    
+    mem_5639.references = NULL;
+    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5393, 0, bytes_5637,
+                                  NULL));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5393, 1,
+                                  sizeof(num_groups_5356), &num_groups_5356));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5393, 2,
+                                  sizeof(mem_5636.mem), &mem_5636.mem));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5393, 3,
+                                  sizeof(mem_5642.mem), &mem_5642.mem));
+    if (1 * max_num_groups_5351 != 0) {
+        const size_t global_work_sizze_5950[1] = {max_num_groups_5351};
+        const size_t local_work_sizze_5954[1] = {max_num_groups_5351};
+        int64_t time_start_5951 = 0, time_end_5952 = 0;
+        
+        if (ctx->debugging) {
+            fprintf(stderr, "Launching %s with global work size [",
+                    "reduce_kernel_5393");
+            fprintf(stderr, "%zu", global_work_sizze_5950[0]);
+            fprintf(stderr, "] and local work size [");
+            fprintf(stderr, "%zu", local_work_sizze_5954[0]);
+            fprintf(stderr, "].\n");
+            time_start_5951 = get_wall_time();
+        }
+        OPENCL_SUCCEED(clEnqueueNDRangeKernel(ctx->opencl.queue,
+                                              ctx->reduce_kernel_5393, 1, NULL,
+                                              global_work_sizze_5950,
+                                              local_work_sizze_5954, 0, NULL,
+                                              NULL));
+        if (ctx->debugging) {
+            OPENCL_SUCCEED(clFinish(ctx->opencl.queue));
+            time_end_5952 = get_wall_time();
+            
+            long time_diff_5953 = time_end_5952 - time_start_5951;
+            
+            ctx->reduce_kernel_5393_total_runtime += time_diff_5953;
+            ctx->reduce_kernel_5393_runs++;
+            fprintf(stderr, "kernel %s runtime: %ldus\n", "reduce_kernel_5393",
+                    time_diff_5953);
+        }
+    }
+    memblock_unref_device(ctx, &mem_5636, "mem_5636");
+    memblock_unref_local(ctx, &mem_5639, "mem_5639");
+    
+    double read_res_5955;
+    
+    OPENCL_SUCCEED(clEnqueueReadBuffer(ctx->opencl.queue, mem_5642.mem, CL_TRUE,
+                                       0, sizeof(double), &read_res_5955, 0,
+                                       NULL, NULL));
+    
+    double res_4905 = read_res_5955;
+    
+    memblock_unref_device(ctx, &mem_5642, "mem_5642");
+    
+    double res_4910 = res_4905 / res_4904;
+    int32_t group_sizze_5412;
+    
+    group_sizze_5412 = ctx->sizes.group_sizze_5411;
+    
+    int32_t max_num_groups_5414;
+    
+    max_num_groups_5414 = ctx->sizes.max_num_groups_5413;
+    
+    int32_t y_5415 = group_sizze_5412 - 1;
+    int32_t x_5416 = sizze_4902 + y_5415;
+    int32_t w_div_group_sizze_5417 = squot32(x_5416, group_sizze_5412);
+    int32_t num_groups_maybe_zzero_5418 = smin32(max_num_groups_5414,
+                                                 w_div_group_sizze_5417);
+    int32_t num_groups_5419 = smax32(1, num_groups_maybe_zzero_5418);
+    int32_t num_threads_5420 = group_sizze_5412 * num_groups_5419;
+    int32_t y_5421 = num_threads_5420 - 1;
+    int32_t x_5422 = sizze_4902 + y_5421;
+    int32_t per_thread_elements_5423 = squot32(x_5422, num_threads_5420);
+    int64_t binop_x_5650 = sext_i32_i64(num_groups_5419);
+    int64_t bytes_5649 = 8 * binop_x_5650;
+    struct memblock_device mem_5651;
+    
+    mem_5651.references = NULL;
+    memblock_alloc_device(ctx, &mem_5651, bytes_5649, "mem_5651");
+    
+    struct memblock_device mem_5654;
+    
+    mem_5654.references = NULL;
+    memblock_alloc_device(ctx, &mem_5654, bytes_5649, "mem_5654");
+    
+    int64_t binop_x_5644 = sext_i32_i64(group_sizze_5412);
+    int64_t bytes_5643 = 8 * binop_x_5644;
+    struct memblock_local mem_5645;
+    
+    mem_5645.references = NULL;
+    
+    struct memblock_local mem_5648;
+    
+    mem_5648.references = NULL;
+    if (ctx->debugging)
+        fprintf(stderr, "%s: %d\n", "input size", (int) sizze_4902);
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5429, 0,
+                                  bytes_5643, NULL));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5429, 1,
+                                  bytes_5643, NULL));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5429, 2,
+                                  sizeof(sizze_4902), &sizze_4902));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5429, 3,
+                                  sizeof(res_4910), &res_4910));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5429, 4,
+                                  sizeof(num_threads_5420), &num_threads_5420));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5429, 5,
+                                  sizeof(per_thread_elements_5423),
+                                  &per_thread_elements_5423));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5429, 6,
+                                  sizeof(values_mem_5630.mem),
+                                  &values_mem_5630.mem));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5429, 7,
+                                  sizeof(mem_5651.mem), &mem_5651.mem));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5429, 8,
+                                  sizeof(mem_5654.mem), &mem_5654.mem));
+    if (1 * (num_groups_5419 * group_sizze_5412) != 0) {
+        const size_t global_work_sizze_5956[1] = {num_groups_5419 *
+                     group_sizze_5412};
+        const size_t local_work_sizze_5960[1] = {group_sizze_5412};
+        int64_t time_start_5957 = 0, time_end_5958 = 0;
+        
+        if (ctx->debugging) {
+            fprintf(stderr, "Launching %s with global work size [",
+                    "chunked_reduce_kernel_5429");
+            fprintf(stderr, "%zu", global_work_sizze_5956[0]);
+            fprintf(stderr, "] and local work size [");
+            fprintf(stderr, "%zu", local_work_sizze_5960[0]);
+            fprintf(stderr, "].\n");
+            time_start_5957 = get_wall_time();
+        }
+        OPENCL_SUCCEED(clEnqueueNDRangeKernel(ctx->opencl.queue,
+                                              ctx->chunked_reduce_kernel_5429,
+                                              1, NULL, global_work_sizze_5956,
+                                              local_work_sizze_5960, 0, NULL,
+                                              NULL));
+        if (ctx->debugging) {
+            OPENCL_SUCCEED(clFinish(ctx->opencl.queue));
+            time_end_5958 = get_wall_time();
+            
+            long time_diff_5959 = time_end_5958 - time_start_5957;
+            
+            ctx->chunked_reduce_kernel_5429_total_runtime += time_diff_5959;
+            ctx->chunked_reduce_kernel_5429_runs++;
+            fprintf(stderr, "kernel %s runtime: %ldus\n",
+                    "chunked_reduce_kernel_5429", time_diff_5959);
+        }
+    }
+    memblock_unref_local(ctx, &mem_5645, "mem_5645");
+    memblock_unref_local(ctx, &mem_5648, "mem_5648");
+    
+    struct memblock_device mem_5663;
+    
+    mem_5663.references = NULL;
+    memblock_alloc_device(ctx, &mem_5663, 8, "mem_5663");
+    
+    struct memblock_device mem_5666;
+    
+    mem_5666.references = NULL;
+    memblock_alloc_device(ctx, &mem_5666, 8, "mem_5666");
+    
+    int64_t binop_x_5656 = sext_i32_i64(max_num_groups_5414);
+    int64_t bytes_5655 = 8 * binop_x_5656;
+    struct memblock_local mem_5657;
+    
+    mem_5657.references = NULL;
+    
+    struct memblock_local mem_5660;
+    
+    mem_5660.references = NULL;
+    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5478, 0, bytes_5655,
+                                  NULL));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5478, 1, bytes_5655,
+                                  NULL));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5478, 2,
+                                  sizeof(num_groups_5419), &num_groups_5419));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5478, 3,
+                                  sizeof(mem_5651.mem), &mem_5651.mem));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5478, 4,
+                                  sizeof(mem_5654.mem), &mem_5654.mem));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5478, 5,
+                                  sizeof(mem_5663.mem), &mem_5663.mem));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5478, 6,
+                                  sizeof(mem_5666.mem), &mem_5666.mem));
+    if (1 * max_num_groups_5414 != 0) {
+        const size_t global_work_sizze_5961[1] = {max_num_groups_5414};
+        const size_t local_work_sizze_5965[1] = {max_num_groups_5414};
+        int64_t time_start_5962 = 0, time_end_5963 = 0;
+        
+        if (ctx->debugging) {
+            fprintf(stderr, "Launching %s with global work size [",
+                    "reduce_kernel_5478");
+            fprintf(stderr, "%zu", global_work_sizze_5961[0]);
+            fprintf(stderr, "] and local work size [");
+            fprintf(stderr, "%zu", local_work_sizze_5965[0]);
+            fprintf(stderr, "].\n");
+            time_start_5962 = get_wall_time();
+        }
+        OPENCL_SUCCEED(clEnqueueNDRangeKernel(ctx->opencl.queue,
+                                              ctx->reduce_kernel_5478, 1, NULL,
+                                              global_work_sizze_5961,
+                                              local_work_sizze_5965, 0, NULL,
+                                              NULL));
+        if (ctx->debugging) {
+            OPENCL_SUCCEED(clFinish(ctx->opencl.queue));
+            time_end_5963 = get_wall_time();
+            
+            long time_diff_5964 = time_end_5963 - time_start_5962;
+            
+            ctx->reduce_kernel_5478_total_runtime += time_diff_5964;
+            ctx->reduce_kernel_5478_runs++;
+            fprintf(stderr, "kernel %s runtime: %ldus\n", "reduce_kernel_5478",
+                    time_diff_5964);
+        }
+    }
+    memblock_unref_device(ctx, &mem_5651, "mem_5651");
+    memblock_unref_device(ctx, &mem_5654, "mem_5654");
+    memblock_unref_local(ctx, &mem_5657, "mem_5657");
+    memblock_unref_local(ctx, &mem_5660, "mem_5660");
+    
+    double read_res_5966;
+    
+    OPENCL_SUCCEED(clEnqueueReadBuffer(ctx->opencl.queue, mem_5663.mem, CL_TRUE,
+                                       0, sizeof(double), &read_res_5966, 0,
+                                       NULL, NULL));
+    
+    double res_4911 = read_res_5966;
+    
+    memblock_unref_device(ctx, &mem_5663, "mem_5663");
+    
+    double read_res_5967;
+    
+    OPENCL_SUCCEED(clEnqueueReadBuffer(ctx->opencl.queue, mem_5666.mem, CL_TRUE,
+                                       0, sizeof(double), &read_res_5967, 0,
+                                       NULL, NULL));
+    
+    double res_4912 = read_res_5967;
+    
+    memblock_unref_device(ctx, &mem_5666, "mem_5666");
+    
+    double x_4924 = res_4904 * res_4912;
+    double y_4925 = res_4911 * res_4911;
+    double res_4926 = x_4924 / y_4925;
+    
+    scalar_out_5798 = res_4926;
+    *out_scalar_out_5944 = scalar_out_5798;
+    memblock_unref_local(ctx, &mem_5660, "mem_5660");
+    memblock_unref_local(ctx, &mem_5657, "mem_5657");
+    memblock_unref_device(ctx, &mem_5666, "mem_5666");
+    memblock_unref_device(ctx, &mem_5663, "mem_5663");
+    memblock_unref_local(ctx, &mem_5648, "mem_5648");
+    memblock_unref_local(ctx, &mem_5645, "mem_5645");
+    memblock_unref_device(ctx, &mem_5654, "mem_5654");
+    memblock_unref_device(ctx, &mem_5651, "mem_5651");
+    memblock_unref_local(ctx, &mem_5639, "mem_5639");
+    memblock_unref_device(ctx, &mem_5642, "mem_5642");
+    memblock_unref_local(ctx, &mem_5633, "mem_5633");
+    memblock_unref_device(ctx, &mem_5636, "mem_5636");
     return 0;
 }
 static int futrts_stddev(struct futhark_context *ctx,
-                         double *out_scalar_out_5633,
-                         int64_t values_mem_sizze_5424,
-                         struct memblock_device values_mem_5425,
-                         int32_t sizze_4882)
+                         double *out_scalar_out_5968,
+                         int64_t values_mem_sizze_5629,
+                         struct memblock_device values_mem_5630,
+                         int32_t sizze_4927)
 {
-    double scalar_out_5546;
-    int32_t group_sizze_5244;
+    double scalar_out_5838;
+    double res_4929 = sitofp_i32_f64(sizze_4927);
+    int32_t group_sizze_5499;
     
-    group_sizze_5244 = ctx->sizes.group_sizze_5243;
+    group_sizze_5499 = ctx->sizes.group_sizze_5498;
     
-    int32_t max_num_groups_5246;
+    int32_t max_num_groups_5501;
     
-    max_num_groups_5246 = ctx->sizes.max_num_groups_5245;
+    max_num_groups_5501 = ctx->sizes.max_num_groups_5500;
     
-    int32_t y_5247 = group_sizze_5244 - 1;
-    int32_t x_5248 = sizze_4882 + y_5247;
-    int32_t w_div_group_sizze_5249 = squot32(x_5248, group_sizze_5244);
-    int32_t num_groups_maybe_zzero_5250 = smin32(max_num_groups_5246,
-                                                 w_div_group_sizze_5249);
-    int32_t num_groups_5251 = smax32(1, num_groups_maybe_zzero_5250);
-    int32_t num_threads_5252 = group_sizze_5244 * num_groups_5251;
-    int32_t y_5253 = num_threads_5252 - 1;
-    int32_t x_5254 = sizze_4882 + y_5253;
-    int32_t per_thread_elements_5255 = squot32(x_5254, num_threads_5252);
-    int32_t y_5390 = smod32(sizze_4882, num_threads_5252);
-    int32_t x_5391 = num_threads_5252 - y_5390;
-    int32_t y_5392 = smod32(x_5391, num_threads_5252);
-    int32_t padded_sizze_5393 = sizze_4882 + y_5392;
-    int32_t per_chunk_5395 = squot32(padded_sizze_5393, num_threads_5252);
-    int64_t binop_x_5427 = sext_i32_i64(y_5392);
-    int64_t bytes_5426 = 8 * binop_x_5427;
-    struct memblock_device mem_5428;
+    int32_t y_5502 = group_sizze_5499 - 1;
+    int32_t x_5503 = sizze_4927 + y_5502;
+    int32_t w_div_group_sizze_5504 = squot32(x_5503, group_sizze_5499);
+    int32_t num_groups_maybe_zzero_5505 = smin32(max_num_groups_5501,
+                                                 w_div_group_sizze_5504);
+    int32_t num_groups_5506 = smax32(1, num_groups_maybe_zzero_5505);
+    int32_t num_threads_5507 = group_sizze_5499 * num_groups_5506;
+    int32_t y_5508 = num_threads_5507 - 1;
+    int32_t x_5509 = sizze_4927 + y_5508;
+    int32_t per_thread_elements_5510 = squot32(x_5509, num_threads_5507);
+    int64_t binop_x_5635 = sext_i32_i64(num_groups_5506);
+    int64_t bytes_5634 = 8 * binop_x_5635;
+    struct memblock_device mem_5636;
     
-    mem_5428.references = NULL;
-    memblock_alloc_device(ctx, &mem_5428, bytes_5426, "mem_5428");
+    mem_5636.references = NULL;
+    memblock_alloc_device(ctx, &mem_5636, bytes_5634, "mem_5636");
     
-    int64_t binop_x_5430 = sext_i32_i64(padded_sizze_5393);
-    int64_t bytes_5429 = 8 * binop_x_5430;
-    struct memblock_device mem_5431;
+    int64_t binop_x_5632 = sext_i32_i64(group_sizze_5499);
+    int64_t bytes_5631 = 8 * binop_x_5632;
+    struct memblock_local mem_5633;
     
-    mem_5431.references = NULL;
-    memblock_alloc_device(ctx, &mem_5431, bytes_5429, "mem_5431");
-    
-    int32_t tmp_offs_5547 = 0;
-    
-    if (sizze_4882 * sizeof(double) > 0) {
-        OPENCL_SUCCEED(clEnqueueCopyBuffer(ctx->opencl.queue,
-                                           values_mem_5425.mem, mem_5431.mem, 0,
-                                           tmp_offs_5547 * 8, sizze_4882 *
-                                           sizeof(double), 0, NULL, NULL));
-        if (ctx->debugging)
-            OPENCL_SUCCEED(clFinish(ctx->opencl.queue));
-    }
-    tmp_offs_5547 += sizze_4882;
-    if (y_5392 * sizeof(double) > 0) {
-        OPENCL_SUCCEED(clEnqueueCopyBuffer(ctx->opencl.queue, mem_5428.mem,
-                                           mem_5431.mem, 0, tmp_offs_5547 * 8,
-                                           y_5392 * sizeof(double), 0, NULL,
-                                           NULL));
-        if (ctx->debugging)
-            OPENCL_SUCCEED(clFinish(ctx->opencl.queue));
-    }
-    tmp_offs_5547 += y_5392;
-    memblock_unref_device(ctx, &mem_5428, "mem_5428");
-    
-    int32_t convop_x_5433 = num_threads_5252 * per_chunk_5395;
-    int64_t binop_x_5434 = sext_i32_i64(convop_x_5433);
-    int64_t bytes_5432 = 8 * binop_x_5434;
-    struct memblock_device mem_5435;
-    
-    mem_5435.references = NULL;
-    memblock_alloc_device(ctx, &mem_5435, bytes_5432, "mem_5435");
-    
-    int call_ret_5634 = futrts_map_transpose_opencl_f64(ctx, mem_5435, 0,
-                                                        mem_5431, 0, 1,
-                                                        per_chunk_5395,
-                                                        num_threads_5252,
-                                                        num_threads_5252 *
-                                                        per_chunk_5395,
-                                                        num_threads_5252 *
-                                                        per_chunk_5395);
-    
-    assert(call_ret_5634 == 0);
-    memblock_unref_device(ctx, &mem_5431, "mem_5431");
-    
-    int64_t binop_x_5446 = sext_i32_i64(num_groups_5251);
-    int64_t bytes_5445 = 8 * binop_x_5446;
-    struct memblock_device mem_5447;
-    
-    mem_5447.references = NULL;
-    memblock_alloc_device(ctx, &mem_5447, bytes_5445, "mem_5447");
-    
-    struct memblock_device mem_5450;
-    
-    mem_5450.references = NULL;
-    memblock_alloc_device(ctx, &mem_5450, bytes_5445, "mem_5450");
-    
-    struct memblock_device mem_5453;
-    
-    mem_5453.references = NULL;
-    memblock_alloc_device(ctx, &mem_5453, bytes_5445, "mem_5453");
-    
-    int64_t binop_x_5437 = sext_i32_i64(group_sizze_5244);
-    int64_t bytes_5436 = 8 * binop_x_5437;
-    struct memblock_local mem_5438;
-    
-    mem_5438.references = NULL;
-    
-    struct memblock_local mem_5441;
-    
-    mem_5441.references = NULL;
-    
-    struct memblock_local mem_5444;
-    
-    mem_5444.references = NULL;
+    mem_5633.references = NULL;
     if (ctx->debugging)
-        fprintf(stderr, "%s: %d\n", "input size", (int) sizze_4882);
-    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5262, 0,
-                                  bytes_5436, NULL));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5262, 1,
-                                  bytes_5436, NULL));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5262, 2,
-                                  bytes_5436, NULL));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5262, 3,
-                                  sizeof(sizze_4882), &sizze_4882));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5262, 4,
-                                  sizeof(num_threads_5252), &num_threads_5252));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5262, 5,
-                                  sizeof(per_thread_elements_5255),
-                                  &per_thread_elements_5255));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5262, 6,
-                                  sizeof(per_chunk_5395), &per_chunk_5395));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5262, 7,
-                                  sizeof(mem_5435.mem), &mem_5435.mem));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5262, 8,
-                                  sizeof(mem_5447.mem), &mem_5447.mem));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5262, 9,
-                                  sizeof(mem_5450.mem), &mem_5450.mem));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5262, 10,
-                                  sizeof(mem_5453.mem), &mem_5453.mem));
-    if (1 * (num_groups_5251 * group_sizze_5244) != 0) {
-        const size_t global_work_sizze_5635[1] = {num_groups_5251 *
-                     group_sizze_5244};
-        const size_t local_work_sizze_5639[1] = {group_sizze_5244};
-        int64_t time_start_5636 = 0, time_end_5637 = 0;
+        fprintf(stderr, "%s: %d\n", "input size", (int) sizze_4927);
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5515, 0,
+                                  bytes_5631, NULL));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5515, 1,
+                                  sizeof(sizze_4927), &sizze_4927));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5515, 2,
+                                  sizeof(num_threads_5507), &num_threads_5507));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5515, 3,
+                                  sizeof(per_thread_elements_5510),
+                                  &per_thread_elements_5510));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5515, 4,
+                                  sizeof(values_mem_5630.mem),
+                                  &values_mem_5630.mem));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5515, 5,
+                                  sizeof(mem_5636.mem), &mem_5636.mem));
+    if (1 * (num_groups_5506 * group_sizze_5499) != 0) {
+        const size_t global_work_sizze_5969[1] = {num_groups_5506 *
+                     group_sizze_5499};
+        const size_t local_work_sizze_5973[1] = {group_sizze_5499};
+        int64_t time_start_5970 = 0, time_end_5971 = 0;
         
         if (ctx->debugging) {
             fprintf(stderr, "Launching %s with global work size [",
-                    "chunked_reduce_kernel_5262");
-            fprintf(stderr, "%zu", global_work_sizze_5635[0]);
+                    "chunked_reduce_kernel_5515");
+            fprintf(stderr, "%zu", global_work_sizze_5969[0]);
             fprintf(stderr, "] and local work size [");
-            fprintf(stderr, "%zu", local_work_sizze_5639[0]);
+            fprintf(stderr, "%zu", local_work_sizze_5973[0]);
             fprintf(stderr, "].\n");
-            time_start_5636 = get_wall_time();
+            time_start_5970 = get_wall_time();
         }
         OPENCL_SUCCEED(clEnqueueNDRangeKernel(ctx->opencl.queue,
-                                              ctx->chunked_reduce_kernel_5262,
-                                              1, NULL, global_work_sizze_5635,
-                                              local_work_sizze_5639, 0, NULL,
+                                              ctx->chunked_reduce_kernel_5515,
+                                              1, NULL, global_work_sizze_5969,
+                                              local_work_sizze_5973, 0, NULL,
                                               NULL));
         if (ctx->debugging) {
             OPENCL_SUCCEED(clFinish(ctx->opencl.queue));
-            time_end_5637 = get_wall_time();
+            time_end_5971 = get_wall_time();
             
-            long time_diff_5638 = time_end_5637 - time_start_5636;
+            long time_diff_5972 = time_end_5971 - time_start_5970;
             
-            ctx->chunked_reduce_kernel_5262_total_runtime += time_diff_5638;
-            ctx->chunked_reduce_kernel_5262_runs++;
+            ctx->chunked_reduce_kernel_5515_total_runtime += time_diff_5972;
+            ctx->chunked_reduce_kernel_5515_runs++;
             fprintf(stderr, "kernel %s runtime: %ldus\n",
-                    "chunked_reduce_kernel_5262", time_diff_5638);
+                    "chunked_reduce_kernel_5515", time_diff_5972);
         }
     }
-    memblock_unref_device(ctx, &mem_5435, "mem_5435");
-    memblock_unref_local(ctx, &mem_5438, "mem_5438");
-    memblock_unref_local(ctx, &mem_5441, "mem_5441");
-    memblock_unref_local(ctx, &mem_5444, "mem_5444");
+    memblock_unref_local(ctx, &mem_5633, "mem_5633");
     
-    struct memblock_device mem_5465;
+    struct memblock_device mem_5642;
     
-    mem_5465.references = NULL;
-    memblock_alloc_device(ctx, &mem_5465, 8, "mem_5465");
+    mem_5642.references = NULL;
+    memblock_alloc_device(ctx, &mem_5642, 8, "mem_5642");
     
-    struct memblock_device mem_5468;
+    int64_t binop_x_5638 = sext_i32_i64(max_num_groups_5501);
+    int64_t bytes_5637 = 8 * binop_x_5638;
+    struct memblock_local mem_5639;
     
-    mem_5468.references = NULL;
-    memblock_alloc_device(ctx, &mem_5468, 8, "mem_5468");
-    
-    struct memblock_device mem_5471;
-    
-    mem_5471.references = NULL;
-    memblock_alloc_device(ctx, &mem_5471, 8, "mem_5471");
-    
-    int64_t binop_x_5455 = sext_i32_i64(max_num_groups_5246);
-    int64_t bytes_5454 = 8 * binop_x_5455;
-    struct memblock_local mem_5456;
-    
-    mem_5456.references = NULL;
-    
-    struct memblock_local mem_5459;
-    
-    mem_5459.references = NULL;
-    
-    struct memblock_local mem_5462;
-    
-    mem_5462.references = NULL;
-    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5367, 0, bytes_5454,
+    mem_5639.references = NULL;
+    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5543, 0, bytes_5637,
                                   NULL));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5367, 1, bytes_5454,
-                                  NULL));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5367, 2, bytes_5454,
-                                  NULL));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5367, 3,
-                                  sizeof(num_groups_5251), &num_groups_5251));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5367, 4,
-                                  sizeof(mem_5447.mem), &mem_5447.mem));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5367, 5,
-                                  sizeof(mem_5450.mem), &mem_5450.mem));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5367, 6,
-                                  sizeof(mem_5453.mem), &mem_5453.mem));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5367, 7,
-                                  sizeof(mem_5465.mem), &mem_5465.mem));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5367, 8,
-                                  sizeof(mem_5468.mem), &mem_5468.mem));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5367, 9,
-                                  sizeof(mem_5471.mem), &mem_5471.mem));
-    if (1 * max_num_groups_5246 != 0) {
-        const size_t global_work_sizze_5640[1] = {max_num_groups_5246};
-        const size_t local_work_sizze_5644[1] = {max_num_groups_5246};
-        int64_t time_start_5641 = 0, time_end_5642 = 0;
+    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5543, 1,
+                                  sizeof(num_groups_5506), &num_groups_5506));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5543, 2,
+                                  sizeof(mem_5636.mem), &mem_5636.mem));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5543, 3,
+                                  sizeof(mem_5642.mem), &mem_5642.mem));
+    if (1 * max_num_groups_5501 != 0) {
+        const size_t global_work_sizze_5974[1] = {max_num_groups_5501};
+        const size_t local_work_sizze_5978[1] = {max_num_groups_5501};
+        int64_t time_start_5975 = 0, time_end_5976 = 0;
         
         if (ctx->debugging) {
             fprintf(stderr, "Launching %s with global work size [",
-                    "reduce_kernel_5367");
-            fprintf(stderr, "%zu", global_work_sizze_5640[0]);
+                    "reduce_kernel_5543");
+            fprintf(stderr, "%zu", global_work_sizze_5974[0]);
             fprintf(stderr, "] and local work size [");
-            fprintf(stderr, "%zu", local_work_sizze_5644[0]);
+            fprintf(stderr, "%zu", local_work_sizze_5978[0]);
             fprintf(stderr, "].\n");
-            time_start_5641 = get_wall_time();
+            time_start_5975 = get_wall_time();
         }
         OPENCL_SUCCEED(clEnqueueNDRangeKernel(ctx->opencl.queue,
-                                              ctx->reduce_kernel_5367, 1, NULL,
-                                              global_work_sizze_5640,
-                                              local_work_sizze_5644, 0, NULL,
+                                              ctx->reduce_kernel_5543, 1, NULL,
+                                              global_work_sizze_5974,
+                                              local_work_sizze_5978, 0, NULL,
                                               NULL));
         if (ctx->debugging) {
             OPENCL_SUCCEED(clFinish(ctx->opencl.queue));
-            time_end_5642 = get_wall_time();
+            time_end_5976 = get_wall_time();
             
-            long time_diff_5643 = time_end_5642 - time_start_5641;
+            long time_diff_5977 = time_end_5976 - time_start_5975;
             
-            ctx->reduce_kernel_5367_total_runtime += time_diff_5643;
-            ctx->reduce_kernel_5367_runs++;
-            fprintf(stderr, "kernel %s runtime: %ldus\n", "reduce_kernel_5367",
-                    time_diff_5643);
+            ctx->reduce_kernel_5543_total_runtime += time_diff_5977;
+            ctx->reduce_kernel_5543_runs++;
+            fprintf(stderr, "kernel %s runtime: %ldus\n", "reduce_kernel_5543",
+                    time_diff_5977);
         }
     }
-    memblock_unref_device(ctx, &mem_5447, "mem_5447");
-    memblock_unref_device(ctx, &mem_5450, "mem_5450");
-    memblock_unref_device(ctx, &mem_5453, "mem_5453");
-    memblock_unref_local(ctx, &mem_5456, "mem_5456");
-    memblock_unref_local(ctx, &mem_5459, "mem_5459");
-    memblock_unref_local(ctx, &mem_5462, "mem_5462");
-    memblock_unref_device(ctx, &mem_5465, "mem_5465");
-    memblock_unref_device(ctx, &mem_5468, "mem_5468");
+    memblock_unref_device(ctx, &mem_5636, "mem_5636");
+    memblock_unref_local(ctx, &mem_5639, "mem_5639");
     
-    double read_res_5645;
+    double read_res_5979;
     
-    OPENCL_SUCCEED(clEnqueueReadBuffer(ctx->opencl.queue, mem_5471.mem, CL_TRUE,
-                                       0, sizeof(double), &read_res_5645, 0,
+    OPENCL_SUCCEED(clEnqueueReadBuffer(ctx->opencl.queue, mem_5642.mem, CL_TRUE,
+                                       0, sizeof(double), &read_res_5979, 0,
                                        NULL, NULL));
     
-    double res_4886 = read_res_5645;
+    double res_4930 = read_res_5979;
     
-    memblock_unref_device(ctx, &mem_5471, "mem_5471");
+    memblock_unref_device(ctx, &mem_5642, "mem_5642");
     
-    double res_4943;
+    double res_4935 = res_4930 / res_4929;
+    int32_t group_sizze_5560;
     
-    res_4943 = futrts_sqrt64(res_4886);
-    scalar_out_5546 = res_4943;
-    *out_scalar_out_5633 = scalar_out_5546;
-    memblock_unref_local(ctx, &mem_5462, "mem_5462");
-    memblock_unref_local(ctx, &mem_5459, "mem_5459");
-    memblock_unref_local(ctx, &mem_5456, "mem_5456");
-    memblock_unref_device(ctx, &mem_5471, "mem_5471");
-    memblock_unref_device(ctx, &mem_5468, "mem_5468");
-    memblock_unref_device(ctx, &mem_5465, "mem_5465");
-    memblock_unref_local(ctx, &mem_5444, "mem_5444");
-    memblock_unref_local(ctx, &mem_5441, "mem_5441");
-    memblock_unref_local(ctx, &mem_5438, "mem_5438");
-    memblock_unref_device(ctx, &mem_5453, "mem_5453");
-    memblock_unref_device(ctx, &mem_5450, "mem_5450");
-    memblock_unref_device(ctx, &mem_5447, "mem_5447");
-    memblock_unref_device(ctx, &mem_5435, "mem_5435");
-    memblock_unref_device(ctx, &mem_5431, "mem_5431");
-    memblock_unref_device(ctx, &mem_5428, "mem_5428");
+    group_sizze_5560 = ctx->sizes.group_sizze_5559;
+    
+    int32_t max_num_groups_5562;
+    
+    max_num_groups_5562 = ctx->sizes.max_num_groups_5561;
+    
+    int32_t y_5563 = group_sizze_5560 - 1;
+    int32_t x_5564 = sizze_4927 + y_5563;
+    int32_t w_div_group_sizze_5565 = squot32(x_5564, group_sizze_5560);
+    int32_t num_groups_maybe_zzero_5566 = smin32(max_num_groups_5562,
+                                                 w_div_group_sizze_5565);
+    int32_t num_groups_5567 = smax32(1, num_groups_maybe_zzero_5566);
+    int32_t num_threads_5568 = group_sizze_5560 * num_groups_5567;
+    int32_t y_5569 = num_threads_5568 - 1;
+    int32_t x_5570 = sizze_4927 + y_5569;
+    int32_t per_thread_elements_5571 = squot32(x_5570, num_threads_5568);
+    int64_t binop_x_5647 = sext_i32_i64(num_groups_5567);
+    int64_t bytes_5646 = 8 * binop_x_5647;
+    struct memblock_device mem_5648;
+    
+    mem_5648.references = NULL;
+    memblock_alloc_device(ctx, &mem_5648, bytes_5646, "mem_5648");
+    
+    int64_t binop_x_5644 = sext_i32_i64(group_sizze_5560);
+    int64_t bytes_5643 = 8 * binop_x_5644;
+    struct memblock_local mem_5645;
+    
+    mem_5645.references = NULL;
+    if (ctx->debugging)
+        fprintf(stderr, "%s: %d\n", "input size", (int) sizze_4927);
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5576, 0,
+                                  bytes_5643, NULL));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5576, 1,
+                                  sizeof(sizze_4927), &sizze_4927));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5576, 2,
+                                  sizeof(res_4935), &res_4935));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5576, 3,
+                                  sizeof(num_threads_5568), &num_threads_5568));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5576, 4,
+                                  sizeof(per_thread_elements_5571),
+                                  &per_thread_elements_5571));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5576, 5,
+                                  sizeof(values_mem_5630.mem),
+                                  &values_mem_5630.mem));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_5576, 6,
+                                  sizeof(mem_5648.mem), &mem_5648.mem));
+    if (1 * (num_groups_5567 * group_sizze_5560) != 0) {
+        const size_t global_work_sizze_5980[1] = {num_groups_5567 *
+                     group_sizze_5560};
+        const size_t local_work_sizze_5984[1] = {group_sizze_5560};
+        int64_t time_start_5981 = 0, time_end_5982 = 0;
+        
+        if (ctx->debugging) {
+            fprintf(stderr, "Launching %s with global work size [",
+                    "chunked_reduce_kernel_5576");
+            fprintf(stderr, "%zu", global_work_sizze_5980[0]);
+            fprintf(stderr, "] and local work size [");
+            fprintf(stderr, "%zu", local_work_sizze_5984[0]);
+            fprintf(stderr, "].\n");
+            time_start_5981 = get_wall_time();
+        }
+        OPENCL_SUCCEED(clEnqueueNDRangeKernel(ctx->opencl.queue,
+                                              ctx->chunked_reduce_kernel_5576,
+                                              1, NULL, global_work_sizze_5980,
+                                              local_work_sizze_5984, 0, NULL,
+                                              NULL));
+        if (ctx->debugging) {
+            OPENCL_SUCCEED(clFinish(ctx->opencl.queue));
+            time_end_5982 = get_wall_time();
+            
+            long time_diff_5983 = time_end_5982 - time_start_5981;
+            
+            ctx->chunked_reduce_kernel_5576_total_runtime += time_diff_5983;
+            ctx->chunked_reduce_kernel_5576_runs++;
+            fprintf(stderr, "kernel %s runtime: %ldus\n",
+                    "chunked_reduce_kernel_5576", time_diff_5983);
+        }
+    }
+    memblock_unref_local(ctx, &mem_5645, "mem_5645");
+    
+    struct memblock_device mem_5654;
+    
+    mem_5654.references = NULL;
+    memblock_alloc_device(ctx, &mem_5654, 8, "mem_5654");
+    
+    int64_t binop_x_5650 = sext_i32_i64(max_num_groups_5562);
+    int64_t bytes_5649 = 8 * binop_x_5650;
+    struct memblock_local mem_5651;
+    
+    mem_5651.references = NULL;
+    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5606, 0, bytes_5649,
+                                  NULL));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5606, 1,
+                                  sizeof(num_groups_5567), &num_groups_5567));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5606, 2,
+                                  sizeof(mem_5648.mem), &mem_5648.mem));
+    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_5606, 3,
+                                  sizeof(mem_5654.mem), &mem_5654.mem));
+    if (1 * max_num_groups_5562 != 0) {
+        const size_t global_work_sizze_5985[1] = {max_num_groups_5562};
+        const size_t local_work_sizze_5989[1] = {max_num_groups_5562};
+        int64_t time_start_5986 = 0, time_end_5987 = 0;
+        
+        if (ctx->debugging) {
+            fprintf(stderr, "Launching %s with global work size [",
+                    "reduce_kernel_5606");
+            fprintf(stderr, "%zu", global_work_sizze_5985[0]);
+            fprintf(stderr, "] and local work size [");
+            fprintf(stderr, "%zu", local_work_sizze_5989[0]);
+            fprintf(stderr, "].\n");
+            time_start_5986 = get_wall_time();
+        }
+        OPENCL_SUCCEED(clEnqueueNDRangeKernel(ctx->opencl.queue,
+                                              ctx->reduce_kernel_5606, 1, NULL,
+                                              global_work_sizze_5985,
+                                              local_work_sizze_5989, 0, NULL,
+                                              NULL));
+        if (ctx->debugging) {
+            OPENCL_SUCCEED(clFinish(ctx->opencl.queue));
+            time_end_5987 = get_wall_time();
+            
+            long time_diff_5988 = time_end_5987 - time_start_5986;
+            
+            ctx->reduce_kernel_5606_total_runtime += time_diff_5988;
+            ctx->reduce_kernel_5606_runs++;
+            fprintf(stderr, "kernel %s runtime: %ldus\n", "reduce_kernel_5606",
+                    time_diff_5988);
+        }
+    }
+    memblock_unref_device(ctx, &mem_5648, "mem_5648");
+    memblock_unref_local(ctx, &mem_5651, "mem_5651");
+    
+    double read_res_5990;
+    
+    OPENCL_SUCCEED(clEnqueueReadBuffer(ctx->opencl.queue, mem_5654.mem, CL_TRUE,
+                                       0, sizeof(double), &read_res_5990, 0,
+                                       NULL, NULL));
+    
+    double res_4936 = read_res_5990;
+    
+    memblock_unref_device(ctx, &mem_5654, "mem_5654");
+    
+    double y_4943 = res_4929 - 1.0;
+    double res_4944 = res_4936 / y_4943;
+    double res_4945;
+    
+    res_4945 = futrts_sqrt64(res_4944);
+    scalar_out_5838 = res_4945;
+    *out_scalar_out_5968 = scalar_out_5838;
+    memblock_unref_local(ctx, &mem_5651, "mem_5651");
+    memblock_unref_device(ctx, &mem_5654, "mem_5654");
+    memblock_unref_local(ctx, &mem_5645, "mem_5645");
+    memblock_unref_device(ctx, &mem_5648, "mem_5648");
+    memblock_unref_local(ctx, &mem_5639, "mem_5639");
+    memblock_unref_device(ctx, &mem_5642, "mem_5642");
+    memblock_unref_local(ctx, &mem_5633, "mem_5633");
+    memblock_unref_device(ctx, &mem_5636, "mem_5636");
     return 0;
 }
 struct futhark_f64_1d {
@@ -4094,24 +4696,24 @@ int64_t *futhark_shape_f64_1d(struct futhark_context *ctx,
 int futhark_entry_sum(struct futhark_context *ctx, double *out0, const
                       struct futhark_f64_1d *in0)
 {
-    int64_t col_mem_sizze_5424;
-    struct memblock_device col_mem_5425;
+    int64_t col_mem_sizze_5629;
+    struct memblock_device col_mem_5630;
     
-    col_mem_5425.references = NULL;
+    col_mem_5630.references = NULL;
     
-    int32_t sizze_4805;
-    double scalar_out_5480;
+    int32_t sizze_4841;
+    double scalar_out_5687;
     
     lock_lock(&ctx->lock);
-    col_mem_5425 = in0->mem;
-    col_mem_sizze_5424 = in0->mem.size;
-    sizze_4805 = in0->shape[0];
+    col_mem_5630 = in0->mem;
+    col_mem_sizze_5629 = in0->mem.size;
+    sizze_4841 = in0->shape[0];
     
-    int ret = futrts_sum(ctx, &scalar_out_5480, col_mem_sizze_5424,
-                         col_mem_5425, sizze_4805);
+    int ret = futrts_sum(ctx, &scalar_out_5687, col_mem_sizze_5629,
+                         col_mem_5630, sizze_4841);
     
     if (ret == 0) {
-        *out0 = scalar_out_5480;
+        *out0 = scalar_out_5687;
     }
     lock_unlock(&ctx->lock);
     return ret;
@@ -4119,24 +4721,24 @@ int futhark_entry_sum(struct futhark_context *ctx, double *out0, const
 int futhark_entry_mean(struct futhark_context *ctx, double *out0, const
                        struct futhark_f64_1d *in0)
 {
-    int64_t col_mem_sizze_5424;
-    struct memblock_device col_mem_5425;
+    int64_t col_mem_sizze_5629;
+    struct memblock_device col_mem_5630;
     
-    col_mem_5425.references = NULL;
+    col_mem_5630.references = NULL;
     
-    int32_t sizze_4812;
-    double scalar_out_5498;
+    int32_t sizze_4848;
+    double scalar_out_5705;
     
     lock_lock(&ctx->lock);
-    col_mem_5425 = in0->mem;
-    col_mem_sizze_5424 = in0->mem.size;
-    sizze_4812 = in0->shape[0];
+    col_mem_5630 = in0->mem;
+    col_mem_sizze_5629 = in0->mem.size;
+    sizze_4848 = in0->shape[0];
     
-    int ret = futrts_mean(ctx, &scalar_out_5498, col_mem_sizze_5424,
-                          col_mem_5425, sizze_4812);
+    int ret = futrts_mean(ctx, &scalar_out_5705, col_mem_sizze_5629,
+                          col_mem_5630, sizze_4848);
     
     if (ret == 0) {
-        *out0 = scalar_out_5498;
+        *out0 = scalar_out_5705;
     }
     lock_unlock(&ctx->lock);
     return ret;
@@ -4144,24 +4746,74 @@ int futhark_entry_mean(struct futhark_context *ctx, double *out0, const
 int futhark_entry_variance(struct futhark_context *ctx, double *out0, const
                            struct futhark_f64_1d *in0)
 {
-    int64_t values_mem_sizze_5424;
-    struct memblock_device values_mem_5425;
+    int64_t values_mem_sizze_5629;
+    struct memblock_device values_mem_5630;
     
-    values_mem_5425.references = NULL;
+    values_mem_5630.references = NULL;
     
-    int32_t sizze_4821;
-    double scalar_out_5516;
+    int32_t sizze_4857;
+    double scalar_out_5723;
     
     lock_lock(&ctx->lock);
-    values_mem_5425 = in0->mem;
-    values_mem_sizze_5424 = in0->mem.size;
-    sizze_4821 = in0->shape[0];
+    values_mem_5630 = in0->mem;
+    values_mem_sizze_5629 = in0->mem.size;
+    sizze_4857 = in0->shape[0];
     
-    int ret = futrts_variance(ctx, &scalar_out_5516, values_mem_sizze_5424,
-                              values_mem_5425, sizze_4821);
+    int ret = futrts_variance(ctx, &scalar_out_5723, values_mem_sizze_5629,
+                              values_mem_5630, sizze_4857);
     
     if (ret == 0) {
-        *out0 = scalar_out_5516;
+        *out0 = scalar_out_5723;
+    }
+    lock_unlock(&ctx->lock);
+    return ret;
+}
+int futhark_entry_skew(struct futhark_context *ctx, double *out0, const
+                       struct futhark_f64_1d *in0)
+{
+    int64_t values_mem_sizze_5629;
+    struct memblock_device values_mem_5630;
+    
+    values_mem_5630.references = NULL;
+    
+    int32_t sizze_4875;
+    double scalar_out_5758;
+    
+    lock_lock(&ctx->lock);
+    values_mem_5630 = in0->mem;
+    values_mem_sizze_5629 = in0->mem.size;
+    sizze_4875 = in0->shape[0];
+    
+    int ret = futrts_skew(ctx, &scalar_out_5758, values_mem_sizze_5629,
+                          values_mem_5630, sizze_4875);
+    
+    if (ret == 0) {
+        *out0 = scalar_out_5758;
+    }
+    lock_unlock(&ctx->lock);
+    return ret;
+}
+int futhark_entry_kurtosis(struct futhark_context *ctx, double *out0, const
+                           struct futhark_f64_1d *in0)
+{
+    int64_t values_mem_sizze_5629;
+    struct memblock_device values_mem_5630;
+    
+    values_mem_5630.references = NULL;
+    
+    int32_t sizze_4902;
+    double scalar_out_5798;
+    
+    lock_lock(&ctx->lock);
+    values_mem_5630 = in0->mem;
+    values_mem_sizze_5629 = in0->mem.size;
+    sizze_4902 = in0->shape[0];
+    
+    int ret = futrts_kurtosis(ctx, &scalar_out_5798, values_mem_sizze_5629,
+                              values_mem_5630, sizze_4902);
+    
+    if (ret == 0) {
+        *out0 = scalar_out_5798;
     }
     lock_unlock(&ctx->lock);
     return ret;
@@ -4169,24 +4821,24 @@ int futhark_entry_variance(struct futhark_context *ctx, double *out0, const
 int futhark_entry_stddev(struct futhark_context *ctx, double *out0, const
                          struct futhark_f64_1d *in0)
 {
-    int64_t values_mem_sizze_5424;
-    struct memblock_device values_mem_5425;
+    int64_t values_mem_sizze_5629;
+    struct memblock_device values_mem_5630;
     
-    values_mem_5425.references = NULL;
+    values_mem_5630.references = NULL;
     
-    int32_t sizze_4882;
-    double scalar_out_5546;
+    int32_t sizze_4927;
+    double scalar_out_5838;
     
     lock_lock(&ctx->lock);
-    values_mem_5425 = in0->mem;
-    values_mem_sizze_5424 = in0->mem.size;
-    sizze_4882 = in0->shape[0];
+    values_mem_5630 = in0->mem;
+    values_mem_sizze_5629 = in0->mem.size;
+    sizze_4927 = in0->shape[0];
     
-    int ret = futrts_stddev(ctx, &scalar_out_5546, values_mem_sizze_5424,
-                            values_mem_5425, sizze_4882);
+    int ret = futrts_stddev(ctx, &scalar_out_5838, values_mem_sizze_5629,
+                            values_mem_5630, sizze_4927);
     
     if (ret == 0) {
-        *out0 = scalar_out_5546;
+        *out0 = scalar_out_5838;
     }
     lock_unlock(&ctx->lock);
     return ret;
