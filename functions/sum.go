@@ -5,6 +5,7 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/functions/futhark"
 	"github.com/influxdata/flux/plan"
 )
 
@@ -73,7 +74,6 @@ func (s *SumProcedureSpec) ReAggregateSpec() plan.ProcedureSpec {
 	return new(SumProcedureSpec)
 }
 
-
 type SumAgg struct{}
 
 func createSumTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
@@ -82,7 +82,8 @@ func createSumTransformation(id execute.DatasetID, mode execute.AccumulationMode
 		return nil, nil, fmt.Errorf("invalid spec type %T", spec)
 	}
 
-	t, d := execute.NewAggregateTransformationAndDataset(id, mode, new(SumAgg), s.AggregateConfig, a.Allocator())
+	agg := futhark.NewAggregator(futhark.Sum)
+	t, d := execute.NewAggregateTransformationAndDataset(id, mode, agg, s.AggregateConfig, a.Allocator())
 	return t, d, nil
 }
 

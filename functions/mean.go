@@ -6,6 +6,7 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/functions/futhark"
 	"github.com/influxdata/flux/plan"
 )
 
@@ -76,7 +77,8 @@ func createMeanTransformation(id execute.DatasetID, mode execute.AccumulationMod
 	if !ok {
 		return nil, nil, fmt.Errorf("invalid spec type %T", spec)
 	}
-	t, d := execute.NewAggregateTransformationAndDataset(id, mode, new(MeanAgg), s.AggregateConfig, a.Allocator())
+	agg := futhark.NewAggregator(futhark.Mean)
+	t, d := execute.NewAggregateTransformationAndDataset(id, mode, agg, s.AggregateConfig, a.Allocator())
 	return t, d, nil
 }
 

@@ -4,3 +4,4 @@ vendor
 .vscode
 .vs
 .tern-project
+*.so
