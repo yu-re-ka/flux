@@ -94,6 +94,10 @@ int futhark_entry_sum(struct futhark_context *ctx, double *out0, const
                       struct futhark_f64_1d *in0);
 int futhark_entry_mean(struct futhark_context *ctx, double *out0, const
                        struct futhark_f64_1d *in0);
+int futhark_entry_variance(struct futhark_context *ctx, double *out0, const
+                           struct futhark_f64_1d *in0);
+int futhark_entry_stddev(struct futhark_context *ctx, double *out0, const
+                         struct futhark_f64_1d *in0);
 
 /*
  * Miscellaneous
