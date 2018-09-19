@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"math"
 
+	"github.com/influxdata/flux/functions/futhark"
+
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/plan"
@@ -76,7 +78,8 @@ func createSkewTransformation(id execute.DatasetID, mode execute.AccumulationMod
 	if !ok {
 		return nil, nil, fmt.Errorf("invalid spec type %T", spec)
 	}
-	t, d := execute.NewAggregateTransformationAndDataset(id, mode, new(SkewAgg), s.AggregateConfig, a.Allocator())
+	agg := futhark.NewAggregator(futhark.Skew)
+	t, d := execute.NewAggregateTransformationAndDataset(id, mode, agg, s.AggregateConfig, a.Allocator())
 	return t, d, nil
 }
 

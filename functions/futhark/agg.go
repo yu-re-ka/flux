@@ -12,20 +12,23 @@ import (
 	"github.com/influxdata/flux/execute"
 )
 
+var ctx *C.struct_futhark_context
+
+func init() {
+	cfg := C.futhark_context_config_new()
+	C.futhark_context_config_set_device(cfg, deviceStr)
+	ctx = C.futhark_context_new(cfg)
+}
+
 // AggFunc is a function the performs an aggregate operation using
 type AggFunc func(*C.struct_futhark_context, *C.double, *C.struct_futhark_f64_1d)
 
 type Aggregator struct {
-	cfg *C.struct_futhark_context_config
 	agg AggFunc
 }
 
 func NewAggregator(agg AggFunc) *Aggregator {
-	cfg := C.futhark_context_config_new()
-	C.futhark_context_config_set_device(cfg, deviceStr)
-
 	return &Aggregator{
-		cfg: cfg,
 		agg: agg,
 	}
 }
@@ -43,7 +46,7 @@ func (a *Aggregator) NewUIntAgg() execute.DoUIntAgg {
 }
 
 func (a *Aggregator) NewFloatAgg() execute.DoFloatAgg {
-	return NewDoFloatAgg(a.cfg, a.agg)
+	return NewDoFloatAgg(a.agg)
 }
 
 func (a *Aggregator) NewStringAgg() execute.DoStringAgg {
@@ -51,16 +54,12 @@ func (a *Aggregator) NewStringAgg() execute.DoStringAgg {
 }
 
 type DoFloatAgg struct {
-	ctx *C.struct_futhark_context
 	out float64
 	agg AggFunc
 }
 
-func NewDoFloatAgg(cfg *C.struct_futhark_context_config, agg AggFunc) *DoFloatAgg {
-	var ctx = C.futhark_context_new(cfg)
-
+func NewDoFloatAgg(agg AggFunc) *DoFloatAgg {
 	return &DoFloatAgg{
-		ctx: ctx,
 		agg: agg,
 	}
 }
@@ -70,9 +69,9 @@ func (f *DoFloatAgg) Type() flux.DataType {
 }
 
 func (f *DoFloatAgg) DoFloat(data []float64) {
-	var in = C.futhark_new_f64_1d(f.ctx, (*C.double)(&data[0]), (C.int)(len(data)))
-	f.agg(f.ctx, (*C.double)(&f.out), in)
-	C.futhark_free_f64_1d(f.ctx, in)
+	var in = C.futhark_new_f64_1d(ctx, (*C.double)(&data[0]), (C.int)(len(data)))
+	f.agg(ctx, (*C.double)(&f.out), in)
+	C.futhark_free_f64_1d(ctx, in)
 }
 
 func (f *DoFloatAgg) ValueFloat() float64 {
@@ -87,4 +86,10 @@ var Mean = func(ctx *C.struct_futhark_context, out *C.double, in *C.struct_futha
 }
 var Stddev = func(ctx *C.struct_futhark_context, out *C.double, in *C.struct_futhark_f64_1d) {
 	C.futhark_entry_stddev(ctx, out, in)
+}
+var Skew = func(ctx *C.struct_futhark_context, out *C.double, in *C.struct_futhark_f64_1d) {
+	C.futhark_entry_skew(ctx, out, in)
+}
+var Kurtosis = func(ctx *C.struct_futhark_context, out *C.double, in *C.struct_futhark_f64_1d) {
+	C.futhark_entry_kurtosis(ctx, out, in)
 }
