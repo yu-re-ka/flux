@@ -61,7 +61,7 @@ The parser directly implements the following grammar.
     MemberExpression               = DotExpression  | MemberBracketExpression
     DotExpression                  = "." identifer
     MemberBracketExpression        = "[" string "]" .
-    CallExpression                 = "(" PropertyList ")" .
+    CallExpression                 = "(" ParameterList ")" .
     IndexExpression                = "[" Expression "]" .
     PrimaryExpression              = identifer
                                    | int_lit
@@ -73,7 +73,7 @@ The parser directly implements the following grammar.
                                    | ObjectLiteral
                                    | ArrayLiteral
                                    | ParenExpression .
-    ObjectLiteral                  = "{" PropertyList "}" .
+    ObjectLiteral                  = "{" ObjectBody "}" .
     ArrayLiteral                   = "[" ExpressionList "]" .
     ParenExpression                = "(" ParenExpressionBody .
     ParenExpressionBody            = ")" FunctionExpressionSuffix
@@ -88,8 +88,15 @@ The parser directly implements the following grammar.
     FunctionBodyExpression         = Block | Expression .
     Block                          = "{" StatementList "}" .
     ExpressionList                 = [ Expression { "," Expression } ] .
+    ObjectBody                     = identifier ObjectBodySuffix .
+                                   | string_lit PropertyListSuffix .
+    ObjectBodySuffix               = "with" PropertyList
+                                   | PropertyListSuffix .
+    PropertyListSuffix             = PropertySuffix { "," PropertyList } .
     PropertyList                   = [ Property { "," Property } ] .
-    Property                       = identifier [ ":" Expression ]
+    Property                       = identifier PropertySuffix
+                                   | string_lit PropertySuffix .
+    PropertySuffix                 = [ ":" Expression ] .
                                    | string_lit ":" Expression .
     ParameterList                  = [ Parameter { "," Parameter } ] .
     Parameter                      = identifer [ "=" Expression ] .

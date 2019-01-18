@@ -22,10 +22,10 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 51,
-					Line:   45,
+					Line:   39,
 				},
 				File:   "v1.flux",
-				Source: "package v1\n\n// Json parses an InfluxDB 1.x json result into a table stream.\nbuiltin json\n\n// Databases returns the list of available databases, it has no parameters.\nbuiltin databases\n\n// fieldsAsCols is a special application of pivot that will automatically align fields within each measurement that have the same timestamp.\nfieldsAsCols = (tables=<-) =>\n    tables\n        |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n\n// TagValues returns the unique values for a given tag.\n// The return value is always a single table with a single column \"_value\".\ntagValues = (bucket, tag, predicate=(r) => true, start=-30d) =>\n    from(bucket: bucket)\n      |> range(start: start)\n      |> filter(fn: predicate)\n      |> keep(columns: [tag])\n      |> group()\n      |> distinct(column: tag)\n\n// MeasurementTagValues returns a single table with a single column \"_value\" that contains the\n// The return value is always a single table with a single column \"_value\".\nmeasurementTagValues = (bucket, measurement, tag) =>\n    tagValues(bucket: bucket, tag: tag, predicate: (r) => r._measurement == measurement)\n\n// TagKeys returns the list of tag keys for all series that match the predicate.\n// The return value is always a single table with a single column \"_value\".\ntagKeys = (bucket, predicate=(r) => true, start=-30d) =>\n    from(bucket: bucket)\n        |> range(start: start)\n        |> filter(fn: predicate)\n        |> keys()\n        |> keep(columns: [\"_value\"])\n        |> distinct()\n\n// MeasurementTagKeys returns the list of tag keys for a specific measurement.\nmeasurementTagKeys = (bucket, measurement) =>\n    tagKeys(bucket: bucket, predicate: (r) => r._measurement == measurement)\n\n// Measurements returns the list of measurements in a specific bucket.\nmeasurements = (bucket) =>\n    tagValues(bucket: bucket, tag: \"_measurement\")",
+				Source: "package v1\n\n// Json parses an InfluxDB 1.x json result into a table stream.\nbuiltin json\n\n// Databases returns the list of available databases, it has no parameters.\nbuiltin databases\n\n// TagValues returns the unique values for a given tag.\n// The return value is always a single table with a single column \"_value\".\ntagValues = (bucket, tag, predicate=(r) => true, start=-30d) =>\n    from(bucket: bucket)\n      |> range(start: start)\n      |> filter(fn: predicate)\n      |> group(columns: [tag])\n      |> distinct(column: tag)\n      |> keep(columns: [\"_value\"])\n\n// MeasurementTagValues returns a single table with a single column \"_value\" that contains the \n// The return value is always a single table with a single column \"_value\".\nmeasurementTagValues = (bucket, measurement, tag) =>\n    tagValues(bucket: bucket, tag: tag, predicate: (r) => r._measurement == measurement)\n\n// TagKeys returns the list of tag keys for all series that match the predicate.\n// The return value is always a single table with a single column \"_value\".\ntagKeys = (bucket, predicate=(r) => true, start=-30d) =>\n    from(bucket: bucket)\n        |> range(start: start)\n        |> filter(fn: predicate)\n        |> keys()\n        |> keep(columns: [\"_value\"])\n\n// MeasurementTagKeys returns the list of tag keys for a specific measurement.\nmeasurementTagKeys = (bucket, measurement) =>\n    tagKeys(bucket: bucket, predicate: (r) => r._measurement == measurement)\n\n// Measurements returns the list of measurements in a specific bucket.\nmeasurements = (bucket) =>\n    tagValues(bucket: bucket, tag: \"_measurement\")",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -105,393 +105,14 @@ var pkgAST = &ast.Package{
 				Errors: nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 81,
-						Line:   12,
+						Column: 35,
+						Line:   17,
 					},
 					File:   "v1.flux",
-					Source: "fieldsAsCols = (tables=<-) =>\n    tables\n        |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")",
+					Source: "tagValues = (bucket, tag, predicate=(r) => true, start=-30d) =>\n    from(bucket: bucket)\n      |> range(start: start)\n      |> filter(fn: predicate)\n      |> group(columns: [tag])\n      |> distinct(column: tag)\n      |> keep(columns: [\"_value\"])",
 					Start: ast.Position{
 						Column: 1,
-						Line:   10,
-					},
-				},
-			},
-			ID: &ast.Identifier{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc: &ast.SourceLocation{
-						End: ast.Position{
-							Column: 13,
-							Line:   10,
-						},
-						File:   "v1.flux",
-						Source: "fieldsAsCols",
-						Start: ast.Position{
-							Column: 1,
-							Line:   10,
-						},
-					},
-				},
-				Name: "fieldsAsCols",
-			},
-			Init: &ast.FunctionExpression{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc: &ast.SourceLocation{
-						End: ast.Position{
-							Column: 81,
-							Line:   12,
-						},
-						File:   "v1.flux",
-						Source: "(tables=<-) =>\n    tables\n        |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")",
-						Start: ast.Position{
-							Column: 16,
-							Line:   10,
-						},
-					},
-				},
-				Body: &ast.PipeExpression{
-					Argument: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 11,
-									Line:   11,
-								},
-								File:   "v1.flux",
-								Source: "tables",
-								Start: ast.Position{
-									Column: 5,
-									Line:   11,
-								},
-							},
-						},
-						Name: "tables",
-					},
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 81,
-								Line:   12,
-							},
-							File:   "v1.flux",
-							Source: "tables\n        |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")",
-							Start: ast.Position{
-								Column: 5,
-								Line:   11,
-							},
-						},
-					},
-					Call: &ast.CallExpression{
-						Arguments: []ast.Expression{&ast.ObjectExpression{
-							BaseNode: ast.BaseNode{
-								Errors: nil,
-								Loc: &ast.SourceLocation{
-									End: ast.Position{
-										Column: 80,
-										Line:   12,
-									},
-									File:   "v1.flux",
-									Source: "rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\"",
-									Start: ast.Position{
-										Column: 18,
-										Line:   12,
-									},
-								},
-							},
-							Properties: []*ast.Property{&ast.Property{
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 34,
-											Line:   12,
-										},
-										File:   "v1.flux",
-										Source: "rowKey:[\"_time\"]",
-										Start: ast.Position{
-											Column: 18,
-											Line:   12,
-										},
-									},
-								},
-								Key: &ast.Identifier{
-									BaseNode: ast.BaseNode{
-										Errors: nil,
-										Loc: &ast.SourceLocation{
-											End: ast.Position{
-												Column: 24,
-												Line:   12,
-											},
-											File:   "v1.flux",
-											Source: "rowKey",
-											Start: ast.Position{
-												Column: 18,
-												Line:   12,
-											},
-										},
-									},
-									Name: "rowKey",
-								},
-								Value: &ast.ArrayExpression{
-									BaseNode: ast.BaseNode{
-										Errors: nil,
-										Loc: &ast.SourceLocation{
-											End: ast.Position{
-												Column: 34,
-												Line:   12,
-											},
-											File:   "v1.flux",
-											Source: "[\"_time\"]",
-											Start: ast.Position{
-												Column: 25,
-												Line:   12,
-											},
-										},
-									},
-									Elements: []ast.Expression{&ast.StringLiteral{
-										BaseNode: ast.BaseNode{
-											Errors: nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 33,
-													Line:   12,
-												},
-												File:   "v1.flux",
-												Source: "\"_time\"",
-												Start: ast.Position{
-													Column: 26,
-													Line:   12,
-												},
-											},
-										},
-										Value: "_time",
-									}},
-								},
-							}, &ast.Property{
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 57,
-											Line:   12,
-										},
-										File:   "v1.flux",
-										Source: "columnKey: [\"_field\"]",
-										Start: ast.Position{
-											Column: 36,
-											Line:   12,
-										},
-									},
-								},
-								Key: &ast.Identifier{
-									BaseNode: ast.BaseNode{
-										Errors: nil,
-										Loc: &ast.SourceLocation{
-											End: ast.Position{
-												Column: 45,
-												Line:   12,
-											},
-											File:   "v1.flux",
-											Source: "columnKey",
-											Start: ast.Position{
-												Column: 36,
-												Line:   12,
-											},
-										},
-									},
-									Name: "columnKey",
-								},
-								Value: &ast.ArrayExpression{
-									BaseNode: ast.BaseNode{
-										Errors: nil,
-										Loc: &ast.SourceLocation{
-											End: ast.Position{
-												Column: 57,
-												Line:   12,
-											},
-											File:   "v1.flux",
-											Source: "[\"_field\"]",
-											Start: ast.Position{
-												Column: 47,
-												Line:   12,
-											},
-										},
-									},
-									Elements: []ast.Expression{&ast.StringLiteral{
-										BaseNode: ast.BaseNode{
-											Errors: nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 56,
-													Line:   12,
-												},
-												File:   "v1.flux",
-												Source: "\"_field\"",
-												Start: ast.Position{
-													Column: 48,
-													Line:   12,
-												},
-											},
-										},
-										Value: "_field",
-									}},
-								},
-							}, &ast.Property{
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 80,
-											Line:   12,
-										},
-										File:   "v1.flux",
-										Source: "valueColumn: \"_value\"",
-										Start: ast.Position{
-											Column: 59,
-											Line:   12,
-										},
-									},
-								},
-								Key: &ast.Identifier{
-									BaseNode: ast.BaseNode{
-										Errors: nil,
-										Loc: &ast.SourceLocation{
-											End: ast.Position{
-												Column: 70,
-												Line:   12,
-											},
-											File:   "v1.flux",
-											Source: "valueColumn",
-											Start: ast.Position{
-												Column: 59,
-												Line:   12,
-											},
-										},
-									},
-									Name: "valueColumn",
-								},
-								Value: &ast.StringLiteral{
-									BaseNode: ast.BaseNode{
-										Errors: nil,
-										Loc: &ast.SourceLocation{
-											End: ast.Position{
-												Column: 80,
-												Line:   12,
-											},
-											File:   "v1.flux",
-											Source: "\"_value\"",
-											Start: ast.Position{
-												Column: 72,
-												Line:   12,
-											},
-										},
-									},
-									Value: "_value",
-								},
-							}},
-						}},
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 81,
-									Line:   12,
-								},
-								File:   "v1.flux",
-								Source: "pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")",
-								Start: ast.Position{
-									Column: 12,
-									Line:   12,
-								},
-							},
-						},
-						Callee: &ast.Identifier{
-							BaseNode: ast.BaseNode{
-								Errors: nil,
-								Loc: &ast.SourceLocation{
-									End: ast.Position{
-										Column: 17,
-										Line:   12,
-									},
-									File:   "v1.flux",
-									Source: "pivot",
-									Start: ast.Position{
-										Column: 12,
-										Line:   12,
-									},
-								},
-							},
-							Name: "pivot",
-						},
-					},
-				},
-				Params: []*ast.Property{&ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 26,
-								Line:   10,
-							},
-							File:   "v1.flux",
-							Source: "tables=<-",
-							Start: ast.Position{
-								Column: 17,
-								Line:   10,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 23,
-									Line:   10,
-								},
-								File:   "v1.flux",
-								Source: "tables",
-								Start: ast.Position{
-									Column: 17,
-									Line:   10,
-								},
-							},
-						},
-						Name: "tables",
-					},
-					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 26,
-								Line:   10,
-							},
-							File:   "v1.flux",
-							Source: "<-",
-							Start: ast.Position{
-								Column: 24,
-								Line:   10,
-							},
-						},
-					}},
-				}},
-			},
-		}, &ast.VariableAssignment{
-			BaseNode: ast.BaseNode{
-				Errors: nil,
-				Loc: &ast.SourceLocation{
-					End: ast.Position{
-						Column: 31,
-						Line:   22,
-					},
-					File:   "v1.flux",
-					Source: "tagValues = (bucket, tag, predicate=(r) => true, start=-30d) =>\n    from(bucket: bucket)\n      |> range(start: start)\n      |> filter(fn: predicate)\n      |> keep(columns: [tag])\n      |> group()\n      |> distinct(column: tag)",
-					Start: ast.Position{
-						Column: 1,
-						Line:   16,
+						Line:   11,
 					},
 				},
 			},
@@ -501,13 +122,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 10,
-							Line:   16,
+							Line:   11,
 						},
 						File:   "v1.flux",
 						Source: "tagValues",
 						Start: ast.Position{
 							Column: 1,
-							Line:   16,
+							Line:   11,
 						},
 					},
 				},
@@ -518,14 +139,14 @@ var pkgAST = &ast.Package{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 31,
-							Line:   22,
+							Column: 35,
+							Line:   17,
 						},
 						File:   "v1.flux",
-						Source: "(bucket, tag, predicate=(r) => true, start=-30d) =>\n    from(bucket: bucket)\n      |> range(start: start)\n      |> filter(fn: predicate)\n      |> keep(columns: [tag])\n      |> group()\n      |> distinct(column: tag)",
+						Source: "(bucket, tag, predicate=(r) => true, start=-30d) =>\n    from(bucket: bucket)\n      |> range(start: start)\n      |> filter(fn: predicate)\n      |> group(columns: [tag])\n      |> distinct(column: tag)\n      |> keep(columns: [\"_value\"])",
 						Start: ast.Position{
 							Column: 13,
-							Line:   16,
+							Line:   11,
 						},
 					},
 				},
@@ -541,13 +162,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 24,
-														Line:   17,
+														Line:   12,
 													},
 													File:   "v1.flux",
 													Source: "bucket: bucket",
 													Start: ast.Position{
 														Column: 10,
-														Line:   17,
+														Line:   12,
 													},
 												},
 											},
@@ -557,13 +178,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 24,
-															Line:   17,
+															Line:   12,
 														},
 														File:   "v1.flux",
 														Source: "bucket: bucket",
 														Start: ast.Position{
 															Column: 10,
-															Line:   17,
+															Line:   12,
 														},
 													},
 												},
@@ -573,13 +194,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 16,
-																Line:   17,
+																Line:   12,
 															},
 															File:   "v1.flux",
 															Source: "bucket",
 															Start: ast.Position{
 																Column: 10,
-																Line:   17,
+																Line:   12,
 															},
 														},
 													},
@@ -591,32 +212,33 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 24,
-																Line:   17,
+																Line:   12,
 															},
 															File:   "v1.flux",
 															Source: "bucket",
 															Start: ast.Position{
 																Column: 18,
-																Line:   17,
+																Line:   12,
 															},
 														},
 													},
 													Name: "bucket",
 												},
 											}},
+											With: nil,
 										}},
 										BaseNode: ast.BaseNode{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 25,
-													Line:   17,
+													Line:   12,
 												},
 												File:   "v1.flux",
 												Source: "from(bucket: bucket)",
 												Start: ast.Position{
 													Column: 5,
-													Line:   17,
+													Line:   12,
 												},
 											},
 										},
@@ -626,13 +248,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 9,
-														Line:   17,
+														Line:   12,
 													},
 													File:   "v1.flux",
 													Source: "from",
 													Start: ast.Position{
 														Column: 5,
-														Line:   17,
+														Line:   12,
 													},
 												},
 											},
@@ -644,13 +266,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 29,
-												Line:   18,
+												Line:   13,
 											},
 											File:   "v1.flux",
 											Source: "from(bucket: bucket)\n      |> range(start: start)",
 											Start: ast.Position{
 												Column: 5,
-												Line:   17,
+												Line:   12,
 											},
 										},
 									},
@@ -661,13 +283,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 28,
-														Line:   18,
+														Line:   13,
 													},
 													File:   "v1.flux",
 													Source: "start: start",
 													Start: ast.Position{
 														Column: 16,
-														Line:   18,
+														Line:   13,
 													},
 												},
 											},
@@ -677,13 +299,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 28,
-															Line:   18,
+															Line:   13,
 														},
 														File:   "v1.flux",
 														Source: "start: start",
 														Start: ast.Position{
 															Column: 16,
-															Line:   18,
+															Line:   13,
 														},
 													},
 												},
@@ -693,13 +315,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 21,
-																Line:   18,
+																Line:   13,
 															},
 															File:   "v1.flux",
 															Source: "start",
 															Start: ast.Position{
 																Column: 16,
-																Line:   18,
+																Line:   13,
 															},
 														},
 													},
@@ -711,32 +333,33 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 28,
-																Line:   18,
+																Line:   13,
 															},
 															File:   "v1.flux",
 															Source: "start",
 															Start: ast.Position{
 																Column: 23,
-																Line:   18,
+																Line:   13,
 															},
 														},
 													},
 													Name: "start",
 												},
 											}},
+											With: nil,
 										}},
 										BaseNode: ast.BaseNode{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 29,
-													Line:   18,
+													Line:   13,
 												},
 												File:   "v1.flux",
 												Source: "range(start: start)",
 												Start: ast.Position{
 													Column: 10,
-													Line:   18,
+													Line:   13,
 												},
 											},
 										},
@@ -746,13 +369,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 15,
-														Line:   18,
+														Line:   13,
 													},
 													File:   "v1.flux",
 													Source: "range",
 													Start: ast.Position{
 														Column: 10,
-														Line:   18,
+														Line:   13,
 													},
 												},
 											},
@@ -765,13 +388,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 31,
-											Line:   19,
+											Line:   14,
 										},
 										File:   "v1.flux",
 										Source: "from(bucket: bucket)\n      |> range(start: start)\n      |> filter(fn: predicate)",
 										Start: ast.Position{
 											Column: 5,
-											Line:   17,
+											Line:   12,
 										},
 									},
 								},
@@ -782,13 +405,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 30,
-													Line:   19,
+													Line:   14,
 												},
 												File:   "v1.flux",
 												Source: "fn: predicate",
 												Start: ast.Position{
 													Column: 17,
-													Line:   19,
+													Line:   14,
 												},
 											},
 										},
@@ -798,13 +421,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 30,
-														Line:   19,
+														Line:   14,
 													},
 													File:   "v1.flux",
 													Source: "fn: predicate",
 													Start: ast.Position{
 														Column: 17,
-														Line:   19,
+														Line:   14,
 													},
 												},
 											},
@@ -814,13 +437,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 19,
-															Line:   19,
+															Line:   14,
 														},
 														File:   "v1.flux",
 														Source: "fn",
 														Start: ast.Position{
 															Column: 17,
-															Line:   19,
+															Line:   14,
 														},
 													},
 												},
@@ -832,32 +455,33 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 30,
-															Line:   19,
+															Line:   14,
 														},
 														File:   "v1.flux",
 														Source: "predicate",
 														Start: ast.Position{
 															Column: 21,
-															Line:   19,
+															Line:   14,
 														},
 													},
 												},
 												Name: "predicate",
 											},
 										}},
+										With: nil,
 									}},
 									BaseNode: ast.BaseNode{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 31,
-												Line:   19,
+												Line:   14,
 											},
 											File:   "v1.flux",
 											Source: "filter(fn: predicate)",
 											Start: ast.Position{
 												Column: 10,
-												Line:   19,
+												Line:   14,
 											},
 										},
 									},
@@ -867,13 +491,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 16,
-													Line:   19,
+													Line:   14,
 												},
 												File:   "v1.flux",
 												Source: "filter",
 												Start: ast.Position{
 													Column: 10,
-													Line:   19,
+													Line:   14,
 												},
 											},
 										},
@@ -885,14 +509,14 @@ var pkgAST = &ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 30,
-										Line:   20,
+										Column: 31,
+										Line:   15,
 									},
 									File:   "v1.flux",
-									Source: "from(bucket: bucket)\n      |> range(start: start)\n      |> filter(fn: predicate)\n      |> keep(columns: [tag])",
+									Source: "from(bucket: bucket)\n      |> range(start: start)\n      |> filter(fn: predicate)\n      |> group(columns: [tag])",
 									Start: ast.Position{
 										Column: 5,
-										Line:   17,
+										Line:   12,
 									},
 								},
 							},
@@ -902,14 +526,14 @@ var pkgAST = &ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 29,
-												Line:   20,
+												Column: 30,
+												Line:   15,
 											},
 											File:   "v1.flux",
 											Source: "columns: [tag]",
 											Start: ast.Position{
-												Column: 15,
-												Line:   20,
+												Column: 16,
+												Line:   15,
 											},
 										},
 									},
@@ -918,14 +542,14 @@ var pkgAST = &ast.Package{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 29,
-													Line:   20,
+													Column: 30,
+													Line:   15,
 												},
 												File:   "v1.flux",
 												Source: "columns: [tag]",
 												Start: ast.Position{
-													Column: 15,
-													Line:   20,
+													Column: 16,
+													Line:   15,
 												},
 											},
 										},
@@ -934,14 +558,14 @@ var pkgAST = &ast.Package{
 												Errors: nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 22,
-														Line:   20,
+														Column: 23,
+														Line:   15,
 													},
 													File:   "v1.flux",
 													Source: "columns",
 													Start: ast.Position{
-														Column: 15,
-														Line:   20,
+														Column: 16,
+														Line:   15,
 													},
 												},
 											},
@@ -952,14 +576,14 @@ var pkgAST = &ast.Package{
 												Errors: nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 29,
-														Line:   20,
+														Column: 30,
+														Line:   15,
 													},
 													File:   "v1.flux",
 													Source: "[tag]",
 													Start: ast.Position{
-														Column: 24,
-														Line:   20,
+														Column: 25,
+														Line:   15,
 													},
 												},
 											},
@@ -968,14 +592,14 @@ var pkgAST = &ast.Package{
 													Errors: nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 28,
-															Line:   20,
+															Column: 29,
+															Line:   15,
 														},
 														File:   "v1.flux",
 														Source: "tag",
 														Start: ast.Position{
-															Column: 25,
-															Line:   20,
+															Column: 26,
+															Line:   15,
 														},
 													},
 												},
@@ -983,19 +607,20 @@ var pkgAST = &ast.Package{
 											}},
 										},
 									}},
+									With: nil,
 								}},
 								BaseNode: ast.BaseNode{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 30,
-											Line:   20,
+											Column: 31,
+											Line:   15,
 										},
 										File:   "v1.flux",
-										Source: "keep(columns: [tag])",
+										Source: "group(columns: [tag])",
 										Start: ast.Position{
 											Column: 10,
-											Line:   20,
+											Line:   15,
 										},
 									},
 								},
@@ -1004,18 +629,18 @@ var pkgAST = &ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 14,
-												Line:   20,
+												Column: 15,
+												Line:   15,
 											},
 											File:   "v1.flux",
-											Source: "keep",
+											Source: "group",
 											Start: ast.Position{
 												Column: 10,
-												Line:   20,
+												Line:   15,
 											},
 										},
 									},
-									Name: "keep",
+									Name: "group",
 								},
 							},
 						},
@@ -1023,31 +648,101 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 17,
-									Line:   21,
+									Column: 31,
+									Line:   16,
 								},
 								File:   "v1.flux",
-								Source: "from(bucket: bucket)\n      |> range(start: start)\n      |> filter(fn: predicate)\n      |> keep(columns: [tag])\n      |> group()",
+								Source: "from(bucket: bucket)\n      |> range(start: start)\n      |> filter(fn: predicate)\n      |> group(columns: [tag])\n      |> distinct(column: tag)",
 								Start: ast.Position{
 									Column: 5,
-									Line:   17,
+									Line:   12,
 								},
 							},
 						},
 						Call: &ast.CallExpression{
-							Arguments: nil,
+							Arguments: []ast.Expression{&ast.ObjectExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 30,
+											Line:   16,
+										},
+										File:   "v1.flux",
+										Source: "column: tag",
+										Start: ast.Position{
+											Column: 19,
+											Line:   16,
+										},
+									},
+								},
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 30,
+												Line:   16,
+											},
+											File:   "v1.flux",
+											Source: "column: tag",
+											Start: ast.Position{
+												Column: 19,
+												Line:   16,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 25,
+													Line:   16,
+												},
+												File:   "v1.flux",
+												Source: "column",
+												Start: ast.Position{
+													Column: 19,
+													Line:   16,
+												},
+											},
+										},
+										Name: "column",
+									},
+									Value: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 30,
+													Line:   16,
+												},
+												File:   "v1.flux",
+												Source: "tag",
+												Start: ast.Position{
+													Column: 27,
+													Line:   16,
+												},
+											},
+										},
+										Name: "tag",
+									},
+								}},
+								With: nil,
+							}},
 							BaseNode: ast.BaseNode{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 17,
-										Line:   21,
+										Column: 31,
+										Line:   16,
 									},
 									File:   "v1.flux",
-									Source: "group()",
+									Source: "distinct(column: tag)",
 									Start: ast.Position{
 										Column: 10,
-										Line:   21,
+										Line:   16,
 									},
 								},
 							},
@@ -1056,18 +751,18 @@ var pkgAST = &ast.Package{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 15,
-											Line:   21,
+											Column: 18,
+											Line:   16,
 										},
 										File:   "v1.flux",
-										Source: "group",
+										Source: "distinct",
 										Start: ast.Position{
 											Column: 10,
-											Line:   21,
+											Line:   16,
 										},
 									},
 								},
-								Name: "group",
+								Name: "distinct",
 							},
 						},
 					},
@@ -1075,14 +770,14 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 31,
-								Line:   22,
+								Column: 35,
+								Line:   17,
 							},
 							File:   "v1.flux",
-							Source: "from(bucket: bucket)\n      |> range(start: start)\n      |> filter(fn: predicate)\n      |> keep(columns: [tag])\n      |> group()\n      |> distinct(column: tag)",
+							Source: "from(bucket: bucket)\n      |> range(start: start)\n      |> filter(fn: predicate)\n      |> group(columns: [tag])\n      |> distinct(column: tag)\n      |> keep(columns: [\"_value\"])",
 							Start: ast.Position{
 								Column: 5,
-								Line:   17,
+								Line:   12,
 							},
 						},
 					},
@@ -1092,14 +787,14 @@ var pkgAST = &ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 30,
-										Line:   22,
+										Column: 34,
+										Line:   17,
 									},
 									File:   "v1.flux",
-									Source: "column: tag",
+									Source: "columns: [\"_value\"]",
 									Start: ast.Position{
-										Column: 19,
-										Line:   22,
+										Column: 15,
+										Line:   17,
 									},
 								},
 							},
@@ -1108,14 +803,14 @@ var pkgAST = &ast.Package{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 30,
-											Line:   22,
+											Column: 34,
+											Line:   17,
 										},
 										File:   "v1.flux",
-										Source: "column: tag",
+										Source: "columns: [\"_value\"]",
 										Start: ast.Position{
-											Column: 19,
-											Line:   22,
+											Column: 15,
+											Line:   17,
 										},
 									},
 								},
@@ -1124,51 +819,69 @@ var pkgAST = &ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 25,
-												Line:   22,
+												Column: 22,
+												Line:   17,
 											},
 											File:   "v1.flux",
-											Source: "column",
+											Source: "columns",
 											Start: ast.Position{
-												Column: 19,
-												Line:   22,
+												Column: 15,
+												Line:   17,
 											},
 										},
 									},
-									Name: "column",
+									Name: "columns",
 								},
-								Value: &ast.Identifier{
+								Value: &ast.ArrayExpression{
 									BaseNode: ast.BaseNode{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 30,
-												Line:   22,
+												Column: 34,
+												Line:   17,
 											},
 											File:   "v1.flux",
-											Source: "tag",
+											Source: "[\"_value\"]",
 											Start: ast.Position{
-												Column: 27,
-												Line:   22,
+												Column: 24,
+												Line:   17,
 											},
 										},
 									},
-									Name: "tag",
+									Elements: []ast.Expression{&ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 33,
+													Line:   17,
+												},
+												File:   "v1.flux",
+												Source: "\"_value\"",
+												Start: ast.Position{
+													Column: 25,
+													Line:   17,
+												},
+											},
+										},
+										Value: "_value",
+									}},
 								},
 							}},
+							With: nil,
 						}},
 						BaseNode: ast.BaseNode{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 31,
-									Line:   22,
+									Column: 35,
+									Line:   17,
 								},
 								File:   "v1.flux",
-								Source: "distinct(column: tag)",
+								Source: "keep(columns: [\"_value\"])",
 								Start: ast.Position{
 									Column: 10,
-									Line:   22,
+									Line:   17,
 								},
 							},
 						},
@@ -1177,18 +890,18 @@ var pkgAST = &ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 18,
-										Line:   22,
+										Column: 14,
+										Line:   17,
 									},
 									File:   "v1.flux",
-									Source: "distinct",
+									Source: "keep",
 									Start: ast.Position{
 										Column: 10,
-										Line:   22,
+										Line:   17,
 									},
 								},
 							},
-							Name: "distinct",
+							Name: "keep",
 						},
 					},
 				},
@@ -1198,13 +911,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 20,
-								Line:   16,
+								Line:   11,
 							},
 							File:   "v1.flux",
 							Source: "bucket",
 							Start: ast.Position{
 								Column: 14,
-								Line:   16,
+								Line:   11,
 							},
 						},
 					},
@@ -1214,13 +927,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 20,
-									Line:   16,
+									Line:   11,
 								},
 								File:   "v1.flux",
 								Source: "bucket",
 								Start: ast.Position{
 									Column: 14,
-									Line:   16,
+									Line:   11,
 								},
 							},
 						},
@@ -1233,13 +946,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 25,
-								Line:   16,
+								Line:   11,
 							},
 							File:   "v1.flux",
 							Source: "tag",
 							Start: ast.Position{
 								Column: 22,
-								Line:   16,
+								Line:   11,
 							},
 						},
 					},
@@ -1249,13 +962,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 25,
-									Line:   16,
+									Line:   11,
 								},
 								File:   "v1.flux",
 								Source: "tag",
 								Start: ast.Position{
 									Column: 22,
-									Line:   16,
+									Line:   11,
 								},
 							},
 						},
@@ -1268,13 +981,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 48,
-								Line:   16,
+								Line:   11,
 							},
 							File:   "v1.flux",
 							Source: "predicate=(r) => true",
 							Start: ast.Position{
 								Column: 27,
-								Line:   16,
+								Line:   11,
 							},
 						},
 					},
@@ -1284,13 +997,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 36,
-									Line:   16,
+									Line:   11,
 								},
 								File:   "v1.flux",
 								Source: "predicate",
 								Start: ast.Position{
 									Column: 27,
-									Line:   16,
+									Line:   11,
 								},
 							},
 						},
@@ -1302,13 +1015,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 48,
-									Line:   16,
+									Line:   11,
 								},
 								File:   "v1.flux",
 								Source: "(r) => true",
 								Start: ast.Position{
 									Column: 37,
-									Line:   16,
+									Line:   11,
 								},
 							},
 						},
@@ -1318,13 +1031,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 48,
-										Line:   16,
+										Line:   11,
 									},
 									File:   "v1.flux",
 									Source: "true",
 									Start: ast.Position{
 										Column: 44,
-										Line:   16,
+										Line:   11,
 									},
 								},
 							},
@@ -1336,13 +1049,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 39,
-										Line:   16,
+										Line:   11,
 									},
 									File:   "v1.flux",
 									Source: "r",
 									Start: ast.Position{
 										Column: 38,
-										Line:   16,
+										Line:   11,
 									},
 								},
 							},
@@ -1352,13 +1065,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 39,
-											Line:   16,
+											Line:   11,
 										},
 										File:   "v1.flux",
 										Source: "r",
 										Start: ast.Position{
 											Column: 38,
-											Line:   16,
+											Line:   11,
 										},
 									},
 								},
@@ -1373,13 +1086,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 60,
-								Line:   16,
+								Line:   11,
 							},
 							File:   "v1.flux",
 							Source: "start=-30d",
 							Start: ast.Position{
 								Column: 50,
-								Line:   16,
+								Line:   11,
 							},
 						},
 					},
@@ -1389,13 +1102,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 55,
-									Line:   16,
+									Line:   11,
 								},
 								File:   "v1.flux",
 								Source: "start",
 								Start: ast.Position{
 									Column: 50,
-									Line:   16,
+									Line:   11,
 								},
 							},
 						},
@@ -1408,13 +1121,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 60,
-										Line:   16,
+										Line:   11,
 									},
 									File:   "v1.flux",
 									Source: "30d",
 									Start: ast.Position{
 										Column: 57,
-										Line:   16,
+										Line:   11,
 									},
 								},
 							},
@@ -1428,13 +1141,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 60,
-									Line:   16,
+									Line:   11,
 								},
 								File:   "v1.flux",
 								Source: "-30d",
 								Start: ast.Position{
 									Column: 56,
-									Line:   16,
+									Line:   11,
 								},
 							},
 						},
@@ -1448,13 +1161,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 89,
-						Line:   27,
+						Line:   22,
 					},
 					File:   "v1.flux",
 					Source: "measurementTagValues = (bucket, measurement, tag) =>\n    tagValues(bucket: bucket, tag: tag, predicate: (r) => r._measurement == measurement)",
 					Start: ast.Position{
 						Column: 1,
-						Line:   26,
+						Line:   21,
 					},
 				},
 			},
@@ -1464,13 +1177,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 21,
-							Line:   26,
+							Line:   21,
 						},
 						File:   "v1.flux",
 						Source: "measurementTagValues",
 						Start: ast.Position{
 							Column: 1,
-							Line:   26,
+							Line:   21,
 						},
 					},
 				},
@@ -1482,13 +1195,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 89,
-							Line:   27,
+							Line:   22,
 						},
 						File:   "v1.flux",
 						Source: "(bucket, measurement, tag) =>\n    tagValues(bucket: bucket, tag: tag, predicate: (r) => r._measurement == measurement)",
 						Start: ast.Position{
 							Column: 24,
-							Line:   26,
+							Line:   21,
 						},
 					},
 				},
@@ -1499,13 +1212,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 88,
-									Line:   27,
+									Line:   22,
 								},
 								File:   "v1.flux",
 								Source: "bucket: bucket, tag: tag, predicate: (r) => r._measurement == measurement",
 								Start: ast.Position{
 									Column: 15,
-									Line:   27,
+									Line:   22,
 								},
 							},
 						},
@@ -1515,13 +1228,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 29,
-										Line:   27,
+										Line:   22,
 									},
 									File:   "v1.flux",
 									Source: "bucket: bucket",
 									Start: ast.Position{
 										Column: 15,
-										Line:   27,
+										Line:   22,
 									},
 								},
 							},
@@ -1531,13 +1244,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 21,
-											Line:   27,
+											Line:   22,
 										},
 										File:   "v1.flux",
 										Source: "bucket",
 										Start: ast.Position{
 											Column: 15,
-											Line:   27,
+											Line:   22,
 										},
 									},
 								},
@@ -1549,13 +1262,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 29,
-											Line:   27,
+											Line:   22,
 										},
 										File:   "v1.flux",
 										Source: "bucket",
 										Start: ast.Position{
 											Column: 23,
-											Line:   27,
+											Line:   22,
 										},
 									},
 								},
@@ -1567,13 +1280,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 39,
-										Line:   27,
+										Line:   22,
 									},
 									File:   "v1.flux",
 									Source: "tag: tag",
 									Start: ast.Position{
 										Column: 31,
-										Line:   27,
+										Line:   22,
 									},
 								},
 							},
@@ -1583,13 +1296,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 34,
-											Line:   27,
+											Line:   22,
 										},
 										File:   "v1.flux",
 										Source: "tag",
 										Start: ast.Position{
 											Column: 31,
-											Line:   27,
+											Line:   22,
 										},
 									},
 								},
@@ -1601,13 +1314,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 39,
-											Line:   27,
+											Line:   22,
 										},
 										File:   "v1.flux",
 										Source: "tag",
 										Start: ast.Position{
 											Column: 36,
-											Line:   27,
+											Line:   22,
 										},
 									},
 								},
@@ -1619,13 +1332,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 88,
-										Line:   27,
+										Line:   22,
 									},
 									File:   "v1.flux",
 									Source: "predicate: (r) => r._measurement == measurement",
 									Start: ast.Position{
 										Column: 41,
-										Line:   27,
+										Line:   22,
 									},
 								},
 							},
@@ -1635,13 +1348,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 50,
-											Line:   27,
+											Line:   22,
 										},
 										File:   "v1.flux",
 										Source: "predicate",
 										Start: ast.Position{
 											Column: 41,
-											Line:   27,
+											Line:   22,
 										},
 									},
 								},
@@ -1653,13 +1366,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 88,
-											Line:   27,
+											Line:   22,
 										},
 										File:   "v1.flux",
 										Source: "(r) => r._measurement == measurement",
 										Start: ast.Position{
 											Column: 52,
-											Line:   27,
+											Line:   22,
 										},
 									},
 								},
@@ -1669,13 +1382,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 88,
-												Line:   27,
+												Line:   22,
 											},
 											File:   "v1.flux",
 											Source: "r._measurement == measurement",
 											Start: ast.Position{
 												Column: 59,
-												Line:   27,
+												Line:   22,
 											},
 										},
 									},
@@ -1685,13 +1398,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 73,
-													Line:   27,
+													Line:   22,
 												},
 												File:   "v1.flux",
 												Source: "r._measurement",
 												Start: ast.Position{
 													Column: 59,
-													Line:   27,
+													Line:   22,
 												},
 											},
 										},
@@ -1701,13 +1414,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 60,
-														Line:   27,
+														Line:   22,
 													},
 													File:   "v1.flux",
 													Source: "r",
 													Start: ast.Position{
 														Column: 59,
-														Line:   27,
+														Line:   22,
 													},
 												},
 											},
@@ -1719,13 +1432,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 73,
-														Line:   27,
+														Line:   22,
 													},
 													File:   "v1.flux",
 													Source: "_measurement",
 													Start: ast.Position{
 														Column: 61,
-														Line:   27,
+														Line:   22,
 													},
 												},
 											},
@@ -1739,13 +1452,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 88,
-													Line:   27,
+													Line:   22,
 												},
 												File:   "v1.flux",
 												Source: "measurement",
 												Start: ast.Position{
 													Column: 77,
-													Line:   27,
+													Line:   22,
 												},
 											},
 										},
@@ -1758,13 +1471,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 54,
-												Line:   27,
+												Line:   22,
 											},
 											File:   "v1.flux",
 											Source: "r",
 											Start: ast.Position{
 												Column: 53,
-												Line:   27,
+												Line:   22,
 											},
 										},
 									},
@@ -1774,13 +1487,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 54,
-													Line:   27,
+													Line:   22,
 												},
 												File:   "v1.flux",
 												Source: "r",
 												Start: ast.Position{
 													Column: 53,
-													Line:   27,
+													Line:   22,
 												},
 											},
 										},
@@ -1790,19 +1503,20 @@ var pkgAST = &ast.Package{
 								}},
 							},
 						}},
+						With: nil,
 					}},
 					BaseNode: ast.BaseNode{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 89,
-								Line:   27,
+								Line:   22,
 							},
 							File:   "v1.flux",
 							Source: "tagValues(bucket: bucket, tag: tag, predicate: (r) => r._measurement == measurement)",
 							Start: ast.Position{
 								Column: 5,
-								Line:   27,
+								Line:   22,
 							},
 						},
 					},
@@ -1812,13 +1526,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 14,
-									Line:   27,
+									Line:   22,
 								},
 								File:   "v1.flux",
 								Source: "tagValues",
 								Start: ast.Position{
 									Column: 5,
-									Line:   27,
+									Line:   22,
 								},
 							},
 						},
@@ -1831,13 +1545,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 31,
-								Line:   26,
+								Line:   21,
 							},
 							File:   "v1.flux",
 							Source: "bucket",
 							Start: ast.Position{
 								Column: 25,
-								Line:   26,
+								Line:   21,
 							},
 						},
 					},
@@ -1847,13 +1561,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 31,
-									Line:   26,
+									Line:   21,
 								},
 								File:   "v1.flux",
 								Source: "bucket",
 								Start: ast.Position{
 									Column: 25,
-									Line:   26,
+									Line:   21,
 								},
 							},
 						},
@@ -1866,13 +1580,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 44,
-								Line:   26,
+								Line:   21,
 							},
 							File:   "v1.flux",
 							Source: "measurement",
 							Start: ast.Position{
 								Column: 33,
-								Line:   26,
+								Line:   21,
 							},
 						},
 					},
@@ -1882,13 +1596,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 44,
-									Line:   26,
+									Line:   21,
 								},
 								File:   "v1.flux",
 								Source: "measurement",
 								Start: ast.Position{
 									Column: 33,
-									Line:   26,
+									Line:   21,
 								},
 							},
 						},
@@ -1901,13 +1615,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 49,
-								Line:   26,
+								Line:   21,
 							},
 							File:   "v1.flux",
 							Source: "tag",
 							Start: ast.Position{
 								Column: 46,
-								Line:   26,
+								Line:   21,
 							},
 						},
 					},
@@ -1917,13 +1631,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 49,
-									Line:   26,
+									Line:   21,
 								},
 								File:   "v1.flux",
 								Source: "tag",
 								Start: ast.Position{
 									Column: 46,
-									Line:   26,
+									Line:   21,
 								},
 							},
 						},
@@ -1937,14 +1651,14 @@ var pkgAST = &ast.Package{
 				Errors: nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 22,
-						Line:   37,
+						Column: 37,
+						Line:   31,
 					},
 					File:   "v1.flux",
-					Source: "tagKeys = (bucket, predicate=(r) => true, start=-30d) =>\n    from(bucket: bucket)\n        |> range(start: start)\n        |> filter(fn: predicate)\n        |> keys()\n        |> keep(columns: [\"_value\"])\n        |> distinct()",
+					Source: "tagKeys = (bucket, predicate=(r) => true, start=-30d) =>\n    from(bucket: bucket)\n        |> range(start: start)\n        |> filter(fn: predicate)\n        |> keys()\n        |> keep(columns: [\"_value\"])",
 					Start: ast.Position{
 						Column: 1,
-						Line:   31,
+						Line:   26,
 					},
 				},
 			},
@@ -1954,13 +1668,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 8,
-							Line:   31,
+							Line:   26,
 						},
 						File:   "v1.flux",
 						Source: "tagKeys",
 						Start: ast.Position{
 							Column: 1,
-							Line:   31,
+							Line:   26,
 						},
 					},
 				},
@@ -1971,14 +1685,14 @@ var pkgAST = &ast.Package{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 22,
-							Line:   37,
+							Column: 37,
+							Line:   31,
 						},
 						File:   "v1.flux",
-						Source: "(bucket, predicate=(r) => true, start=-30d) =>\n    from(bucket: bucket)\n        |> range(start: start)\n        |> filter(fn: predicate)\n        |> keys()\n        |> keep(columns: [\"_value\"])\n        |> distinct()",
+						Source: "(bucket, predicate=(r) => true, start=-30d) =>\n    from(bucket: bucket)\n        |> range(start: start)\n        |> filter(fn: predicate)\n        |> keys()\n        |> keep(columns: [\"_value\"])",
 						Start: ast.Position{
 							Column: 11,
-							Line:   31,
+							Line:   26,
 						},
 					},
 				},
@@ -1986,245 +1700,124 @@ var pkgAST = &ast.Package{
 					Argument: &ast.PipeExpression{
 						Argument: &ast.PipeExpression{
 							Argument: &ast.PipeExpression{
-								Argument: &ast.PipeExpression{
-									Argument: &ast.CallExpression{
-										Arguments: []ast.Expression{&ast.ObjectExpression{
+								Argument: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 24,
+													Line:   27,
+												},
+												File:   "v1.flux",
+												Source: "bucket: bucket",
+												Start: ast.Position{
+													Column: 10,
+													Line:   27,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
 												Errors: nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 24,
-														Line:   32,
+														Line:   27,
 													},
 													File:   "v1.flux",
 													Source: "bucket: bucket",
 													Start: ast.Position{
 														Column: 10,
-														Line:   32,
+														Line:   27,
 													},
 												},
 											},
-											Properties: []*ast.Property{&ast.Property{
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 16,
+															Line:   27,
+														},
+														File:   "v1.flux",
+														Source: "bucket",
+														Start: ast.Position{
+															Column: 10,
+															Line:   27,
+														},
+													},
+												},
+												Name: "bucket",
+											},
+											Value: &ast.Identifier{
 												BaseNode: ast.BaseNode{
 													Errors: nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 24,
-															Line:   32,
+															Line:   27,
 														},
 														File:   "v1.flux",
-														Source: "bucket: bucket",
+														Source: "bucket",
 														Start: ast.Position{
-															Column: 10,
-															Line:   32,
+															Column: 18,
+															Line:   27,
 														},
 													},
 												},
-												Key: &ast.Identifier{
-													BaseNode: ast.BaseNode{
-														Errors: nil,
-														Loc: &ast.SourceLocation{
-															End: ast.Position{
-																Column: 16,
-																Line:   32,
-															},
-															File:   "v1.flux",
-															Source: "bucket",
-															Start: ast.Position{
-																Column: 10,
-																Line:   32,
-															},
-														},
-													},
-													Name: "bucket",
-												},
-												Value: &ast.Identifier{
-													BaseNode: ast.BaseNode{
-														Errors: nil,
-														Loc: &ast.SourceLocation{
-															End: ast.Position{
-																Column: 24,
-																Line:   32,
-															},
-															File:   "v1.flux",
-															Source: "bucket",
-															Start: ast.Position{
-																Column: 18,
-																Line:   32,
-															},
-														},
-													},
-													Name: "bucket",
-												},
-											}},
+												Name: "bucket",
+											},
 										}},
-										BaseNode: ast.BaseNode{
-											Errors: nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 25,
-													Line:   32,
-												},
-												File:   "v1.flux",
-												Source: "from(bucket: bucket)",
-												Start: ast.Position{
-													Column: 5,
-													Line:   32,
-												},
-											},
-										},
-										Callee: &ast.Identifier{
-											BaseNode: ast.BaseNode{
-												Errors: nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 9,
-														Line:   32,
-													},
-													File:   "v1.flux",
-													Source: "from",
-													Start: ast.Position{
-														Column: 5,
-														Line:   32,
-													},
-												},
-											},
-											Name: "from",
-										},
-									},
+										With: nil,
+									}},
 									BaseNode: ast.BaseNode{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 31,
-												Line:   33,
+												Column: 25,
+												Line:   27,
 											},
 											File:   "v1.flux",
-											Source: "from(bucket: bucket)\n        |> range(start: start)",
+											Source: "from(bucket: bucket)",
 											Start: ast.Position{
 												Column: 5,
-												Line:   32,
+												Line:   27,
 											},
 										},
 									},
-									Call: &ast.CallExpression{
-										Arguments: []ast.Expression{&ast.ObjectExpression{
-											BaseNode: ast.BaseNode{
-												Errors: nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 30,
-														Line:   33,
-													},
-													File:   "v1.flux",
-													Source: "start: start",
-													Start: ast.Position{
-														Column: 18,
-														Line:   33,
-													},
-												},
-											},
-											Properties: []*ast.Property{&ast.Property{
-												BaseNode: ast.BaseNode{
-													Errors: nil,
-													Loc: &ast.SourceLocation{
-														End: ast.Position{
-															Column: 30,
-															Line:   33,
-														},
-														File:   "v1.flux",
-														Source: "start: start",
-														Start: ast.Position{
-															Column: 18,
-															Line:   33,
-														},
-													},
-												},
-												Key: &ast.Identifier{
-													BaseNode: ast.BaseNode{
-														Errors: nil,
-														Loc: &ast.SourceLocation{
-															End: ast.Position{
-																Column: 23,
-																Line:   33,
-															},
-															File:   "v1.flux",
-															Source: "start",
-															Start: ast.Position{
-																Column: 18,
-																Line:   33,
-															},
-														},
-													},
-													Name: "start",
-												},
-												Value: &ast.Identifier{
-													BaseNode: ast.BaseNode{
-														Errors: nil,
-														Loc: &ast.SourceLocation{
-															End: ast.Position{
-																Column: 30,
-																Line:   33,
-															},
-															File:   "v1.flux",
-															Source: "start",
-															Start: ast.Position{
-																Column: 25,
-																Line:   33,
-															},
-														},
-													},
-													Name: "start",
-												},
-											}},
-										}},
+									Callee: &ast.Identifier{
 										BaseNode: ast.BaseNode{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 31,
-													Line:   33,
+													Column: 9,
+													Line:   27,
 												},
 												File:   "v1.flux",
-												Source: "range(start: start)",
+												Source: "from",
 												Start: ast.Position{
-													Column: 12,
-													Line:   33,
+													Column: 5,
+													Line:   27,
 												},
 											},
 										},
-										Callee: &ast.Identifier{
-											BaseNode: ast.BaseNode{
-												Errors: nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 17,
-														Line:   33,
-													},
-													File:   "v1.flux",
-													Source: "range",
-													Start: ast.Position{
-														Column: 12,
-														Line:   33,
-													},
-												},
-											},
-											Name: "range",
-										},
+										Name: "from",
 									},
 								},
 								BaseNode: ast.BaseNode{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 33,
-											Line:   34,
+											Column: 31,
+											Line:   28,
 										},
 										File:   "v1.flux",
-										Source: "from(bucket: bucket)\n        |> range(start: start)\n        |> filter(fn: predicate)",
+										Source: "from(bucket: bucket)\n        |> range(start: start)",
 										Start: ast.Position{
 											Column: 5,
-											Line:   32,
+											Line:   27,
 										},
 									},
 								},
@@ -2234,14 +1827,14 @@ var pkgAST = &ast.Package{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 32,
-													Line:   34,
+													Column: 30,
+													Line:   28,
 												},
 												File:   "v1.flux",
-												Source: "fn: predicate",
+												Source: "start: start",
 												Start: ast.Position{
-													Column: 19,
-													Line:   34,
+													Column: 18,
+													Line:   28,
 												},
 											},
 										},
@@ -2250,14 +1843,14 @@ var pkgAST = &ast.Package{
 												Errors: nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 32,
-														Line:   34,
+														Column: 30,
+														Line:   28,
 													},
 													File:   "v1.flux",
-													Source: "fn: predicate",
+													Source: "start: start",
 													Start: ast.Position{
-														Column: 19,
-														Line:   34,
+														Column: 18,
+														Line:   28,
 													},
 												},
 											},
@@ -2266,51 +1859,52 @@ var pkgAST = &ast.Package{
 													Errors: nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 21,
-															Line:   34,
+															Column: 23,
+															Line:   28,
 														},
 														File:   "v1.flux",
-														Source: "fn",
+														Source: "start",
 														Start: ast.Position{
-															Column: 19,
-															Line:   34,
+															Column: 18,
+															Line:   28,
 														},
 													},
 												},
-												Name: "fn",
+												Name: "start",
 											},
 											Value: &ast.Identifier{
 												BaseNode: ast.BaseNode{
 													Errors: nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 32,
-															Line:   34,
+															Column: 30,
+															Line:   28,
 														},
 														File:   "v1.flux",
-														Source: "predicate",
+														Source: "start",
 														Start: ast.Position{
-															Column: 23,
-															Line:   34,
+															Column: 25,
+															Line:   28,
 														},
 													},
 												},
-												Name: "predicate",
+												Name: "start",
 											},
 										}},
+										With: nil,
 									}},
 									BaseNode: ast.BaseNode{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 33,
-												Line:   34,
+												Column: 31,
+												Line:   28,
 											},
 											File:   "v1.flux",
-											Source: "filter(fn: predicate)",
+											Source: "range(start: start)",
 											Start: ast.Position{
 												Column: 12,
-												Line:   34,
+												Line:   28,
 											},
 										},
 									},
@@ -2319,18 +1913,18 @@ var pkgAST = &ast.Package{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 18,
-													Line:   34,
+													Column: 17,
+													Line:   28,
 												},
 												File:   "v1.flux",
-												Source: "filter",
+												Source: "range",
 												Start: ast.Position{
 													Column: 12,
-													Line:   34,
+													Line:   28,
 												},
 											},
 										},
-										Name: "filter",
+										Name: "range",
 									},
 								},
 							},
@@ -2338,31 +1932,101 @@ var pkgAST = &ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 18,
-										Line:   35,
+										Column: 33,
+										Line:   29,
 									},
 									File:   "v1.flux",
-									Source: "from(bucket: bucket)\n        |> range(start: start)\n        |> filter(fn: predicate)\n        |> keys()",
+									Source: "from(bucket: bucket)\n        |> range(start: start)\n        |> filter(fn: predicate)",
 									Start: ast.Position{
 										Column: 5,
-										Line:   32,
+										Line:   27,
 									},
 								},
 							},
 							Call: &ast.CallExpression{
-								Arguments: nil,
+								Arguments: []ast.Expression{&ast.ObjectExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 32,
+												Line:   29,
+											},
+											File:   "v1.flux",
+											Source: "fn: predicate",
+											Start: ast.Position{
+												Column: 19,
+												Line:   29,
+											},
+										},
+									},
+									Properties: []*ast.Property{&ast.Property{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 32,
+													Line:   29,
+												},
+												File:   "v1.flux",
+												Source: "fn: predicate",
+												Start: ast.Position{
+													Column: 19,
+													Line:   29,
+												},
+											},
+										},
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 21,
+														Line:   29,
+													},
+													File:   "v1.flux",
+													Source: "fn",
+													Start: ast.Position{
+														Column: 19,
+														Line:   29,
+													},
+												},
+											},
+											Name: "fn",
+										},
+										Value: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 32,
+														Line:   29,
+													},
+													File:   "v1.flux",
+													Source: "predicate",
+													Start: ast.Position{
+														Column: 23,
+														Line:   29,
+													},
+												},
+											},
+											Name: "predicate",
+										},
+									}},
+									With: nil,
+								}},
 								BaseNode: ast.BaseNode{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 18,
-											Line:   35,
+											Column: 33,
+											Line:   29,
 										},
 										File:   "v1.flux",
-										Source: "keys()",
+										Source: "filter(fn: predicate)",
 										Start: ast.Position{
 											Column: 12,
-											Line:   35,
+											Line:   29,
 										},
 									},
 								},
@@ -2371,18 +2035,18 @@ var pkgAST = &ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 16,
-												Line:   35,
+												Column: 18,
+												Line:   29,
 											},
 											File:   "v1.flux",
-											Source: "keys",
+											Source: "filter",
 											Start: ast.Position{
 												Column: 12,
-												Line:   35,
+												Line:   29,
 											},
 										},
 									},
-									Name: "keys",
+									Name: "filter",
 								},
 							},
 						},
@@ -2390,117 +2054,31 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 37,
-									Line:   36,
+									Column: 18,
+									Line:   30,
 								},
 								File:   "v1.flux",
-								Source: "from(bucket: bucket)\n        |> range(start: start)\n        |> filter(fn: predicate)\n        |> keys()\n        |> keep(columns: [\"_value\"])",
+								Source: "from(bucket: bucket)\n        |> range(start: start)\n        |> filter(fn: predicate)\n        |> keys()",
 								Start: ast.Position{
 									Column: 5,
-									Line:   32,
+									Line:   27,
 								},
 							},
 						},
 						Call: &ast.CallExpression{
-							Arguments: []ast.Expression{&ast.ObjectExpression{
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 36,
-											Line:   36,
-										},
-										File:   "v1.flux",
-										Source: "columns: [\"_value\"]",
-										Start: ast.Position{
-											Column: 17,
-											Line:   36,
-										},
-									},
-								},
-								Properties: []*ast.Property{&ast.Property{
-									BaseNode: ast.BaseNode{
-										Errors: nil,
-										Loc: &ast.SourceLocation{
-											End: ast.Position{
-												Column: 36,
-												Line:   36,
-											},
-											File:   "v1.flux",
-											Source: "columns: [\"_value\"]",
-											Start: ast.Position{
-												Column: 17,
-												Line:   36,
-											},
-										},
-									},
-									Key: &ast.Identifier{
-										BaseNode: ast.BaseNode{
-											Errors: nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 24,
-													Line:   36,
-												},
-												File:   "v1.flux",
-												Source: "columns",
-												Start: ast.Position{
-													Column: 17,
-													Line:   36,
-												},
-											},
-										},
-										Name: "columns",
-									},
-									Value: &ast.ArrayExpression{
-										BaseNode: ast.BaseNode{
-											Errors: nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 36,
-													Line:   36,
-												},
-												File:   "v1.flux",
-												Source: "[\"_value\"]",
-												Start: ast.Position{
-													Column: 26,
-													Line:   36,
-												},
-											},
-										},
-										Elements: []ast.Expression{&ast.StringLiteral{
-											BaseNode: ast.BaseNode{
-												Errors: nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 35,
-														Line:   36,
-													},
-													File:   "v1.flux",
-													Source: "\"_value\"",
-													Start: ast.Position{
-														Column: 27,
-														Line:   36,
-													},
-												},
-											},
-											Value: "_value",
-										}},
-									},
-								}},
-							}},
+							Arguments: nil,
 							BaseNode: ast.BaseNode{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 37,
-										Line:   36,
+										Column: 18,
+										Line:   30,
 									},
 									File:   "v1.flux",
-									Source: "keep(columns: [\"_value\"])",
+									Source: "keys()",
 									Start: ast.Position{
 										Column: 12,
-										Line:   36,
+										Line:   30,
 									},
 								},
 							},
@@ -2510,17 +2088,17 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 16,
-											Line:   36,
+											Line:   30,
 										},
 										File:   "v1.flux",
-										Source: "keep",
+										Source: "keys",
 										Start: ast.Position{
 											Column: 12,
-											Line:   36,
+											Line:   30,
 										},
 									},
 								},
-								Name: "keep",
+								Name: "keys",
 							},
 						},
 					},
@@ -2528,31 +2106,118 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 22,
-								Line:   37,
+								Column: 37,
+								Line:   31,
 							},
 							File:   "v1.flux",
-							Source: "from(bucket: bucket)\n        |> range(start: start)\n        |> filter(fn: predicate)\n        |> keys()\n        |> keep(columns: [\"_value\"])\n        |> distinct()",
+							Source: "from(bucket: bucket)\n        |> range(start: start)\n        |> filter(fn: predicate)\n        |> keys()\n        |> keep(columns: [\"_value\"])",
 							Start: ast.Position{
 								Column: 5,
-								Line:   32,
+								Line:   27,
 							},
 						},
 					},
 					Call: &ast.CallExpression{
-						Arguments: nil,
+						Arguments: []ast.Expression{&ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 36,
+										Line:   31,
+									},
+									File:   "v1.flux",
+									Source: "columns: [\"_value\"]",
+									Start: ast.Position{
+										Column: 17,
+										Line:   31,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 36,
+											Line:   31,
+										},
+										File:   "v1.flux",
+										Source: "columns: [\"_value\"]",
+										Start: ast.Position{
+											Column: 17,
+											Line:   31,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 24,
+												Line:   31,
+											},
+											File:   "v1.flux",
+											Source: "columns",
+											Start: ast.Position{
+												Column: 17,
+												Line:   31,
+											},
+										},
+									},
+									Name: "columns",
+								},
+								Value: &ast.ArrayExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 36,
+												Line:   31,
+											},
+											File:   "v1.flux",
+											Source: "[\"_value\"]",
+											Start: ast.Position{
+												Column: 26,
+												Line:   31,
+											},
+										},
+									},
+									Elements: []ast.Expression{&ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 35,
+													Line:   31,
+												},
+												File:   "v1.flux",
+												Source: "\"_value\"",
+												Start: ast.Position{
+													Column: 27,
+													Line:   31,
+												},
+											},
+										},
+										Value: "_value",
+									}},
+								},
+							}},
+							With: nil,
+						}},
 						BaseNode: ast.BaseNode{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 22,
-									Line:   37,
+									Column: 37,
+									Line:   31,
 								},
 								File:   "v1.flux",
-								Source: "distinct()",
+								Source: "keep(columns: [\"_value\"])",
 								Start: ast.Position{
 									Column: 12,
-									Line:   37,
+									Line:   31,
 								},
 							},
 						},
@@ -2561,18 +2226,18 @@ var pkgAST = &ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 20,
-										Line:   37,
+										Column: 16,
+										Line:   31,
 									},
 									File:   "v1.flux",
-									Source: "distinct",
+									Source: "keep",
 									Start: ast.Position{
 										Column: 12,
-										Line:   37,
+										Line:   31,
 									},
 								},
 							},
-							Name: "distinct",
+							Name: "keep",
 						},
 					},
 				},
@@ -2582,13 +2247,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 18,
-								Line:   31,
+								Line:   26,
 							},
 							File:   "v1.flux",
 							Source: "bucket",
 							Start: ast.Position{
 								Column: 12,
-								Line:   31,
+								Line:   26,
 							},
 						},
 					},
@@ -2598,13 +2263,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 18,
-									Line:   31,
+									Line:   26,
 								},
 								File:   "v1.flux",
 								Source: "bucket",
 								Start: ast.Position{
 									Column: 12,
-									Line:   31,
+									Line:   26,
 								},
 							},
 						},
@@ -2617,13 +2282,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 41,
-								Line:   31,
+								Line:   26,
 							},
 							File:   "v1.flux",
 							Source: "predicate=(r) => true",
 							Start: ast.Position{
 								Column: 20,
-								Line:   31,
+								Line:   26,
 							},
 						},
 					},
@@ -2633,13 +2298,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 29,
-									Line:   31,
+									Line:   26,
 								},
 								File:   "v1.flux",
 								Source: "predicate",
 								Start: ast.Position{
 									Column: 20,
-									Line:   31,
+									Line:   26,
 								},
 							},
 						},
@@ -2651,13 +2316,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 41,
-									Line:   31,
+									Line:   26,
 								},
 								File:   "v1.flux",
 								Source: "(r) => true",
 								Start: ast.Position{
 									Column: 30,
-									Line:   31,
+									Line:   26,
 								},
 							},
 						},
@@ -2667,13 +2332,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 41,
-										Line:   31,
+										Line:   26,
 									},
 									File:   "v1.flux",
 									Source: "true",
 									Start: ast.Position{
 										Column: 37,
-										Line:   31,
+										Line:   26,
 									},
 								},
 							},
@@ -2685,13 +2350,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 32,
-										Line:   31,
+										Line:   26,
 									},
 									File:   "v1.flux",
 									Source: "r",
 									Start: ast.Position{
 										Column: 31,
-										Line:   31,
+										Line:   26,
 									},
 								},
 							},
@@ -2701,13 +2366,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 32,
-											Line:   31,
+											Line:   26,
 										},
 										File:   "v1.flux",
 										Source: "r",
 										Start: ast.Position{
 											Column: 31,
-											Line:   31,
+											Line:   26,
 										},
 									},
 								},
@@ -2722,13 +2387,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 53,
-								Line:   31,
+								Line:   26,
 							},
 							File:   "v1.flux",
 							Source: "start=-30d",
 							Start: ast.Position{
 								Column: 43,
-								Line:   31,
+								Line:   26,
 							},
 						},
 					},
@@ -2738,13 +2403,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 48,
-									Line:   31,
+									Line:   26,
 								},
 								File:   "v1.flux",
 								Source: "start",
 								Start: ast.Position{
 									Column: 43,
-									Line:   31,
+									Line:   26,
 								},
 							},
 						},
@@ -2757,13 +2422,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 53,
-										Line:   31,
+										Line:   26,
 									},
 									File:   "v1.flux",
 									Source: "30d",
 									Start: ast.Position{
 										Column: 50,
-										Line:   31,
+										Line:   26,
 									},
 								},
 							},
@@ -2777,13 +2442,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 53,
-									Line:   31,
+									Line:   26,
 								},
 								File:   "v1.flux",
 								Source: "-30d",
 								Start: ast.Position{
 									Column: 49,
-									Line:   31,
+									Line:   26,
 								},
 							},
 						},
@@ -2797,13 +2462,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 77,
-						Line:   41,
+						Line:   35,
 					},
 					File:   "v1.flux",
 					Source: "measurementTagKeys = (bucket, measurement) =>\n    tagKeys(bucket: bucket, predicate: (r) => r._measurement == measurement)",
 					Start: ast.Position{
 						Column: 1,
-						Line:   40,
+						Line:   34,
 					},
 				},
 			},
@@ -2813,13 +2478,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 19,
-							Line:   40,
+							Line:   34,
 						},
 						File:   "v1.flux",
 						Source: "measurementTagKeys",
 						Start: ast.Position{
 							Column: 1,
-							Line:   40,
+							Line:   34,
 						},
 					},
 				},
@@ -2831,13 +2496,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 77,
-							Line:   41,
+							Line:   35,
 						},
 						File:   "v1.flux",
 						Source: "(bucket, measurement) =>\n    tagKeys(bucket: bucket, predicate: (r) => r._measurement == measurement)",
 						Start: ast.Position{
 							Column: 22,
-							Line:   40,
+							Line:   34,
 						},
 					},
 				},
@@ -2848,13 +2513,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 76,
-									Line:   41,
+									Line:   35,
 								},
 								File:   "v1.flux",
 								Source: "bucket: bucket, predicate: (r) => r._measurement == measurement",
 								Start: ast.Position{
 									Column: 13,
-									Line:   41,
+									Line:   35,
 								},
 							},
 						},
@@ -2864,13 +2529,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 27,
-										Line:   41,
+										Line:   35,
 									},
 									File:   "v1.flux",
 									Source: "bucket: bucket",
 									Start: ast.Position{
 										Column: 13,
-										Line:   41,
+										Line:   35,
 									},
 								},
 							},
@@ -2880,13 +2545,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 19,
-											Line:   41,
+											Line:   35,
 										},
 										File:   "v1.flux",
 										Source: "bucket",
 										Start: ast.Position{
 											Column: 13,
-											Line:   41,
+											Line:   35,
 										},
 									},
 								},
@@ -2898,13 +2563,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 27,
-											Line:   41,
+											Line:   35,
 										},
 										File:   "v1.flux",
 										Source: "bucket",
 										Start: ast.Position{
 											Column: 21,
-											Line:   41,
+											Line:   35,
 										},
 									},
 								},
@@ -2916,13 +2581,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 76,
-										Line:   41,
+										Line:   35,
 									},
 									File:   "v1.flux",
 									Source: "predicate: (r) => r._measurement == measurement",
 									Start: ast.Position{
 										Column: 29,
-										Line:   41,
+										Line:   35,
 									},
 								},
 							},
@@ -2932,13 +2597,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 38,
-											Line:   41,
+											Line:   35,
 										},
 										File:   "v1.flux",
 										Source: "predicate",
 										Start: ast.Position{
 											Column: 29,
-											Line:   41,
+											Line:   35,
 										},
 									},
 								},
@@ -2950,13 +2615,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 76,
-											Line:   41,
+											Line:   35,
 										},
 										File:   "v1.flux",
 										Source: "(r) => r._measurement == measurement",
 										Start: ast.Position{
 											Column: 40,
-											Line:   41,
+											Line:   35,
 										},
 									},
 								},
@@ -2966,13 +2631,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 76,
-												Line:   41,
+												Line:   35,
 											},
 											File:   "v1.flux",
 											Source: "r._measurement == measurement",
 											Start: ast.Position{
 												Column: 47,
-												Line:   41,
+												Line:   35,
 											},
 										},
 									},
@@ -2982,13 +2647,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 61,
-													Line:   41,
+													Line:   35,
 												},
 												File:   "v1.flux",
 												Source: "r._measurement",
 												Start: ast.Position{
 													Column: 47,
-													Line:   41,
+													Line:   35,
 												},
 											},
 										},
@@ -2998,13 +2663,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 48,
-														Line:   41,
+														Line:   35,
 													},
 													File:   "v1.flux",
 													Source: "r",
 													Start: ast.Position{
 														Column: 47,
-														Line:   41,
+														Line:   35,
 													},
 												},
 											},
@@ -3016,13 +2681,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 61,
-														Line:   41,
+														Line:   35,
 													},
 													File:   "v1.flux",
 													Source: "_measurement",
 													Start: ast.Position{
 														Column: 49,
-														Line:   41,
+														Line:   35,
 													},
 												},
 											},
@@ -3036,13 +2701,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 76,
-													Line:   41,
+													Line:   35,
 												},
 												File:   "v1.flux",
 												Source: "measurement",
 												Start: ast.Position{
 													Column: 65,
-													Line:   41,
+													Line:   35,
 												},
 											},
 										},
@@ -3055,13 +2720,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 42,
-												Line:   41,
+												Line:   35,
 											},
 											File:   "v1.flux",
 											Source: "r",
 											Start: ast.Position{
 												Column: 41,
-												Line:   41,
+												Line:   35,
 											},
 										},
 									},
@@ -3071,13 +2736,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 42,
-													Line:   41,
+													Line:   35,
 												},
 												File:   "v1.flux",
 												Source: "r",
 												Start: ast.Position{
 													Column: 41,
-													Line:   41,
+													Line:   35,
 												},
 											},
 										},
@@ -3087,19 +2752,20 @@ var pkgAST = &ast.Package{
 								}},
 							},
 						}},
+						With: nil,
 					}},
 					BaseNode: ast.BaseNode{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 77,
-								Line:   41,
+								Line:   35,
 							},
 							File:   "v1.flux",
 							Source: "tagKeys(bucket: bucket, predicate: (r) => r._measurement == measurement)",
 							Start: ast.Position{
 								Column: 5,
-								Line:   41,
+								Line:   35,
 							},
 						},
 					},
@@ -3109,13 +2775,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 12,
-									Line:   41,
+									Line:   35,
 								},
 								File:   "v1.flux",
 								Source: "tagKeys",
 								Start: ast.Position{
 									Column: 5,
-									Line:   41,
+									Line:   35,
 								},
 							},
 						},
@@ -3128,13 +2794,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 29,
-								Line:   40,
+								Line:   34,
 							},
 							File:   "v1.flux",
 							Source: "bucket",
 							Start: ast.Position{
 								Column: 23,
-								Line:   40,
+								Line:   34,
 							},
 						},
 					},
@@ -3144,13 +2810,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 29,
-									Line:   40,
+									Line:   34,
 								},
 								File:   "v1.flux",
 								Source: "bucket",
 								Start: ast.Position{
 									Column: 23,
-									Line:   40,
+									Line:   34,
 								},
 							},
 						},
@@ -3163,13 +2829,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 42,
-								Line:   40,
+								Line:   34,
 							},
 							File:   "v1.flux",
 							Source: "measurement",
 							Start: ast.Position{
 								Column: 31,
-								Line:   40,
+								Line:   34,
 							},
 						},
 					},
@@ -3179,13 +2845,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 42,
-									Line:   40,
+									Line:   34,
 								},
 								File:   "v1.flux",
 								Source: "measurement",
 								Start: ast.Position{
 									Column: 31,
-									Line:   40,
+									Line:   34,
 								},
 							},
 						},
@@ -3200,13 +2866,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 51,
-						Line:   45,
+						Line:   39,
 					},
 					File:   "v1.flux",
 					Source: "measurements = (bucket) =>\n    tagValues(bucket: bucket, tag: \"_measurement\")",
 					Start: ast.Position{
 						Column: 1,
-						Line:   44,
+						Line:   38,
 					},
 				},
 			},
@@ -3216,13 +2882,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 13,
-							Line:   44,
+							Line:   38,
 						},
 						File:   "v1.flux",
 						Source: "measurements",
 						Start: ast.Position{
 							Column: 1,
-							Line:   44,
+							Line:   38,
 						},
 					},
 				},
@@ -3234,13 +2900,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 51,
-							Line:   45,
+							Line:   39,
 						},
 						File:   "v1.flux",
 						Source: "(bucket) =>\n    tagValues(bucket: bucket, tag: \"_measurement\")",
 						Start: ast.Position{
 							Column: 16,
-							Line:   44,
+							Line:   38,
 						},
 					},
 				},
@@ -3251,13 +2917,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 50,
-									Line:   45,
+									Line:   39,
 								},
 								File:   "v1.flux",
 								Source: "bucket: bucket, tag: \"_measurement\"",
 								Start: ast.Position{
 									Column: 15,
-									Line:   45,
+									Line:   39,
 								},
 							},
 						},
@@ -3267,13 +2933,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 29,
-										Line:   45,
+										Line:   39,
 									},
 									File:   "v1.flux",
 									Source: "bucket: bucket",
 									Start: ast.Position{
 										Column: 15,
-										Line:   45,
+										Line:   39,
 									},
 								},
 							},
@@ -3283,13 +2949,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 21,
-											Line:   45,
+											Line:   39,
 										},
 										File:   "v1.flux",
 										Source: "bucket",
 										Start: ast.Position{
 											Column: 15,
-											Line:   45,
+											Line:   39,
 										},
 									},
 								},
@@ -3301,13 +2967,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 29,
-											Line:   45,
+											Line:   39,
 										},
 										File:   "v1.flux",
 										Source: "bucket",
 										Start: ast.Position{
 											Column: 23,
-											Line:   45,
+											Line:   39,
 										},
 									},
 								},
@@ -3319,13 +2985,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 50,
-										Line:   45,
+										Line:   39,
 									},
 									File:   "v1.flux",
 									Source: "tag: \"_measurement\"",
 									Start: ast.Position{
 										Column: 31,
-										Line:   45,
+										Line:   39,
 									},
 								},
 							},
@@ -3335,13 +3001,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 34,
-											Line:   45,
+											Line:   39,
 										},
 										File:   "v1.flux",
 										Source: "tag",
 										Start: ast.Position{
 											Column: 31,
-											Line:   45,
+											Line:   39,
 										},
 									},
 								},
@@ -3353,32 +3019,33 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 50,
-											Line:   45,
+											Line:   39,
 										},
 										File:   "v1.flux",
 										Source: "\"_measurement\"",
 										Start: ast.Position{
 											Column: 36,
-											Line:   45,
+											Line:   39,
 										},
 									},
 								},
 								Value: "_measurement",
 							},
 						}},
+						With: nil,
 					}},
 					BaseNode: ast.BaseNode{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 51,
-								Line:   45,
+								Line:   39,
 							},
 							File:   "v1.flux",
 							Source: "tagValues(bucket: bucket, tag: \"_measurement\")",
 							Start: ast.Position{
 								Column: 5,
-								Line:   45,
+								Line:   39,
 							},
 						},
 					},
@@ -3388,13 +3055,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 14,
-									Line:   45,
+									Line:   39,
 								},
 								File:   "v1.flux",
 								Source: "tagValues",
 								Start: ast.Position{
 									Column: 5,
-									Line:   45,
+									Line:   39,
 								},
 							},
 						},
@@ -3407,13 +3074,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 23,
-								Line:   44,
+								Line:   38,
 							},
 							File:   "v1.flux",
 							Source: "bucket",
 							Start: ast.Position{
 								Column: 17,
-								Line:   44,
+								Line:   38,
 							},
 						},
 					},
@@ -3423,13 +3090,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 23,
-									Line:   44,
+									Line:   38,
 								},
 								File:   "v1.flux",
 								Source: "bucket",
 								Start: ast.Position{
 									Column: 17,
-									Line:   44,
+									Line:   38,
 								},
 							},
 						},
