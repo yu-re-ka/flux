@@ -2,6 +2,7 @@ package semantic
 
 import (
 	"fmt"
+	"log"
 	"sort"
 	"strings"
 
@@ -699,6 +700,7 @@ func (k KClass) resolvePolyType(map[Tvar]Kind) (PolyType, error) {
 }
 
 type ObjectKind struct {
+	with       Tvar
 	properties map[string]PolyType
 	lower      LabelSet
 	upper      LabelSet
@@ -728,10 +730,16 @@ func (k ObjectKind) freeVars(c *Constraints) TvarSet {
 }
 
 func (l ObjectKind) unifyKind(kinds map[Tvar]Kind, k Kind) (Kind, Substitution, error) {
-	r, ok := k.(ObjectKind)
-	if !ok {
+	var r ObjectKind
+	switch kt := k.(type) {
+	case ObjectKind:
+		r = kt
+	case WithObjectKind:
+		r = kt.toObjectKind(kinds)
+	default:
 		return nil, nil, fmt.Errorf("cannot unify record with %T", k)
 	}
+	// Consider with objects
 
 	// Merge properties building up a substitution
 	subst := make(Substitution)
@@ -820,6 +828,61 @@ func (k ObjectKind) resolvePolyType(kinds map[Tvar]Kind) (PolyType, error) {
 		}
 	}
 	return NewObjectPolyType(properties, k.lower, k.upper), nil
+}
+
+type WithObjectKind struct {
+	with Tvar
+}
+
+func (k WithObjectKind) String() string {
+	return fmt.Sprintf("{with %v}", k.with)
+}
+
+func (k WithObjectKind) substituteKind(tv Tvar, t PolyType) Kind {
+	return k
+}
+func (k WithObjectKind) freeVars(c *Constraints) TvarSet {
+	return k.with.freeVars(c)
+}
+
+func (l WithObjectKind) unifyKind(kinds map[Tvar]Kind, k Kind) (Kind, Substitution, error) {
+	return l.toObjectKind(kinds).unifyKind(kinds, k)
+}
+
+func (l WithObjectKind) toObjectKind(kinds map[Tvar]Kind) (obj ObjectKind) {
+	defer func() {
+		// Maybe instead of using a disinct WithObjectKind type, we can use more properties on the Objectkind itself
+		// This way there is not conversion and the ObjectKind knows how to unifiy its more complex self
+		// Perhaps the ObjectKind gets a `with` map[string]PolyType` field?
+		// Or a `with` Tvar
+		log.Println("WithObjectKind.toObjectKind", obj)
+	}()
+	kind, ok := kinds[l.with]
+	if !ok {
+		return ObjectKind{}
+	}
+	k, ok := kind.(ObjectKind)
+	if !ok {
+		return ObjectKind{}
+	}
+	properties := make(map[string]PolyType, len(k.properties))
+	for l, t := range k.properties {
+		properties[l] = t
+	}
+	return ObjectKind{
+		properties: properties,
+		lower:      nil,
+		upper:      k.upper.copy(),
+	}
+}
+func (k WithObjectKind) resolveType(kinds map[Tvar]Kind) (Type, error) {
+	return k.toObjectKind(kinds).resolveType(kinds)
+}
+func (k WithObjectKind) MonoType() (Type, bool) {
+	return nil, false
+}
+func (k WithObjectKind) resolvePolyType(kinds map[Tvar]Kind) (PolyType, error) {
+	return k.toObjectKind(kinds).resolvePolyType(kinds)
 }
 
 type Comparable struct{}

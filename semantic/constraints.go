@@ -329,6 +329,18 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 		v.cs.AddTypeConst(typ, ft, n.Location())
 		return ft.ret, nil
 	case *ObjectExpression:
+		var with Tvar
+		if n.With != nil {
+			t, err := v.lookup(n.With)
+			if err != nil {
+				return nil, err
+			}
+			tv, ok := t.(Tvar)
+			if !ok {
+				return nil, errors.New("object 'with' identifier must be a type variable")
+			}
+			with = tv
+		}
 		properties := make(map[string]PolyType, len(n.Properties))
 		upper := make([]string, 0, len(properties))
 		for _, field := range n.Properties {
@@ -340,10 +352,12 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 			upper = append(upper, field.Key.Key())
 		}
 		v.cs.AddKindConst(nodeVar, ObjectKind{
+			with:       with,
 			properties: properties,
 			lower:      nil,
 			upper:      upper,
 		})
+
 		return nodeVar, nil
 	case *Property:
 		return v.lookup(n.Value)
