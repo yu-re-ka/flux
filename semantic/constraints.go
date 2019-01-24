@@ -2,6 +2,7 @@ package semantic
 
 import (
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/influxdata/flux/ast"
@@ -24,7 +25,7 @@ func GenerateConstraints(node Node, annotator Annotator, importer Importer) (*Co
 		importer: importer,
 	}
 	Walk(NewScopedVisitor(cg), node)
-	//log.Println("GenerateConstraints", cg.cs)
+	log.Println("GenerateConstraints", cg.cs)
 	return cg.cs, *cg.err
 }
 
@@ -329,7 +330,17 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 		v.cs.AddTypeConst(typ, ft, n.Location())
 		return ft.ret, nil
 	case *ObjectExpression:
-		var with Tvar
+		properties := make(map[string]PolyType, len(n.Properties))
+		upper := make(LabelSet, 0, len(properties))
+		for _, field := range n.Properties {
+			t, err := v.lookup(field.Value)
+			if err != nil {
+				return nil, err
+			}
+			properties[field.Key.Key()] = t
+			upper = append(upper, field.Key.Key())
+		}
+		var with *Tvar
 		if n.With != nil {
 			t, err := v.lookup(n.With)
 			if err != nil {
@@ -339,17 +350,8 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 			if !ok {
 				return nil, errors.New("object 'with' identifier must be a type variable")
 			}
-			with = tv
-		}
-		properties := make(map[string]PolyType, len(n.Properties))
-		upper := make([]string, 0, len(properties))
-		for _, field := range n.Properties {
-			t, err := v.lookup(field.Value)
-			if err != nil {
-				return nil, err
-			}
-			properties[field.Key.Key()] = t
-			upper = append(upper, field.Key.Key())
+			with = new(Tvar)
+			*with = tv
 		}
 		v.cs.AddKindConst(nodeVar, ObjectKind{
 			with:       with,

@@ -2,6 +2,7 @@ package semantic
 
 import (
 	"fmt"
+	"log"
 	"sort"
 	"strings"
 
@@ -40,7 +41,7 @@ func (s *Solution) FreshSolution() TypeSolution {
 //
 // Unifying two types means to do one of the following:
 //  1. Given two primitive types assert the types are the same or report an error.
-//  2. Given a type variable and another type record that the type variable now has the given type.
+//  2. Given a type variable and another type, record that the type variable now has the given type.
 //  3. Recurse into children types of compound types, for example unify the return types of functions.
 //
 // The unification process has two domains over which it operates.
@@ -88,13 +89,24 @@ func (sol *Solution) solve() error {
 		subst.Merge(s)
 	}
 
-	// Apply substituion to kind constraints
+	// Apply substitution to kind constraints
 	sol.kinds = make(map[Tvar]Kind, len(kinds))
 	for tv, k := range kinds {
 		k = subst.ApplyKind(k)
 		tv = subst.ApplyTvar(tv)
 		sol.kinds[tv] = k
 	}
+	log.Println("subst", subst)
+	log.Println("kinds", sol.kinds)
+
+	// Check kinds
+	for _, k := range sol.kinds {
+		err := k.check(sol.kinds)
+		if err != nil {
+			return errors.Wrap(err, "kind check failed")
+		}
+	}
+
 	// Apply substitution to the type annotations
 	for n, ann := range sol.cs.annotations {
 		if ann.Type != nil {
@@ -102,8 +114,6 @@ func (sol *Solution) solve() error {
 			sol.cs.annotations[n] = ann
 		}
 	}
-	//log.Println("subst", subst)
-	//log.Println("kinds", sol.kinds)
 	return nil
 }
 
@@ -142,7 +152,7 @@ func (s *Solution) AddConstraint(l, r PolyType) error {
 }
 
 func unifyTypes(kinds map[Tvar]Kind, l, r PolyType) (s Substitution, _ error) {
-	//log.Printf("unifyTypes %v == %v", l, r)
+	log.Printf("unifyTypes %v == %v", l, r)
 	return l.unifyType(kinds, r)
 }
 
@@ -151,7 +161,7 @@ func unifyKinds(kinds map[Tvar]Kind, tvl, tvr Tvar, l, r Kind) (Substitution, er
 	if err != nil {
 		return nil, err
 	}
-	//log.Printf("unifyKinds %v = %v == %v = %v ==> %v :: %v", tvl, l, tvr, r, k, s)
+	log.Printf("unifyKinds %v = %v == %v = %v ==> %v :: %v", tvl, l, tvr, r, k, s)
 	kinds[tvr] = k
 	if tvl != tvr {
 		// The substituion now knows that tvl = tvr
