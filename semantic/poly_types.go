@@ -44,8 +44,6 @@ type Kind interface {
 	substituteKind(tv Tvar, t PolyType) Kind
 	// unifyKind unifies the two kinds producing a new merged kind and a substitution.
 	unifyKind(map[Tvar]Kind, Kind) (Kind, Substitution, error)
-	// check kind reports if the kind is valid.
-	check(kinds map[Tvar]Kind) error
 }
 
 // Tvar represents a type variable meaning its type could be any possible type.
@@ -753,28 +751,6 @@ func (k ObjectKind) freeVars(c *Constraints) TvarSet {
 	return fvs
 }
 
-func (k ObjectKind) resolveWith(kinds map[Tvar]Kind) (properties map[string]PolyType, upper LabelSet, err error) {
-	if k.with == nil {
-		return k.properties, k.upper, nil
-	}
-	kc, ok := kinds[*k.with]
-	if !ok {
-		return nil, nil, fmt.Errorf("type variable %q has no kind constraints", *k.with)
-	}
-	w, ok := kc.(ObjectKind)
-	if !ok {
-		return nil, nil, fmt.Errorf("cannot unify object with var %q and type %T", *k.with, kc)
-	}
-	properties = make(map[string]PolyType, len(k.properties)+len(w.properties))
-	for f, p := range k.properties {
-		properties[f] = p
-	}
-	for f, p := range w.properties {
-		properties[f] = p
-	}
-	return properties, k.upper.union(w.upper), nil
-}
-
 func (l ObjectKind) unifyKind(kinds map[Tvar]Kind, k Kind) (Kind, Substitution, error) {
 	r, ok := k.(ObjectKind)
 	if !ok {
@@ -809,6 +785,12 @@ func (l ObjectKind) unifyKind(kinds map[Tvar]Kind, k Kind) (Kind, Substitution, 
 	upper := l.upper.intersect(r.upper)
 	lower := l.lower.union(r.lower)
 
+	// Check for missing properties
+	diff := lower.diff(upper)
+	if len(diff) > 0 {
+		return nil, nil, fmt.Errorf("missing object properties %v", diff)
+	}
+
 	var with *Tvar
 	switch {
 	case l.with == nil && r.with == nil:
@@ -829,36 +811,20 @@ func (l ObjectKind) unifyKind(kinds map[Tvar]Kind, k Kind) (Kind, Substitution, 
 		lower:      lower,
 		upper:      upper,
 	}
+	// Check for invalid records in lower bound
+	for _, lbl := range kr.lower {
+		t := kr.properties[lbl]
+		i, ok := t.(invalid)
+		if ok {
+			return nil, nil, errors.Wrapf(i.err, "invalid record access %q", lbl)
+		}
+	}
 	return kr, subst, nil
 }
 
-func (k ObjectKind) check(kinds map[Tvar]Kind) error {
-	properties, upper, err := k.resolveWith(kinds)
-	if err != nil {
-		return err
-	}
-	diff := k.lower.diff(upper)
-	if len(diff) > 0 {
-		return fmt.Errorf("missing object properties %v", diff)
-	}
-	// Check for invalid records in lower bound
-	for _, lbl := range k.lower {
-		t := properties[lbl]
-		i, ok := t.(invalid)
-		if ok {
-			return errors.Wrapf(i.err, "invalid record access %q", lbl)
-		}
-	}
-	return nil
-}
-
 func (k ObjectKind) resolveType(kinds map[Tvar]Kind) (Type, error) {
-	props, _, err := k.resolveWith(kinds)
-	if err != nil {
-		return nil, err
-	}
-	properties := make(map[string]Type, len(props))
-	for l, ft := range props {
+	properties := make(map[string]Type, len(k.properties))
+	for l, ft := range k.properties {
 		if _, ok := ft.(invalid); !ok {
 			t, err := ft.resolveType(kinds)
 			if err != nil {
@@ -886,12 +852,8 @@ func (k ObjectKind) MonoType() (Type, bool) {
 	return NewObjectType(properties), true
 }
 func (k ObjectKind) resolvePolyType(kinds map[Tvar]Kind) (PolyType, error) {
-	props, upper, err := k.resolveWith(kinds)
-	if err != nil {
-		return nil, err
-	}
-	properties := make(map[string]PolyType, len(upper))
-	for l, ft := range props {
+	properties := make(map[string]PolyType, len(k.upper))
+	for l, ft := range k.properties {
 		if _, ok := ft.(invalid); !ok {
 			t, err := ft.resolvePolyType(kinds)
 			if err != nil {
@@ -900,7 +862,7 @@ func (k ObjectKind) resolvePolyType(kinds map[Tvar]Kind) (PolyType, error) {
 			properties[l] = t
 		}
 	}
-	return NewObjectPolyType(properties, k.lower, upper), nil
+	return NewObjectPolyType(properties, k.lower, k.upper), nil
 }
 
 type Comparable struct{}

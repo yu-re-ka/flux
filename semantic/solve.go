@@ -96,16 +96,6 @@ func (sol *Solution) solve() error {
 		tv = subst.ApplyTvar(tv)
 		sol.kinds[tv] = k
 	}
-	log.Println("subst", subst)
-	log.Println("kinds", sol.kinds)
-
-	// Check kinds
-	for _, k := range sol.kinds {
-		err := k.check(sol.kinds)
-		if err != nil {
-			return errors.Wrap(err, "kind check failed")
-		}
-	}
 
 	// Apply substitution to the type annotations
 	for n, ann := range sol.cs.annotations {
@@ -114,6 +104,8 @@ func (sol *Solution) solve() error {
 			sol.cs.annotations[n] = ann
 		}
 	}
+	log.Println("subst", subst)
+	log.Println("kinds", sol.kinds)
 	return nil
 }
 

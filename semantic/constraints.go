@@ -165,6 +165,7 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 			return nil, fmt.Errorf("undefined identifier %q", n.Name)
 		}
 		t := v.cs.Instantiate(scheme, n.Location())
+		log.Println("IdentifierExpression", n.Name, scheme, t)
 		return t, nil
 	case *ReturnStatement:
 		return v.lookup(n.Argument)
@@ -350,8 +351,19 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 			if !ok {
 				return nil, errors.New("object 'with' identifier must be a type variable")
 			}
-			with = new(Tvar)
-			*with = tv
+			for _, k := range v.cs.kindConst[tv] {
+				obj, ok := k.(ObjectKind)
+				if !ok {
+					return nil, errors.New("object 'with' identifier must be have only object kind constraints")
+				}
+				if obj.upper.isAllLabels() {
+					continue
+				}
+				for _, p := range obj.upper {
+					properties[p] = obj.properties[p]
+				}
+				upper = upper.union(obj.upper)
+			}
 		}
 		v.cs.AddKindConst(nodeVar, ObjectKind{
 			with:       with,
@@ -530,9 +542,13 @@ func (c *Constraints) AddKindConst(tv Tvar, k Kind) {
 // Instantiate produces a new poly type where the free variables from the scheme have been made fresh.
 // This way each new instantiation of a scheme is independent of the other but all have the same constraint structure.
 func (c *Constraints) Instantiate(s Scheme, loc ast.SourceLocation) (t PolyType) {
+	defer func() {
+		log.Println("Instantiate", s, t)
+	}()
 	if len(s.Free) == 0 {
 		return s.T
 	}
+
 	// Create a substituion for the new type variables
 	subst := make(Substitution, len(s.Free))
 	for _, tv := range s.Free {
@@ -569,7 +585,13 @@ func (c *Constraints) Instantiate(s Scheme, loc ast.SourceLocation) (t PolyType)
 func (c *Constraints) String() string {
 	var builder strings.Builder
 	builder.WriteString("{\nannotations:\n")
-	for n, ann := range c.annotations {
+	nodes := make([]Node, 0, len(c.annotations))
+	for n := range c.annotations {
+		nodes = append(nodes, n)
+	}
+	SortNodes(nodes)
+	for _, n := range nodes {
+		ann := c.annotations[n]
 		fmt.Fprintf(&builder, "%T@%v = %v,\n", n, n.Location(), ann.Var)
 	}
 	builder.WriteString("types:\n")
