@@ -18,7 +18,8 @@ func GenerateConstraints(node Node, annotator Annotator, importer Importer) (*Co
 		cs: &Constraints{
 			f:           annotator.f,
 			annotations: annotator.annotations,
-			kindConst:   make(map[Tvar][]Kind),
+			kindConst:   make(map[Kvar][]Kind),
+			typeKinds:   make(map[Tvar]Kvar),
 		},
 		env:      NewEnv(),
 		err:      new(error),
@@ -494,8 +495,10 @@ type Constraints struct {
 	annotations map[Node]annotation
 
 	typeConst []TypeConstraint
-	kindConst map[Tvar][]Kind
+	kindConst map[Kvar][]Kind
+	typeKinds map[Tvar]Kvar
 }
+type Kvar int
 
 func (c *Constraints) Copy() *Constraints {
 	n := &Constraints{
@@ -503,6 +506,7 @@ func (c *Constraints) Copy() *Constraints {
 		annotations: make(map[Node]annotation, len(c.annotations)),
 		typeConst:   make([]TypeConstraint, len(c.typeConst)),
 		kindConst:   make(map[Tvar][]Kind, len(c.kindConst)),
+		typeKinds:   make(map[Kvar]Tvar, len(c.typeKinds)),
 	}
 	*n.f = *c.f
 	for k, v := range c.annotations {
@@ -513,6 +517,9 @@ func (c *Constraints) Copy() *Constraints {
 		kinds := make([]Kind, len(v))
 		copy(kinds, v)
 		n.kindConst[k] = kinds
+	}
+	for t, k := range c.typeKinds {
+		n.typeKinds[t] = k
 	}
 	return n
 }
@@ -535,8 +542,16 @@ func (c *Constraints) AddTypeConst(l, r PolyType, loc ast.SourceLocation) {
 	})
 }
 
-func (c *Constraints) AddKindConst(tv Tvar, k Kind) {
-	c.kindConst[tv] = append(c.kindConst[tv], k)
+func (c *Constraints) lookupKindTvar(kv Kvar) Tvar {
+	kv, ok := c.typeKinds[tv]
+	if !ok {
+		kv = Kvar(c.f.Fresh())
+		c.typeKinds[tv] = kv
+	}
+	return kv
+}
+func (c *Constraints) AddKindConst(kv Kvar, k Kind) {
+	c.kindConst[kv] = append(c.kindConst[kv], k)
 }
 
 // Instantiate produces a new poly type where the free variables from the scheme have been made fresh.
@@ -558,12 +573,14 @@ func (c *Constraints) Instantiate(s Scheme, loc ast.SourceLocation) (t PolyType)
 
 	// Add any new kind constraints
 	for _, tv := range s.Free {
-		ks, ok := c.kindConst[tv]
+		kv := c.typeKinds[tv]
+		ks, ok := c.kindConst[kv]
 		if ok {
 			ntv := subst.ApplyTvar(tv)
+			c.typeKinds[ntv] = kv
 			for _, k := range ks {
 				nk := subst.ApplyKind(k)
-				c.AddKindConst(ntv, nk)
+				c.AddKindConst(kv, nk)
 			}
 		}
 	}

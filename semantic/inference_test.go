@@ -1573,8 +1573,7 @@ name = (p) => p.name
 
 j = getJim(x: 5)
 
-n = name(p: j)
-n
+name(p: j)
 `,
 			solution: &solutionVisitor{
 				f: func(node semantic.Node) semantic.PolyType {
@@ -1725,16 +1724,6 @@ n
 					return nil
 				},
 			},
-		},
-		{
-			name: "structural polymorphism indirection no funcs",
-			script: `
-j = {name: "Jim", age: 30, weight: 100.0}
-name = (p) => p.name
-k = j
-name(p: k)
-`,
-			solution: nil,
 		},
 		{
 			name: "structural polymorphism error",
