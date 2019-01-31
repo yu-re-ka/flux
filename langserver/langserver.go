@@ -58,13 +58,6 @@ func (s *Server) handle(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.
 			Message: "server is shutdown",
 		}
 	}
-	logger := s.logger
-	if req.ID.IsString {
-		logger = logger.With(zap.String("id", req.ID.Str))
-	} else {
-		logger = logger.With(zap.Uint64("id", req.ID.Num))
-	}
-	logger = logger.With(zap.String("method", req.Method))
 
 	switch req.Method {
 	case "initialize":
