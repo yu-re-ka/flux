@@ -74,6 +74,8 @@ func (s *Server) handle(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.
 				},
 			},
 		}, nil
+	case "initialized":
+		return nil, nil
 	case "shutdown":
 		s.shutdown = true
 		return nil, nil
