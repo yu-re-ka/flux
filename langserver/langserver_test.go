@@ -101,7 +101,7 @@ func TestServer_Serve_Shutdown(t *testing.T) {
 
 		rwc := langserver.ReadWriter(r1, w2)
 		handler := langserver.Handler{}
-		server := langserver.New(handler, zap.NewNop())
+		server := langserver.New(handler, newLogger(os.Stdout))
 		if err := server.Serve(rwc); err != nil {
 			t.Error(err)
 		}
