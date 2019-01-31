@@ -51,16 +51,9 @@ func TestServer_Serve(t *testing.T) {
 	done := make(chan struct{})
 	go func() {
 		defer close(done)
-
-		conn, err := l.Accept()
-		if err != nil {
-			t.Error(err)
-			return
-		}
-
 		handler := langserver.Handler{}
 		server := langserver.New(handler, zap.NewNop())
-		if err := server.Serve(conn); err != nil {
+		if err := server.Serve(l); err != nil {
 			t.Error(err)
 		}
 	}()
@@ -82,8 +75,19 @@ func TestServer_Serve(t *testing.T) {
 
 	// TODO(jsternberg): Check the server capabilities.
 
+	if err := client.Notify(ctx, "exit", nil); err != nil {
+		t.Error(err)
+	}
+
 	if err := client.Close(); err != nil {
 		t.Error(err)
 	}
-	<-done
+
+	timer := time.NewTimer(100 * time.Millisecond)
+	select {
+	case <-done:
+		timer.Stop()
+	case <-timer.C:
+		t.Errorf("server did not exit")
+	}
 }

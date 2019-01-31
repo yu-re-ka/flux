@@ -3,6 +3,7 @@ package langserver
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -13,8 +14,10 @@ import (
 )
 
 type Server struct {
-	handler *Handler
-	logger  *zap.Logger
+	handler  *Handler
+	logger   *zap.Logger
+	listener net.Listener
+	closed   bool
 }
 
 func New(h Handler, l *zap.Logger) *Server {
@@ -25,9 +28,16 @@ func New(h Handler, l *zap.Logger) *Server {
 }
 
 func (s *Server) Serve(l net.Listener) error {
+	if s.listener != nil {
+		return errors.New("already listening")
+	}
+	s.listener = l
 	for {
 		conn, err := l.Accept()
 		if err != nil {
+			if s.closed {
+				return nil
+			}
 			return err
 		}
 		go s.serve(conn)
@@ -68,6 +78,11 @@ func (s *Server) handle(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.
 		}
 		return lsp.InitializeResult{}, nil
 	case "exit":
+		s.closed = true
+		if err := s.listener.Close(); err != nil {
+			return nil, err
+		}
+		return nil, nil
 	}
 	return nil, &jsonrpc2.Error{
 		Code:    jsonrpc2.CodeMethodNotFound,
