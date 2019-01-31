@@ -7,6 +7,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/url"
+	"time"
 
 	"github.com/influxdata/flux/complete"
 	"github.com/sourcegraph/go-lsp"
@@ -38,6 +39,19 @@ func (s *Server) Serve(rw io.ReadWriteCloser) error {
 }
 
 func (s *Server) handle(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.Request) (result interface{}, err error) {
+	logger := s.logger
+	if req.ID.IsString {
+		logger = logger.With(zap.String("id", req.ID.Str))
+	} else {
+		logger = logger.With(zap.Uint64("id", req.ID.Num))
+	}
+	logger = logger.With(zap.String("method", req.Method))
+
+	defer func(start time.Time) {
+		dur := time.Since(start)
+		logger.Info("Request received", zap.Duration("dur", dur))
+	}(time.Now())
+
 	if s.shutdown && req.Method != "exit" {
 		return nil, &jsonrpc2.Error{
 			Code:    jsonrpc2.CodeInvalidRequest,
@@ -63,10 +77,10 @@ func (s *Server) handle(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.
 			return nil, err
 		}
 
-		logger.Info("Initialize", zap.Int("processId", params.ProcessID), zap.String("path", string(params.RootURI)))
 		if err := s.reset(params); err != nil {
 			return nil, err
 		}
+		logger.Info("Initialized", zap.Int("processId", params.ProcessID), zap.String("path", string(params.RootURI)))
 		return lsp.InitializeResult{
 			Capabilities: lsp.ServerCapabilities{
 				CompletionProvider: &lsp.CompletionOptions{
