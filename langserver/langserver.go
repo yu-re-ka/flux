@@ -18,6 +18,7 @@ type Server struct {
 	logger   *zap.Logger
 	listener net.Listener
 	closed   bool
+	shutdown bool
 }
 
 func New(h Handler, l *zap.Logger) *Server {
@@ -53,6 +54,12 @@ func (s *Server) serve(rw io.ReadWriteCloser) error {
 }
 
 func (s *Server) handle(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.Request) (result interface{}, err error) {
+	if s.shutdown && req.Method != "exit" {
+		return nil, &jsonrpc2.Error{
+			Code:    jsonrpc2.CodeInvalidRequest,
+			Message: "server is shutdown",
+		}
+	}
 	logger := s.logger
 	if req.ID.IsString {
 		logger = logger.With(zap.String("id", req.ID.Str))
@@ -77,6 +84,9 @@ func (s *Server) handle(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.
 			return nil, err
 		}
 		return lsp.InitializeResult{}, nil
+	case "shutdown":
+		s.shutdown = true
+		return nil, nil
 	case "exit":
 		s.closed = true
 		if err := s.listener.Close(); err != nil {

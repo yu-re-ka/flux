@@ -91,3 +91,67 @@ func TestServer_Serve(t *testing.T) {
 		t.Errorf("server did not exit")
 	}
 }
+
+func TestServer_Serve_Shutdown(t *testing.T) {
+	l, err := net.Listen("tcp", ":0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer l.Close()
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		handler := langserver.Handler{}
+		server := langserver.New(handler, zap.NewNop())
+		if err := server.Serve(l); err != nil {
+			t.Error(err)
+		}
+	}()
+
+	conn, err := net.Dial("tcp", l.Addr().String())
+	if err != nil {
+		t.Fatal(err)
+	}
+	stream := jsonrpc2.NewBufferedStream(conn, jsonrpc2.VSCodeObjectCodec{})
+	client := jsonrpc2.NewConn(ctx, stream, nil)
+
+	var (
+		params lsp.InitializeParams
+		res    lsp.InitializeResult
+	)
+	if err := client.Call(ctx, "initialize", params, &res); err != nil {
+		t.Error(err)
+	}
+
+	// TODO(jsternberg): Check the server capabilities.
+
+	if err := client.Call(ctx, "shutdown", nil, nil); err != nil {
+		t.Error(err)
+	}
+
+	if err := client.Call(ctx, "request", nil, nil); err == nil {
+		t.Error("expected error")
+	} else if err := err.(*jsonrpc2.Error); err.Code != jsonrpc2.CodeInvalidRequest {
+		t.Errorf("unexpected error code: want=%d got=%d", jsonrpc2.CodeInvalidRequest, err.Code)
+	}
+
+	if err := client.Notify(ctx, "exit", nil); err != nil {
+		t.Error(err)
+	}
+
+	if err := client.Close(); err != nil {
+		t.Error(err)
+	}
+
+	timer := time.NewTimer(100 * time.Millisecond)
+	select {
+	case <-done:
+		timer.Stop()
+	case <-timer.C:
+		t.Errorf("server did not exit")
+	}
+}
