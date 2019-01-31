@@ -3,11 +3,9 @@ package langserver
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
-	"net"
 	"net/url"
 
 	"github.com/influxdata/flux/complete"
@@ -19,8 +17,6 @@ import (
 type Server struct {
 	handler  *Handler
 	logger   *zap.Logger
-	listener net.Listener
-	closed   bool
 	shutdown bool
 
 	workspace string
@@ -33,24 +29,7 @@ func New(h Handler, l *zap.Logger) *Server {
 	}
 }
 
-func (s *Server) Serve(l net.Listener) error {
-	if s.listener != nil {
-		return errors.New("already listening")
-	}
-	s.listener = l
-	for {
-		conn, err := l.Accept()
-		if err != nil {
-			if s.closed {
-				return nil
-			}
-			return err
-		}
-		go s.serve(conn)
-	}
-}
-
-func (s *Server) serve(rw io.ReadWriteCloser) error {
+func (s *Server) Serve(rw io.ReadWriteCloser) error {
 	stream := jsonrpc2.NewBufferedStream(rw, jsonrpc2.VSCodeObjectCodec{})
 	handler := jsonrpc2.HandlerWithError(s.handle)
 	conn := jsonrpc2.NewConn(context.TODO(), stream, handler)
@@ -99,8 +78,7 @@ func (s *Server) handle(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.
 		s.shutdown = true
 		return nil, nil
 	case "exit":
-		s.closed = true
-		if err := s.listener.Close(); err != nil {
+		if err := conn.Close(); err != nil {
 			return nil, err
 		}
 		return nil, nil

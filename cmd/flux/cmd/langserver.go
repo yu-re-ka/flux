@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 	"io"
-	"net"
 	"os"
 	"time"
 
@@ -49,19 +48,8 @@ func newLogger(w io.Writer) *zap.Logger {
 }
 
 func runLangserver(cmd *cobra.Command, args []string) error {
-	l, err := net.Listen("tcp", ":9317")
-	if err != nil {
-		return err
-	}
-
 	handler := langserver.Handler{}
-	logger := newLogger(os.Stdout)
+	logger := newLogger(os.Stderr)
 	srv := langserver.New(handler, logger)
-	for {
-		conn, err := l.Accept()
-		if err != nil {
-			return err
-		}
-		go srv.Serve(conn)
-	}
+	return srv.Serve(langserver.ReadWriter(os.Stdin, os.Stdout))
 }

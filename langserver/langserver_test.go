@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"net"
+	"os"
 	"testing"
 	"time"
 
@@ -39,11 +39,8 @@ func newLogger(w io.Writer) *zap.Logger {
 }
 
 func TestServer_Serve(t *testing.T) {
-	l, err := net.Listen("tcp", ":0")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer l.Close()
+	r1, w1 := io.Pipe()
+	r2, w2 := io.Pipe()
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
@@ -51,18 +48,17 @@ func TestServer_Serve(t *testing.T) {
 	done := make(chan struct{})
 	go func() {
 		defer close(done)
+
+		rwc := langserver.ReadWriter(r1, w2)
 		handler := langserver.Handler{}
-		server := langserver.New(handler, zap.NewNop())
-		if err := server.Serve(l); err != nil {
+		server := langserver.New(handler, newLogger(os.Stdout))
+		if err := server.Serve(rwc); err != nil {
 			t.Error(err)
 		}
 	}()
 
-	conn, err := net.Dial("tcp", l.Addr().String())
-	if err != nil {
-		t.Fatal(err)
-	}
-	stream := jsonrpc2.NewBufferedStream(conn, jsonrpc2.VSCodeObjectCodec{})
+	rwc := langserver.ReadWriter(r2, w1)
+	stream := jsonrpc2.NewBufferedStream(rwc, jsonrpc2.VSCodeObjectCodec{})
 	client := jsonrpc2.NewConn(ctx, stream, nil)
 
 	var (
@@ -93,11 +89,8 @@ func TestServer_Serve(t *testing.T) {
 }
 
 func TestServer_Serve_Shutdown(t *testing.T) {
-	l, err := net.Listen("tcp", ":0")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer l.Close()
+	r1, w1 := io.Pipe()
+	r2, w2 := io.Pipe()
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
@@ -105,18 +98,17 @@ func TestServer_Serve_Shutdown(t *testing.T) {
 	done := make(chan struct{})
 	go func() {
 		defer close(done)
+
+		rwc := langserver.ReadWriter(r1, w2)
 		handler := langserver.Handler{}
 		server := langserver.New(handler, zap.NewNop())
-		if err := server.Serve(l); err != nil {
+		if err := server.Serve(rwc); err != nil {
 			t.Error(err)
 		}
 	}()
 
-	conn, err := net.Dial("tcp", l.Addr().String())
-	if err != nil {
-		t.Fatal(err)
-	}
-	stream := jsonrpc2.NewBufferedStream(conn, jsonrpc2.VSCodeObjectCodec{})
+	rwc := langserver.ReadWriter(r2, w1)
+	stream := jsonrpc2.NewBufferedStream(rwc, jsonrpc2.VSCodeObjectCodec{})
 	client := jsonrpc2.NewConn(ctx, stream, nil)
 
 	var (
