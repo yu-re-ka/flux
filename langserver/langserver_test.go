@@ -50,9 +50,7 @@ func TestServer_Serve(t *testing.T) {
 		defer close(done)
 
 		rwc := langserver.ReadWriter(r1, w2)
-		handler := langserver.Handler{}
-		server := langserver.New(handler, newLogger(os.Stdout))
-		if err := server.Serve(rwc); err != nil {
+		if err := langserver.Run(ctx, rwc, newLogger(os.Stdout)); err != nil {
 			t.Error(err)
 		}
 	}()
@@ -100,9 +98,7 @@ func TestServer_Serve_Shutdown(t *testing.T) {
 		defer close(done)
 
 		rwc := langserver.ReadWriter(r1, w2)
-		handler := langserver.Handler{}
-		server := langserver.New(handler, newLogger(os.Stdout))
-		if err := server.Serve(rwc); err != nil {
+		if err := langserver.Run(ctx, rwc, newLogger(os.Stdout)); err != nil {
 			t.Error(err)
 		}
 	}()

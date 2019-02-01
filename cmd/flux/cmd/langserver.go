@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -48,8 +49,6 @@ func newLogger(w io.Writer) *zap.Logger {
 }
 
 func runLangserver(cmd *cobra.Command, args []string) error {
-	handler := langserver.Handler{}
 	logger := newLogger(os.Stderr)
-	srv := langserver.New(handler, logger)
-	return srv.Serve(langserver.ReadWriter(os.Stdin, os.Stdout))
+	return langserver.Run(context.TODO(), langserver.ReadWriter(os.Stdin, os.Stdout), logger)
 }
