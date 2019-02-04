@@ -9,7 +9,6 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/influxdata/flux/complete"
 	"github.com/sourcegraph/go-lsp"
 	"github.com/sourcegraph/jsonrpc2"
 	"go.uber.org/zap"
@@ -124,14 +123,14 @@ func (s *Server) reset(params lsp.InitializeParams) error {
 }
 
 func (s *Server) completions(uri lsp.DocumentURI) (lsp.CompletionList, error) {
-	text, err := s.getText(uri)
-	if err != nil {
-		return lsp.CompletionList{}, err
-	}
-	list, err := complete.StaticComplete(text)
-	if err != nil {
-		return lsp.CompletionList{}, err
-	}
+	//text, err := s.getText(uri)
+	//if err != nil {
+	//	return lsp.CompletionList{}, err
+	//}
+	list := []string{"foo", "bar"}
+	//if err != nil {
+	//	return lsp.CompletionList{}, err
+	//}
 	items := make([]lsp.CompletionItem, 0, len(list))
 	for _, item := range list {
 		items = append(items, lsp.CompletionItem{
