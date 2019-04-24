@@ -22,7 +22,7 @@ require (
 	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
 	github.com/opentracing/opentracing-go v1.0.2
 	github.com/pierrec/lz4 v2.0.5+incompatible // indirect
-	github.com/pkg/errors v0.8.0
+	github.com/pkg/errors v0.8.1
 	github.com/pkg/term v0.0.0-20180730021639-bffc007b7fd5 // indirect
 	github.com/prometheus/client_golang v0.0.0-20171201122222-661e31bf844d
 	github.com/prometheus/client_model v0.0.0-20180712105110-5c3871d89910 // indirect
@@ -43,3 +43,5 @@ require (
 	gopkg.in/src-d/go-git.v4 v4.8.1
 	honnef.co/go/tools v0.0.0-20181108184350-ae8f1f9103cc
 )
+
+replace github.com/apache/arrow/go/arrow => github.com/jsternberg/arrow/go/arrow v0.0.0-20190424175531-4c094583a001
