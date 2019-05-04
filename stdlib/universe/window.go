@@ -248,7 +248,7 @@ func (t *fixedWindowTransformation) Process(id execute.DatasetID, tbl flux.Table
 	startColIdx := -1
 	stopColIdx := -1
 	for j, c := range tbl.Cols() {
-		keyIdx := execute.ColIdx(c.Label, tbl.Key().Cols())
+		keyIdx := tbl.Key().Index(c.Label)
 		keyed := keyIdx >= 0
 		if c.Label == t.startCol {
 			startColIdx = j

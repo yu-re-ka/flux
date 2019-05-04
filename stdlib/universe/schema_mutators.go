@@ -139,7 +139,7 @@ func (m *RenameMutator) Mutate(ctx *BuilderContext) error {
 	keyValues := make([]values.Value, 0, len(ctx.Cols()))
 
 	for i := range ctx.Cols() {
-		keyIdx := execute.ColIdx(ctx.TableColumns[i].Label, ctx.Key().Cols())
+		keyIdx := ctx.Key().Index(ctx.TableColumns[i].Label)
 		keyed := keyIdx >= 0
 
 		if err := m.renameCol(&ctx.TableColumns[i]); err != nil {
@@ -275,7 +275,7 @@ func (m *DropKeepMutator) Mutate(ctx *BuilderContext) error {
 			continue
 		}
 
-		keyIdx := execute.ColIdx(c.Label, ctx.Key().Cols())
+		keyIdx := ctx.Key().Index(c.Label)
 		if keyIdx >= 0 {
 			keyCols = append(keyCols, c)
 			keyValues = append(keyValues, ctx.Key().Value(keyIdx))
@@ -324,18 +324,28 @@ func (m *DuplicateMutator) Mutate(ctx *BuilderContext) error {
 		ctx.TableColumns[asIdx] = newCol
 		ctx.ColIdxMap[asIdx] = ctx.ColIdxMap[fromIdx]
 	}
-	asKeyIdx := execute.ColIdx(ctx.TableColumns[asIdx].Label, ctx.Key().Cols())
+	asKeyIdx := ctx.Key().Index(ctx.TableColumns[asIdx].Label)
 	if asKeyIdx >= 0 {
-		newKeyCols := append(ctx.Key().Cols()[:0:0], ctx.Key().Cols()...)
-		newKeyVals := append(ctx.Key().Values()[:0:0], ctx.Key().Values()...)
-		fromKeyIdx := execute.ColIdx(m.Column, newKeyCols)
-		if fromKeyIdx >= 0 {
-			newKeyCols[asKeyIdx] = newCol
-			newKeyVals[asKeyIdx] = newKeyVals[fromKeyIdx]
+		if fromKeyIdx := ctx.Key().Index(m.Column); fromKeyIdx >= 0 {
+			// Both as and from are in the group key, so override
+			// the old value.
+			gkb := execute.NewGroupKeyBuilder(ctx.Key())
+			gkb.SetKeyValue(newCol.Label, ctx.Key().Value(fromKeyIdx))
+			ctx.TableKey, _ = gkb.Build()
 		} else {
-			newKeyCols = append(newKeyCols[:asKeyIdx], newKeyCols[asKeyIdx+1:]...)
+			// The from value isn't in the group key, but the as
+			// value is so construct a new group key that removes
+			// the as value.
+			gkb := execute.NewGroupKeyBuilder(nil)
+			for j, n := 0, ctx.Key().NCols(); j < n; j++ {
+				if j == asKeyIdx {
+					continue
+				}
+				c := ctx.Key().Col(j)
+				gkb.AddKeyValue(c.Label, ctx.Key().Value(j))
+			}
+			ctx.TableKey, _ = gkb.Build()
 		}
-		ctx.TableKey = execute.NewGroupKey(newKeyCols, newKeyVals)
 	}
 
 	return nil

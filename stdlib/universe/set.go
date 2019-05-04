@@ -126,12 +126,12 @@ func (t *setTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey
 
 func (t *setTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 	key := tbl.Key()
-	if idx := execute.ColIdx(t.key, key.Cols()); idx >= 0 {
+	if idx := key.Index(t.key); idx >= 0 {
 		// Update key
-		cols := make([]flux.ColMeta, len(key.Cols()))
-		vs := make([]values.Value, len(key.Cols()))
-		for j, c := range key.Cols() {
-			cols[j] = c
+		cols := make([]flux.ColMeta, key.NCols())
+		vs := make([]values.Value, key.NCols())
+		for j, n := 0, key.NCols(); j < n; j++ {
+			cols[j] = key.Col(j)
 			if j == idx {
 				vs[j] = values.NewString(t.value)
 			} else {

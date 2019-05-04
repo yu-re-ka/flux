@@ -155,9 +155,10 @@ func (t *shiftTransformation) RetractTable(id execute.DatasetID, key flux.GroupK
 func (t *shiftTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 	key := tbl.Key()
 	// Update key
-	cols := make([]flux.ColMeta, len(key.Cols()))
-	vs := make([]values.Value, len(key.Cols()))
-	for j, c := range key.Cols() {
+	cols := make([]flux.ColMeta, key.NCols())
+	vs := make([]values.Value, key.NCols())
+	for j, n := 0, key.NCols(); j < n; j++ {
+		c := key.Col(j)
 		if execute.ContainsStr(t.columns, c.Label) {
 			if c.Type != flux.TTime {
 				return fmt.Errorf("column %q is not of type time", c.Label)

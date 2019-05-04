@@ -172,18 +172,19 @@ func (t *sortTransformation) Finish(id execute.DatasetID, err error) {
 }
 
 func (t *sortTransformation) sortedKey(key flux.GroupKey) flux.GroupKey {
-	cols := make([]flux.ColMeta, len(key.Cols()))
-	vs := make([]values.Value, len(key.Cols()))
+	cols := make([]flux.ColMeta, key.NCols())
+	vs := make([]values.Value, key.NCols())
 	j := 0
 	for _, label := range t.cols {
-		idx := execute.ColIdx(label, key.Cols())
+		idx := key.Index(label)
 		if idx >= 0 {
-			cols[j] = key.Cols()[idx]
+			cols[j] = key.Col(idx)
 			vs[j] = key.Value(idx)
 			j++
 		}
 	}
-	for idx, c := range key.Cols() {
+	for idx, n := 0, key.NCols(); idx < n; idx++ {
+		c := key.Col(idx)
 		if !execute.ContainsStr(t.cols, c.Label) {
 			cols[j] = c
 			vs[j] = key.Value(idx)

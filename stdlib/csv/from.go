@@ -158,7 +158,7 @@ func (c *CSVSource) Run(ctx context.Context) {
 			if err != nil {
 				return err
 			}
-			if idx := execute.ColIdx(execute.DefaultStopColLabel, tbl.Key().Cols()); idx >= 0 {
+			if idx := tbl.Key().Index(execute.DefaultStopColLabel); idx >= 0 {
 				if stop := tbl.Key().ValueTime(idx); !maxSet || stop > max {
 					max = stop
 					maxSet = true

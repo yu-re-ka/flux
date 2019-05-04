@@ -246,7 +246,7 @@ func (t *reduceTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 		for j, c := range builder.Cols() {
 			v, ok := reducer.Get(c.Label)
 			if !ok {
-				if idx := execute.ColIdx(c.Label, tbl.Key().Cols()); idx >= 0 {
+				if idx := tbl.Key().Index(c.Label); idx >= 0 {
 					v = tbl.Key().Value(idx)
 				} else {
 					// This should be unreachable
