@@ -200,7 +200,7 @@ func (t *fillTransformation) RetractTable(id execute.DatasetID, key flux.GroupKe
 
 func (t *fillTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 	key := tbl.Key()
-	if idx := execute.ColIdx(t.spec.Column, tbl.Key().Cols()); idx >= 0 {
+	if idx := tbl.Key().Index(t.spec.Column); idx >= 0 {
 		var err error
 		gkb := execute.NewGroupKeyBuilder(tbl.Key())
 		gkb.SetKeyValue(t.spec.Column, values.New(t.spec.Value))

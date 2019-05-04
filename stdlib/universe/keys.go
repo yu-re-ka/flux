@@ -121,7 +121,8 @@ func (t *keysTransformation) Process(id execute.DatasetID, tbl flux.Table) error
 	}
 
 	keys := make([]string, 0, len(tbl.Cols()))
-	for _, c := range tbl.Key().Cols() {
+	for j, n := 0, tbl.Key().NCols(); j < n; j++ {
+		c := tbl.Key().Col(j)
 		keys = append(keys, c.Label)
 	}
 

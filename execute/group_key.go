@@ -34,14 +34,17 @@ func newGroupKey(cols []flux.ColMeta, values []values.Value) *groupKey {
 	}
 }
 
-func (k *groupKey) Cols() []flux.ColMeta {
-	return k.cols
+func (k *groupKey) NCols() int {
+	return len(k.cols)
 }
-func (k *groupKey) Values() []values.Value {
-	return k.values
+func (k *groupKey) Col(idx int) flux.ColMeta {
+	return k.cols[idx]
 }
 func (k *groupKey) HasCol(label string) bool {
 	return ColIdx(label, k.cols) >= 0
+}
+func (k *groupKey) Index(label string) int {
+	return ColIdx(label, k.cols)
 }
 func (k *groupKey) LabelValue(label string) values.Value {
 	if !k.HasCol(label) {
@@ -77,12 +80,8 @@ func (k *groupKey) ValueTime(j int) Time {
 	return k.values[j].Time()
 }
 
-func (k *groupKey) Equal(o flux.GroupKey) bool {
-	return groupKeyEqual(k, o)
-}
-
-func (k *groupKey) Less(o flux.GroupKey) bool {
-	return groupKeyLess(k, o)
+func (k *groupKey) Sorted() flux.GroupKey {
+	return sortedGroupKey{k: k}
 }
 
 func (k *groupKey) String() string {
@@ -98,128 +97,75 @@ func (k *groupKey) String() string {
 	return b.String()
 }
 
-func groupKeyEqual(a *groupKey, other flux.GroupKey) bool {
-	b, ok := other.(*groupKey)
-	if !ok {
-		b = newGroupKey(other.Cols(), other.Values())
-	}
-
-	if len(a.cols) != len(b.cols) {
-		return false
-	}
-	for i, idx := range a.sorted {
-		jdx := b.sorted[i]
-		if a.cols[idx] != b.cols[jdx] {
-			return false
-		}
-		if anull, bnull := a.values[idx].IsNull(), b.values[jdx].IsNull(); anull && bnull {
-			// Both key columns are null, consider them equal
-			// So that rows are assigned to the same table.
-			continue
-		} else if anull || bnull {
-			return false
-		}
-
-		switch a.cols[idx].Type {
-		case flux.TBool:
-			if a.ValueBool(idx) != b.ValueBool(jdx) {
-				return false
-			}
-		case flux.TInt:
-			if a.ValueInt(idx) != b.ValueInt(jdx) {
-				return false
-			}
-		case flux.TUInt:
-			if a.ValueUInt(idx) != b.ValueUInt(jdx) {
-				return false
-			}
-		case flux.TFloat:
-			if a.ValueFloat(idx) != b.ValueFloat(jdx) {
-				return false
-			}
-		case flux.TString:
-			if a.ValueString(idx) != b.ValueString(jdx) {
-				return false
-			}
-		case flux.TTime:
-			if a.ValueTime(idx) != b.ValueTime(jdx) {
-				return false
-			}
-		}
-	}
-	return true
+type sortedGroupKey struct {
+	k *groupKey
 }
 
-// groupKeyLess determines if the former key is lexicographically less than the
-// latter.
-func groupKeyLess(a *groupKey, other flux.GroupKey) bool {
-	b, ok := other.(*groupKey)
-	if !ok {
-		b = newGroupKey(other.Cols(), other.Values())
-	}
+func (k sortedGroupKey) NCols() int {
+	return k.k.NCols()
+}
 
-	min := len(a.sorted)
-	if len(b.sorted) < min {
-		min = len(b.sorted)
-	}
+func (k sortedGroupKey) Col(idx int) flux.ColMeta {
+	return k.k.Col(k.k.sorted[idx])
+}
 
-	for i := 0; i < min; i++ {
-		idx, jdx := a.sorted[i], b.sorted[i]
-		if a.cols[idx].Label != b.cols[jdx].Label {
-			// The labels at the current index are different
-			// so whichever one is greater is the one missing
-			// a value and the one missing a value is the less.
-			// That causes this next conditional to look wrong.
-			return a.cols[idx].Label > b.cols[jdx].Label
-		}
+func (k sortedGroupKey) HasCol(label string) bool {
+	return k.k.HasCol(label)
+}
 
-		// The labels are identical. If the types are different,
-		// then resolve the ordering based on the type.
-		// TODO(jsternberg): Make this official in some way and part of the spec.
-		if a.cols[idx].Type != b.cols[jdx].Type {
-			return a.cols[idx].Type < b.cols[jdx].Type
-		}
-
-		// If a value is null, it is less than.
-		if anull, bnull := a.values[idx].IsNull(), b.values[jdx].IsNull(); anull && bnull {
-			continue
-		} else if anull {
-			return true
-		} else if bnull {
-			return false
-		}
-
-		// Neither value is null and they are the same type so compare.
-		switch a.cols[idx].Type {
-		case flux.TBool:
-			if av, bv := a.ValueBool(idx), b.ValueBool(jdx); av != bv {
-				return bv
-			}
-		case flux.TInt:
-			if av, bv := a.ValueInt(idx), b.ValueInt(jdx); av != bv {
-				return av < bv
-			}
-		case flux.TUInt:
-			if av, bv := a.ValueUInt(idx), b.ValueUInt(jdx); av != bv {
-				return av < bv
-			}
-		case flux.TFloat:
-			if av, bv := a.ValueFloat(idx), b.ValueFloat(jdx); av != bv {
-				return av < bv
-			}
-		case flux.TString:
-			if av, bv := a.ValueString(idx), b.ValueString(jdx); av != bv {
-				return av < bv
-			}
-		case flux.TTime:
-			if av, bv := a.ValueTime(idx), b.ValueTime(jdx); av != bv {
-				return av < bv
-			}
+func (k sortedGroupKey) Index(label string) int {
+	for i, j := range k.k.sorted {
+		if k.k.cols[j].Label == label {
+			return i
 		}
 	}
+	return -1
+}
 
-	// In this case, min columns have been compared and found to be equal.
-	// Whichever key has the greater number of columns is lexicographically
-	// greater than the other.
-	return len(a.sorted) < len(b.sorted)
+func (k sortedGroupKey) LabelValue(label string) values.Value {
+	return k.k.LabelValue(label)
+}
+
+func (k sortedGroupKey) IsNull(j int) bool {
+	return k.k.IsNull(k.k.sorted[j])
+}
+
+func (k sortedGroupKey) ValueBool(j int) bool {
+	return k.k.ValueBool(k.k.sorted[j])
+}
+
+func (k sortedGroupKey) ValueUInt(j int) uint64 {
+	return k.k.ValueUInt(k.k.sorted[j])
+}
+
+func (k sortedGroupKey) ValueInt(j int) int64 {
+	return k.k.ValueInt(k.k.sorted[j])
+}
+
+func (k sortedGroupKey) ValueFloat(j int) float64 {
+	return k.k.ValueFloat(k.k.sorted[j])
+}
+
+func (k sortedGroupKey) ValueString(j int) string {
+	return k.k.ValueString(k.k.sorted[j])
+}
+
+func (k sortedGroupKey) ValueDuration(j int) values.Duration {
+	return k.k.ValueDuration(k.k.sorted[j])
+}
+
+func (k sortedGroupKey) ValueTime(j int) values.Time {
+	return k.k.ValueTime(k.k.sorted[j])
+}
+
+func (k sortedGroupKey) Value(j int) values.Value {
+	return k.k.Value(k.k.sorted[j])
+}
+
+func (k sortedGroupKey) Sorted() flux.GroupKey {
+	return k
+}
+
+func (k sortedGroupKey) String() string {
+	return k.String()
 }

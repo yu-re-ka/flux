@@ -426,7 +426,7 @@ func (buf *streamBuffer) insert(table flux.Table) error {
 	// Insert this table into the buffer
 	buf.data[table.Key()] = builder
 
-	if len(table.Key().Cols()) > 0 {
+	if table.Key().NCols() > 0 {
 		leftKeyValue := table.Key().Value(0)
 
 		tablesConsumed := buf.consumed[leftKeyValue]
@@ -445,7 +445,7 @@ func (buf *streamBuffer) insert(table flux.Table) error {
 }
 
 func (buf *streamBuffer) expire(key flux.GroupKey) {
-	if !buf.stale[key] && len(key.Cols()) > 0 {
+	if !buf.stale[key] && key.NCols() > 0 {
 		leftKeyValue := key.Value(0)
 		consumedTables := buf.consumed[leftKeyValue]
 		buf.consumed[leftKeyValue] = consumedTables - 1
@@ -691,7 +691,7 @@ func (c *MergeJoinCache) insertIntoBuffer(id execute.DatasetID, tbl flux.Table) 
 	if _, ok := c.schemas[id]; !ok {
 
 		c.schemas[id] = schema{
-			key:     make([]flux.ColMeta, len(tbl.Key().Cols())),
+			key:     make([]flux.ColMeta, tbl.Key().NCols()),
 			columns: make([]flux.ColMeta, len(tbl.Cols())),
 		}
 
@@ -699,7 +699,8 @@ func (c *MergeJoinCache) insertIntoBuffer(id execute.DatasetID, tbl flux.Table) 
 
 		intersection := make(map[string]bool, len(c.intersection))
 
-		for j, column := range tbl.Key().Cols() {
+		for j, n := 0, tbl.Key().NCols(); j < n; j++ {
+			column := tbl.Key().Col(j)
 			c.schemas[id].key[j] = column
 
 			if c.intersection[column.Label] {
@@ -714,7 +715,8 @@ func (c *MergeJoinCache) insertIntoBuffer(id execute.DatasetID, tbl flux.Table) 
 	// and there are any nulls in those columns, we can discard this table,
 	// since null != null for joining purposes.
 	k := tbl.Key()
-	for j, col := range k.Cols() {
+	for j, n := 0, k.NCols(); j < n; j++ {
+		col := k.Col(j)
 		if c.on[col.Label] {
 			if k.IsNull(j) {
 				// Discard the table and return.  Note: we need to iterate over the
@@ -840,8 +842,8 @@ func (c *MergeJoinCache) buildPostJoinSchema() {
 // equalJoinKeys compares two keys for equality.
 // Null values are not considered equal when joining (unlike when grouping).
 func equalJoinkeys(left, right flux.GroupKey) bool {
-
-	for j, v := range left.Values() {
+	for j, n := 0, left.NCols(); j < n; j++ {
+		v := left.Value(j)
 		// value.Equal will return false if both sides are null
 		if !v.Equal(right.Value(j)) {
 			return false
@@ -915,7 +917,7 @@ func (c *MergeJoinCache) join(left, right *execute.ColListTableBuilder) (flux.Ta
 			}
 			leftSet, leftKey = c.advance(leftSet.Stop, left)
 			rightSet, rightKey = c.advance(rightSet.Stop, right)
-		} else if leftKey.Less(rightKey) {
+		} else if flux.GroupKeyLess(leftKey, rightKey) {
 			leftSet, leftKey = c.advance(leftSet.Stop, left)
 		} else {
 			rightSet, rightKey = c.advance(rightSet.Stop, right)
@@ -935,8 +937,8 @@ func (c *MergeJoinCache) postJoinGroupKey(keys map[execute.DatasetID]flux.GroupK
 	added := make(map[string]bool, len(keys)*5)
 
 	for id, groupKey := range keys {
-		for j, column := range groupKey.Cols() {
-
+		for j, n := 0, groupKey.NCols(); j < n; j++ {
+			column := groupKey.Col(j)
 			tableAndColumn := tableCol{
 				table: c.names[id],
 				col:   column.Label,

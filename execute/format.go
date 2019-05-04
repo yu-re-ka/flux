@@ -119,9 +119,9 @@ func (f *Formatter) WriteTo(out io.Writer) (int64, error) {
 
 	// Write table header
 	w.write([]byte("Table: keys: ["))
-	labels := make([]string, len(f.tbl.Key().Cols()))
-	for i, c := range f.tbl.Key().Cols() {
-		labels[i] = c.Label
+	labels := make([]string, f.tbl.Key().NCols())
+	for i := range labels {
+		labels[i] = f.tbl.Key().Col(i).Label
 	}
 	w.write([]byte(strings.Join(labels, ", ")))
 	w.write([]byte("]"))
@@ -299,8 +299,8 @@ func (o orderedCols) Swap(i int, j int) {
 }
 
 func (o orderedCols) Less(i int, j int) bool {
-	ki := ColIdx(o.cols[i].Label, o.key.Cols())
-	kj := ColIdx(o.cols[j].Label, o.key.Cols())
+	ki := o.key.Index(o.cols[i].Label)
+	kj := o.key.Index(o.cols[j].Label)
 	if ki >= 0 && kj >= 0 {
 		return ki < kj
 	} else if ki >= 0 {

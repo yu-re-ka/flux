@@ -193,8 +193,8 @@ func (t *pivotTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 	}
 
 	cols := make([]flux.ColMeta, 0, len(tbl.Cols()))
-	keyCols := make([]flux.ColMeta, 0, len(tbl.Key().Cols()))
-	keyValues := make([]values.Value, 0, len(tbl.Key().Cols()))
+	keyCols := make([]flux.ColMeta, 0, tbl.Key().NCols())
+	keyValues := make([]values.Value, 0, tbl.Key().NCols())
 	newIDX := 0
 	colMap := make([]int, len(tbl.Cols()))
 

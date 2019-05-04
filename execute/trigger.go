@@ -81,7 +81,7 @@ type afterWatermarkTrigger struct {
 }
 
 func (t *afterWatermarkTrigger) Triggered(c TriggerContext) bool {
-	timeIdx := ColIdx(DefaultStopColLabel, c.Table.Key.Cols())
+	timeIdx := c.Table.Key.Index(DefaultStopColLabel)
 	if timeIdx < 0 {
 		return false
 	}

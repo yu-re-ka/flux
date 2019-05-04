@@ -230,8 +230,8 @@ func (t *rangeTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 	}
 
 	// Determine index of start and stop columns in group key
-	startKeyColIdx := execute.ColIdx(t.startCol, tbl.Key().Cols())
-	stopKeyColIdx := execute.ColIdx(t.stopCol, tbl.Key().Cols())
+	startKeyColIdx := tbl.Key().Index(t.startCol)
+	stopKeyColIdx := tbl.Key().Index(t.stopCol)
 
 	// Compute the group key for the output table
 	outKey := t.createRangeGroupKey(tbl.Key(), startKeyColIdx, stopKeyColIdx)
@@ -281,8 +281,8 @@ func (t *rangeTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 		}
 	}
 
-	startTime := outKey.Value(execute.ColIdx(t.startCol, outKey.Cols()))
-	stopTime := outKey.Value(execute.ColIdx(t.stopCol, outKey.Cols()))
+	startTime := outKey.Value(outKey.Index(t.startCol))
+	stopTime := outKey.Value(outKey.Index(t.stopCol))
 	return tbl.Do(func(cr flux.ColReader) error {
 		l := cr.Len()
 		for i := 0; i < l; i++ {
@@ -316,16 +316,11 @@ func (t *rangeTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 }
 
 func (t *rangeTransformation) createRangeGroupKey(inKey flux.GroupKey, startKeyColIdx, stopKeyColIdx int) flux.GroupKey {
-	var outKeyCols []flux.ColMeta
-	var outKeyValues []values.Value
+	gkb := execute.NewGroupKeyBuilder(inKey)
 	if startKeyColIdx >= 0 && stopKeyColIdx >= 0 {
 		// Both start and stop columns exist and they are in the group key.
 		// If start/stop intersects with the range bounds, use the intersection
 		// as start/stop in the group key, otherwise use the range bounds.
-		outKeyCols = inKey.Cols()
-		outKeyValues = make([]values.Value, len(inKey.Values()))
-		copy(outKeyValues, inKey.Values())
-
 		useBounds := t.bounds
 		if !inKey.Value(startKeyColIdx).IsNull() && !inKey.Value(stopKeyColIdx).IsNull() {
 			inBounds := execute.Bounds{
@@ -336,30 +331,16 @@ func (t *rangeTransformation) createRangeGroupKey(inKey flux.GroupKey, startKeyC
 				useBounds = t.bounds.Intersect(inBounds)
 			}
 		}
-		outKeyValues[startKeyColIdx] = values.NewTime(useBounds.Start)
-		outKeyValues[stopKeyColIdx] = values.NewTime(useBounds.Stop)
+		gkb.SetKeyValue(t.startCol, values.NewTime(useBounds.Start))
+		gkb.SetKeyValue(t.stopCol, values.NewTime(useBounds.Stop))
 	} else {
 		// One or both of the start/stop columns is missing or is not in the group key.
 		// Put them both in the group key and set start/stop to the range bounds.
-		outKeyCols = make([]flux.ColMeta, 0, len(inKey.Cols())+2)
-		outKeyValues = make([]values.Value, 0, len(inKey.Cols())+2)
-
-		if startKeyColIdx < 0 {
-			outKeyCols = append(outKeyCols, flux.ColMeta{Label: t.startCol, Type: flux.TTime})
-			outKeyValues = append(outKeyValues, values.New(t.bounds.Start))
-		}
-		if stopKeyColIdx < 0 {
-			outKeyCols = append(outKeyCols, flux.ColMeta{Label: t.stopCol, Type: flux.TTime})
-			outKeyValues = append(outKeyValues, values.New(t.bounds.Stop))
-		}
-
-		for j := 0; j < len(inKey.Cols()); j++ {
-			outKeyCols = append(outKeyCols, inKey.Cols()[j])
-			outKeyValues = append(outKeyValues, inKey.Value(j))
-		}
+		gkb.SetKeyValue(t.startCol, values.NewTime(t.bounds.Start))
+		gkb.SetKeyValue(t.stopCol, values.NewTime(t.bounds.Stop))
 	}
-
-	return execute.NewGroupKey(outKeyCols, outKeyValues)
+	key, _ := gkb.Build()
+	return key
 }
 
 func (t *rangeTransformation) UpdateWatermark(id execute.DatasetID, mark execute.Time) error {

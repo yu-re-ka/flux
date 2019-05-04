@@ -165,7 +165,7 @@ func (t *distinctTransformation) Process(id execute.DatasetID, tbl flux.Table) e
 	}
 
 	if tbl.Key().HasCol(t.column) {
-		j := execute.ColIdx(t.column, tbl.Key().Cols())
+		j := tbl.Key().Index(t.column)
 		switch col.Type {
 		case flux.TBool:
 			if err := builder.AppendBool(colIdx, tbl.Key().ValueBool(j)); err != nil {

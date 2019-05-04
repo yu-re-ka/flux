@@ -357,11 +357,11 @@ func ConvertTable(tbl flux.Table) (*Table, error) {
 		ColMeta:  tbl.Cols(),
 	}
 
-	keyCols := key.Cols()
-	if len(keyCols) > 0 {
-		blk.KeyCols = make([]string, len(keyCols))
-		blk.KeyValues = make([]interface{}, len(keyCols))
-		for j, c := range keyCols {
+	if nCols := key.NCols(); nCols > 0 {
+		blk.KeyCols = make([]string, nCols)
+		blk.KeyValues = make([]interface{}, nCols)
+		for j, n := 0, nCols; j < n; j++ {
+			c := key.Col(j)
 			blk.KeyCols[j] = c.Label
 			var v interface{}
 			if !key.IsNull(j) {
@@ -437,7 +437,7 @@ func (b SortedTables) Len() int {
 }
 
 func (b SortedTables) Less(i int, j int) bool {
-	return b[i].Key().Less(b[j].Key())
+	return flux.GroupKeyLess(b[i].Key(), b[j].Key())
 }
 
 func (b SortedTables) Swap(i int, j int) {

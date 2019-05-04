@@ -595,7 +595,7 @@ func (t *ExactQuantileSelectorTransformation) Process(id execute.DatasetID, tbl 
 
 	for j, col := range builder.Cols() {
 		if row.Values == nil {
-			if idx := execute.ColIdx(col.Label, tbl.Key().Cols()); idx != -1 {
+			if idx := tbl.Key().Index(col.Label); idx >= 0 {
 				v := tbl.Key().Value(idx)
 				if err := builder.AppendValue(j, v); err != nil {
 					return err

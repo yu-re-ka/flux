@@ -894,7 +894,7 @@ func writeSchema(writer *csv.Writer, c *ResultEncoderConfig, row []string, cols 
 			}
 		default:
 			if useKeyDefaults {
-				kj := execute.ColIdx(c.Label, key.Cols())
+				kj := key.Index(c.Label)
 				if kj >= 0 {
 					v, err := encodeValue(key.Value(kj), c)
 					if err != nil {

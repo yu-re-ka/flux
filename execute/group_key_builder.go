@@ -19,8 +19,12 @@ type GroupKeyBuilder struct {
 func NewGroupKeyBuilder(key flux.GroupKey) *GroupKeyBuilder {
 	gkb := &GroupKeyBuilder{}
 	if key != nil {
-		gkb.cols = append(gkb.cols, key.Cols()...)
-		gkb.values = append(gkb.values, key.Values()...)
+		gkb.cols = make([]flux.ColMeta, key.NCols())
+		gkb.values = make([]values.Value, key.NCols())
+		for i := range gkb.cols {
+			gkb.cols[i] = key.Col(i)
+			gkb.values[i] = key.Value(i)
+		}
 	}
 	return gkb
 }

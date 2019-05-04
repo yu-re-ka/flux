@@ -160,8 +160,9 @@ func (t *mapTransformation) Process(id execute.DatasetID, tbl flux.Table) error 
 	sort.Strings(keys)
 
 	// Determine on which cols to group
-	on := make(map[string]bool, len(tbl.Key().Cols()))
-	for _, c := range tbl.Key().Cols() {
+	on := make(map[string]bool, tbl.Key().NCols())
+	for j, n := 0, tbl.Key().NCols(); j < n; j++ {
+		c := tbl.Key().Col(j)
 		on[c.Label] = t.mergeKey || execute.ContainsStr(keys, c.Label)
 	}
 
@@ -196,7 +197,7 @@ func (t *mapTransformation) Process(id execute.DatasetID, tbl flux.Table) error 
 			for j, c := range builder.Cols() {
 				v, ok := m.Get(c.Label)
 				if !ok {
-					if idx := execute.ColIdx(c.Label, tbl.Key().Cols()); t.mergeKey && idx >= 0 {
+					if idx := tbl.Key().Index(c.Label); t.mergeKey && idx >= 0 {
 						v = tbl.Key().Value(idx)
 					} else {
 						// This should be unreachable

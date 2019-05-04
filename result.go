@@ -6,7 +6,6 @@ import (
 	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux/iocounter"
 	"github.com/influxdata/flux/semantic"
-	"github.com/influxdata/flux/values"
 	"github.com/pkg/errors"
 )
 
@@ -138,33 +137,11 @@ type ColReader interface {
 	Times(j int) *array.Int64
 }
 
-type GroupKey interface {
-	Cols() []ColMeta
-	Values() []values.Value
-
-	HasCol(label string) bool
-	LabelValue(label string) values.Value
-
-	IsNull(j int) bool
-	ValueBool(j int) bool
-	ValueUInt(j int) uint64
-	ValueInt(j int) int64
-	ValueFloat(j int) float64
-	ValueString(j int) string
-	ValueDuration(j int) values.Duration
-	ValueTime(j int) values.Time
-	Value(j int) values.Value
-
-	Equal(o GroupKey) bool
-	Less(o GroupKey) bool
-	String() string
-}
-
 // GroupKeys provides a sortable collection of group keys.
 type GroupKeys []GroupKey
 
 func (a GroupKeys) Len() int           { return len(a) }
-func (a GroupKeys) Less(i, j int) bool { return a[i].Less(a[j]) }
+func (a GroupKeys) Less(i, j int) bool { return GroupKeyLess(a[i], a[j]) }
 func (a GroupKeys) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 
 // String returns a string representation of the keys

@@ -78,7 +78,7 @@ func (kg *groupKeyList) delete(i int) {
 // It will return -1 if the entry is present, but deleted.
 func (kg *groupKeyList) Index(key flux.GroupKey) int {
 	i := kg.InsertAt(key)
-	if i >= len(kg.elements) || kg.elements[i].deleted || !kg.elements[i].key.Equal(key) {
+	if i >= len(kg.elements) || kg.elements[i].deleted || !flux.GroupKeyEqual(kg.elements[i].key, key) {
 		return -1
 	}
 	return i
@@ -90,11 +90,11 @@ func (kg *groupKeyList) Index(key flux.GroupKey) int {
 // where that element is located. If the key should be inserted at the
 // end of the array, it will return an index the size of the array.
 func (kg *groupKeyList) InsertAt(key flux.GroupKey) int {
-	if kg.Last().Less(key) {
+	if flux.GroupKeyLess(kg.Last(), key) {
 		return len(kg.elements)
 	}
 	return sort.Search(len(kg.elements), func(i int) bool {
-		return !kg.elements[i].key.Less(key)
+		return !flux.GroupKeyLess(kg.elements[i].key, key)
 	})
 }
 
@@ -140,11 +140,11 @@ func (l *GroupLookup) Set(key flux.GroupKey, value interface{}) {
 func (l *GroupLookup) lookupGroup(key flux.GroupKey) int {
 	if l.lastIndex >= 0 {
 		kg := l.groups[l.lastIndex]
-		if !key.Less(kg.First()) {
+		if !flux.GroupKeyLess(key, kg.First()) {
 			// If the next group doesn't exist or has a first value that is
 			// greater than this key, then we can return the last index and
 			// avoid performing a binary search.
-			if l.lastIndex == len(l.groups)-1 || key.Less(l.groups[l.lastIndex+1].First()) {
+			if l.lastIndex == len(l.groups)-1 || flux.GroupKeyLess(key, l.groups[l.lastIndex+1].First()) {
 				return l.lastIndex
 			}
 		}
@@ -155,7 +155,7 @@ func (l *GroupLookup) lookupGroup(key flux.GroupKey) int {
 	// the first group where the first key is greater than the key we are setting
 	// and use the group before that one.
 	index := sort.Search(len(l.groups), func(i int) bool {
-		return key.Less(l.groups[i].First())
+		return flux.GroupKeyLess(key, l.groups[i].First())
 	}) - 1
 	if index >= 0 {
 		l.lastIndex = index
@@ -193,7 +193,7 @@ func (l *GroupLookup) createOrSetInGroup(index int, key flux.GroupKey, value int
 			value: value,
 		})
 		return
-	} else if kg.elements[i].key.Equal(key) {
+	} else if flux.GroupKeyEqual(kg.elements[i].key, key) {
 		// If the entry already exists at this index, set the value.
 		kg.set(i, value)
 		return
