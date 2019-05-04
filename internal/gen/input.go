@@ -347,7 +347,7 @@ func groupBy(keys []flux.GroupKey, by []string) []seriesGroup {
 	for _, k := range keys {
 		parts := make([]string, 0, len(by))
 		for _, s := range by {
-			idx := execute.ColIdx(s, k.Cols())
+			idx := k.Index(s)
 			if idx == -1 {
 				continue
 			}
