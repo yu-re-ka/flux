@@ -7,6 +7,7 @@ import (
 	"sync/atomic"
 
 	"github.com/apache/arrow/go/arrow/array"
+	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/memory"
@@ -277,61 +278,60 @@ func BuilderColsMatchReader(builder TableBuilder, cr flux.ColReader) bool {
 // ColumnReader so if you are calling this from the a Process method, you may need to copy the table if you need to
 // iterate over the data for other calculations.
 func TablesEqual(left, right flux.Table, alloc *memory.Allocator) (bool, error) {
-	// if colsMatch(left.Key().Cols(), right.Key().Cols()) && colsMatch(left.Cols(), right.Cols()) {
-	// 	eq := true
-	// 	// rbuffer will buffer out rows from the right table, always holding just enough to do a comparison with the left
-	// 	// table's ColReader
-	// 	leftBuffer := NewColListTableBuilder(left.Key(), alloc)
-	// 	if err := AddTableCols(left, leftBuffer); err != nil {
-	// 		return false, err
-	// 	}
-	// 	if err := AppendTable(left, leftBuffer); err != nil {
-	// 		return false, err
-	// 	}
-	//
-	// 	rightBuffer := NewColListTableBuilder(right.Key(), alloc)
-	// 	if err := AddTableCols(right, rightBuffer); err != nil {
-	// 		return false, err
-	// 	}
-	// 	if err := AppendTable(right, rightBuffer); err != nil {
-	// 		return false, err
-	// 	}
-	//
-	// 	if leftBuffer.NRows() != rightBuffer.NRows() {
-	// 		return false, nil
-	// 	}
-	//
-	// 	for j, c := range leftBuffer.Cols() {
-	// 		switch c.Type {
-	// 		case flux.TBool:
-	// 			eq = cmp.Equal(leftBuffer.cols[j].(*boolColumnBuilder).data,
-	// 				rightBuffer.cols[j].(*boolColumnBuilder).data)
-	// 		case flux.TInt:
-	// 			eq = cmp.Equal(leftBuffer.cols[j].(*intColumnBuilder).data,
-	// 				rightBuffer.cols[j].(*intColumnBuilder).data)
-	// 		case flux.TUInt:
-	// 			eq = cmp.Equal(leftBuffer.cols[j].(*uintColumnBuilder).data,
-	// 				rightBuffer.cols[j].(*uintColumnBuilder).data)
-	// 		case flux.TFloat:
-	// 			eq = cmp.Equal(leftBuffer.cols[j].(*floatColumnBuilder).data,
-	// 				rightBuffer.cols[j].(*floatColumnBuilder).data)
-	// 		case flux.TString:
-	// 			eq = cmp.Equal(leftBuffer.cols[j].(*stringColumnBuilder).data,
-	// 				rightBuffer.cols[j].(*stringColumnBuilder).data)
-	// 		case flux.TTime:
-	// 			eq = cmp.Equal(leftBuffer.cols[j].(*timeColumnBuilder).data,
-	// 				rightBuffer.cols[j].(*timeColumnBuilder).data)
-	// 		default:
-	// 			PanicUnknownType(c.Type)
-	// 		}
-	// 		if !eq {
-	// 			return false, nil
-	// 		}
-	// 	}
-	// 	return eq, nil
-	// }
-	// return false, nil
-	panic("deprecated")
+	if keyColsMatch(left.Key(), right.Key()) && colsMatch(left.Cols(), right.Cols()) {
+		eq := true
+		// rbuffer will buffer out rows from the right table, always holding just enough to do a comparison with the left
+		// table's ColReader
+		leftBuffer := NewColListTableBuilder(left.Key(), alloc)
+		if err := AddTableCols(left, leftBuffer); err != nil {
+			return false, err
+		}
+		if err := AppendTable(left, leftBuffer); err != nil {
+			return false, err
+		}
+
+		rightBuffer := NewColListTableBuilder(right.Key(), alloc)
+		if err := AddTableCols(right, rightBuffer); err != nil {
+			return false, err
+		}
+		if err := AppendTable(right, rightBuffer); err != nil {
+			return false, err
+		}
+
+		if leftBuffer.NRows() != rightBuffer.NRows() {
+			return false, nil
+		}
+
+		for j, c := range leftBuffer.Cols() {
+			switch c.Type {
+			case flux.TBool:
+				eq = cmp.Equal(leftBuffer.cols[j].(*boolColumnBuilder).data,
+					rightBuffer.cols[j].(*boolColumnBuilder).data)
+			case flux.TInt:
+				eq = cmp.Equal(leftBuffer.cols[j].(*intColumnBuilder).data,
+					rightBuffer.cols[j].(*intColumnBuilder).data)
+			case flux.TUInt:
+				eq = cmp.Equal(leftBuffer.cols[j].(*uintColumnBuilder).data,
+					rightBuffer.cols[j].(*uintColumnBuilder).data)
+			case flux.TFloat:
+				eq = cmp.Equal(leftBuffer.cols[j].(*floatColumnBuilder).data,
+					rightBuffer.cols[j].(*floatColumnBuilder).data)
+			case flux.TString:
+				eq = cmp.Equal(leftBuffer.cols[j].(*stringColumnBuilder).data,
+					rightBuffer.cols[j].(*stringColumnBuilder).data)
+			case flux.TTime:
+				eq = cmp.Equal(leftBuffer.cols[j].(*timeColumnBuilder).data,
+					rightBuffer.cols[j].(*timeColumnBuilder).data)
+			default:
+				PanicUnknownType(c.Type)
+			}
+			if !eq {
+				return false, nil
+			}
+		}
+		return eq, nil
+	}
+	return false, nil
 }
 
 func colsMatch(left, right []flux.ColMeta) bool {
@@ -340,6 +340,18 @@ func colsMatch(left, right []flux.ColMeta) bool {
 	}
 	for j, l := range left {
 		if l != right[j] {
+			return false
+		}
+	}
+	return true
+}
+
+func keyColsMatch(left, right flux.GroupKey) bool {
+	if left.NCols() != right.NCols() {
+		return false
+	}
+	for j, n := 0, left.NCols(); j < n; j++ {
+		if left.Col(j) != right.Col(j) {
 			return false
 		}
 	}
