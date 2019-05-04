@@ -917,7 +917,7 @@ func (c *MergeJoinCache) join(left, right *execute.ColListTableBuilder) (flux.Ta
 			}
 			leftSet, leftKey = c.advance(leftSet.Stop, left)
 			rightSet, rightKey = c.advance(rightSet.Stop, right)
-		} else if flux.GroupKeyLess(leftKey, rightKey) {
+		} else if leftKey.Less(rightKey) {
 			leftSet, leftKey = c.advance(leftSet.Stop, left)
 		} else {
 			rightSet, rightKey = c.advance(rightSet.Stop, right)

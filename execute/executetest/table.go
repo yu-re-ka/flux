@@ -437,7 +437,7 @@ func (b SortedTables) Len() int {
 }
 
 func (b SortedTables) Less(i int, j int) bool {
-	return flux.GroupKeyLess(b[i].Key(), b[j].Key())
+	return b[i].Key().Less(b[j].Key())
 }
 
 func (b SortedTables) Swap(i int, j int) {

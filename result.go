@@ -141,7 +141,7 @@ type ColReader interface {
 type GroupKeys []GroupKey
 
 func (a GroupKeys) Len() int           { return len(a) }
-func (a GroupKeys) Less(i, j int) bool { return GroupKeyLess(a[i], a[j]) }
+func (a GroupKeys) Less(i, j int) bool { return a[i].Less(a[j]) }
 func (a GroupKeys) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 
 // String returns a string representation of the keys
