@@ -21,6 +21,8 @@ type GroupKey interface {
 	Value(j int) values.Value
 
 	Sorted() GroupKey
+	Less(other GroupKey) bool
+	Equal(other GroupKey) bool
 
 	String() string
 }

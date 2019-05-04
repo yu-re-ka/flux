@@ -84,6 +84,14 @@ func (k *groupKey) Sorted() flux.GroupKey {
 	return sortedGroupKey{k: k}
 }
 
+func (k *groupKey) Less(other flux.GroupKey) bool {
+	return flux.GroupKeyLess(k, other)
+}
+
+func (k *groupKey) Equal(other flux.GroupKey) bool {
+	return flux.GroupKeyEqual(k, other)
+}
+
 func (k *groupKey) String() string {
 	var b strings.Builder
 	b.WriteRune('{')
@@ -164,6 +172,14 @@ func (k sortedGroupKey) Value(j int) values.Value {
 
 func (k sortedGroupKey) Sorted() flux.GroupKey {
 	return k
+}
+
+func (k sortedGroupKey) Less(other flux.GroupKey) bool {
+	return flux.GroupKeyLess(k, other)
+}
+
+func (k sortedGroupKey) Equal(other flux.GroupKey) bool {
+	return flux.GroupKeyEqual(k, other)
 }
 
 func (k sortedGroupKey) String() string {
