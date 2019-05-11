@@ -11,6 +11,7 @@ import (
 )
 
 func BenchmarkGroupKey(b *testing.B) {
+	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
 		benchmarkGroupKey()
 	}
@@ -61,6 +62,7 @@ func newWindowGroupKey(parent flux.GroupKey, start, stop values.Time) flux.Group
 }
 
 func BenchmarkKey(b *testing.B) {
+	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
 		benchmarkKey()
 	}
