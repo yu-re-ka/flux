@@ -19,7 +19,7 @@ func BenchmarkGroupKey(b *testing.B) {
 
 func benchmarkGroupKey() {
 	start := values.Time(0 * time.Second)
-	stop := values.Time(300 * time.Second)
+	stop := values.Time(60 * time.Second)
 	parent := execute.NewGroupKey(
 		[]flux.ColMeta{
 			{Label: "_measurement", Type: flux.TString},
@@ -70,7 +70,7 @@ func BenchmarkKey(b *testing.B) {
 
 func benchmarkKey() {
 	start := values.Time(0 * time.Second)
-	stop := values.Time(300 * time.Second)
+	stop := values.Time(60 * time.Second)
 	parent := group.NewKey(
 		[]flux.ColMeta{
 			{Label: "_measurement", Type: flux.TString},
