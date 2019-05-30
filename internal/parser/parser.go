@@ -1152,17 +1152,10 @@ func (p *parser) parsePropertySuffix(key ast.PropertyKey) *ast.Property {
 	}
 	if _, tok, _ := p.peek(); tok == token.COLON {
 		p.consume()
-		val = p.parsePropertyValue()
+		property.Value = p.parsePropertyValue()
 	}
 
-	return &ast.Property{
-		BaseNode: p.baseNode(p.sourceLocation(
-			locStart(key),
-			locEnd(val),
-		)),
-		Key:   key,
-		Value: val,
-	}
+	return property
 }
 
 func (p *parser) parseInvalidProperty() *ast.Property {

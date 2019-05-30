@@ -2773,11 +2773,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 8,
+								Column: 5,
 								Line:   88,
 							},
 							File:   "math.flux",
-							Source: "pi:pi",
+							Source: "pi",
 							Start: ast.Position{
 								Column: 3,
 								Line:   88,
@@ -2825,11 +2825,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 6,
+								Column: 4,
 								Line:   89,
 							},
 							File:   "math.flux",
-							Source: "e:e",
+							Source: "e",
 							Start: ast.Position{
 								Column: 3,
 								Line:   89,
@@ -2877,11 +2877,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 10,
+								Column: 6,
 								Line:   90,
 							},
 							File:   "math.flux",
-							Source: "phi:phi",
+							Source: "phi",
 							Start: ast.Position{
 								Column: 3,
 								Line:   90,
@@ -2929,11 +2929,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 14,
+								Column: 8,
 								Line:   91,
 							},
 							File:   "math.flux",
-							Source: "sqrt2:sqrt2",
+							Source: "sqrt2",
 							Start: ast.Position{
 								Column: 3,
 								Line:   91,
@@ -2981,11 +2981,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 14,
+								Column: 8,
 								Line:   92,
 							},
 							File:   "math.flux",
-							Source: "sqrte:sqrte",
+							Source: "sqrte",
 							Start: ast.Position{
 								Column: 3,
 								Line:   92,
@@ -3033,11 +3033,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 16,
+								Column: 9,
 								Line:   93,
 							},
 							File:   "math.flux",
-							Source: "sqrtpi:sqrtpi",
+							Source: "sqrtpi",
 							Start: ast.Position{
 								Column: 3,
 								Line:   93,
@@ -3085,11 +3085,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 18,
+								Column: 10,
 								Line:   94,
 							},
 							File:   "math.flux",
-							Source: "sqrtphi:sqrtphi",
+							Source: "sqrtphi",
 							Start: ast.Position{
 								Column: 3,
 								Line:   94,
@@ -3137,11 +3137,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 10,
+								Column: 6,
 								Line:   95,
 							},
 							File:   "math.flux",
-							Source: "ln2:ln2",
+							Source: "ln2",
 							Start: ast.Position{
 								Column: 3,
 								Line:   95,
@@ -3189,11 +3189,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 14,
+								Column: 8,
 								Line:   96,
 							},
 							File:   "math.flux",
-							Source: "log2e:log2e",
+							Source: "log2e",
 							Start: ast.Position{
 								Column: 3,
 								Line:   96,
@@ -3241,11 +3241,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 12,
+								Column: 7,
 								Line:   97,
 							},
 							File:   "math.flux",
-							Source: "ln10:ln10",
+							Source: "ln10",
 							Start: ast.Position{
 								Column: 3,
 								Line:   97,
@@ -3293,11 +3293,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 16,
+								Column: 9,
 								Line:   98,
 							},
 							File:   "math.flux",
-							Source: "log10e:log10e",
+							Source: "log10e",
 							Start: ast.Position{
 								Column: 3,
 								Line:   98,
@@ -3345,11 +3345,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 20,
+								Column: 11,
 								Line:   99,
 							},
 							File:   "math.flux",
-							Source: "maxfloat:maxfloat",
+							Source: "maxfloat",
 							Start: ast.Position{
 								Column: 3,
 								Line:   99,
@@ -3397,11 +3397,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 44,
+								Column: 23,
 								Line:   100,
 							},
 							File:   "math.flux",
-							Source: "smallestNonzeroFloat:smallestNonzeroFloat",
+							Source: "smallestNonzeroFloat",
 							Start: ast.Position{
 								Column: 3,
 								Line:   100,
@@ -3449,11 +3449,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 16,
+								Column: 9,
 								Line:   101,
 							},
 							File:   "math.flux",
-							Source: "maxint:maxint",
+							Source: "maxint",
 							Start: ast.Position{
 								Column: 3,
 								Line:   101,
@@ -3501,11 +3501,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 16,
+								Column: 9,
 								Line:   102,
 							},
 							File:   "math.flux",
-							Source: "minint:minint",
+							Source: "minint",
 							Start: ast.Position{
 								Column: 3,
 								Line:   102,
@@ -3553,11 +3553,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 18,
+								Column: 10,
 								Line:   103,
 							},
 							File:   "math.flux",
-							Source: "maxuint:maxuint",
+							Source: "maxuint",
 							Start: ast.Position{
 								Column: 3,
 								Line:   103,
@@ -3605,11 +3605,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 10,
+								Column: 6,
 								Line:   104,
 							},
 							File:   "math.flux",
-							Source: "abs:abs",
+							Source: "abs",
 							Start: ast.Position{
 								Column: 3,
 								Line:   104,
@@ -3657,11 +3657,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 12,
+								Column: 7,
 								Line:   105,
 							},
 							File:   "math.flux",
-							Source: "acos:acos",
+							Source: "acos",
 							Start: ast.Position{
 								Column: 3,
 								Line:   105,
@@ -3709,11 +3709,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 14,
+								Column: 8,
 								Line:   106,
 							},
 							File:   "math.flux",
-							Source: "acosh:acosh",
+							Source: "acosh",
 							Start: ast.Position{
 								Column: 3,
 								Line:   106,
@@ -3761,11 +3761,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 12,
+								Column: 7,
 								Line:   107,
 							},
 							File:   "math.flux",
-							Source: "asin:asin",
+							Source: "asin",
 							Start: ast.Position{
 								Column: 3,
 								Line:   107,
@@ -3813,11 +3813,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 14,
+								Column: 8,
 								Line:   108,
 							},
 							File:   "math.flux",
-							Source: "asinh:asinh",
+							Source: "asinh",
 							Start: ast.Position{
 								Column: 3,
 								Line:   108,
@@ -3865,11 +3865,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 12,
+								Column: 7,
 								Line:   109,
 							},
 							File:   "math.flux",
-							Source: "atan:atan",
+							Source: "atan",
 							Start: ast.Position{
 								Column: 3,
 								Line:   109,
@@ -3917,11 +3917,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 14,
+								Column: 8,
 								Line:   110,
 							},
 							File:   "math.flux",
-							Source: "atan2:atan2",
+							Source: "atan2",
 							Start: ast.Position{
 								Column: 3,
 								Line:   110,
@@ -3969,11 +3969,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 14,
+								Column: 8,
 								Line:   111,
 							},
 							File:   "math.flux",
-							Source: "atanh:atanh",
+							Source: "atanh",
 							Start: ast.Position{
 								Column: 3,
 								Line:   111,
@@ -4021,11 +4021,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 12,
+								Column: 7,
 								Line:   112,
 							},
 							File:   "math.flux",
-							Source: "cbrt:cbrt",
+							Source: "cbrt",
 							Start: ast.Position{
 								Column: 3,
 								Line:   112,
@@ -4073,11 +4073,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 12,
+								Column: 7,
 								Line:   113,
 							},
 							File:   "math.flux",
-							Source: "ceil:ceil",
+							Source: "ceil",
 							Start: ast.Position{
 								Column: 3,
 								Line:   113,
@@ -4125,11 +4125,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 20,
+								Column: 11,
 								Line:   114,
 							},
 							File:   "math.flux",
-							Source: "copysign:copysign",
+							Source: "copysign",
 							Start: ast.Position{
 								Column: 3,
 								Line:   114,
@@ -4177,11 +4177,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 10,
+								Column: 6,
 								Line:   115,
 							},
 							File:   "math.flux",
-							Source: "cos:cos",
+							Source: "cos",
 							Start: ast.Position{
 								Column: 3,
 								Line:   115,
@@ -4229,11 +4229,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 12,
+								Column: 7,
 								Line:   116,
 							},
 							File:   "math.flux",
-							Source: "cosh:cosh",
+							Source: "cosh",
 							Start: ast.Position{
 								Column: 3,
 								Line:   116,
@@ -4281,11 +4281,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 10,
+								Column: 6,
 								Line:   117,
 							},
 							File:   "math.flux",
-							Source: "dim:dim",
+							Source: "dim",
 							Start: ast.Position{
 								Column: 3,
 								Line:   117,
@@ -4333,11 +4333,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 10,
+								Column: 6,
 								Line:   118,
 							},
 							File:   "math.flux",
-							Source: "erf:erf",
+							Source: "erf",
 							Start: ast.Position{
 								Column: 3,
 								Line:   118,
@@ -4385,11 +4385,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 12,
+								Column: 7,
 								Line:   119,
 							},
 							File:   "math.flux",
-							Source: "erfc:erfc",
+							Source: "erfc",
 							Start: ast.Position{
 								Column: 3,
 								Line:   119,
@@ -4437,11 +4437,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 18,
+								Column: 10,
 								Line:   120,
 							},
 							File:   "math.flux",
-							Source: "erfcinv:erfcinv",
+							Source: "erfcinv",
 							Start: ast.Position{
 								Column: 3,
 								Line:   120,
@@ -4489,11 +4489,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 16,
+								Column: 9,
 								Line:   121,
 							},
 							File:   "math.flux",
-							Source: "erfinv:erfinv",
+							Source: "erfinv",
 							Start: ast.Position{
 								Column: 3,
 								Line:   121,
@@ -4541,11 +4541,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 10,
+								Column: 6,
 								Line:   122,
 							},
 							File:   "math.flux",
-							Source: "exp:exp",
+							Source: "exp",
 							Start: ast.Position{
 								Column: 3,
 								Line:   122,
@@ -4593,11 +4593,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 12,
+								Column: 7,
 								Line:   123,
 							},
 							File:   "math.flux",
-							Source: "exp2:exp2",
+							Source: "exp2",
 							Start: ast.Position{
 								Column: 3,
 								Line:   123,
@@ -4645,11 +4645,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 14,
+								Column: 8,
 								Line:   124,
 							},
 							File:   "math.flux",
-							Source: "expm1:expm1",
+							Source: "expm1",
 							Start: ast.Position{
 								Column: 3,
 								Line:   124,
@@ -4697,11 +4697,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 26,
+								Column: 14,
 								Line:   125,
 							},
 							File:   "math.flux",
-							Source: "float64bits:float64bits",
+							Source: "float64bits",
 							Start: ast.Position{
 								Column: 3,
 								Line:   125,
@@ -4749,11 +4749,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 14,
+								Column: 8,
 								Line:   126,
 							},
 							File:   "math.flux",
-							Source: "floor:floor",
+							Source: "floor",
 							Start: ast.Position{
 								Column: 3,
 								Line:   126,
@@ -4801,11 +4801,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 14,
+								Column: 8,
 								Line:   127,
 							},
 							File:   "math.flux",
-							Source: "frexp:frexp",
+							Source: "frexp",
 							Start: ast.Position{
 								Column: 3,
 								Line:   127,
@@ -4853,11 +4853,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 14,
+								Column: 8,
 								Line:   128,
 							},
 							File:   "math.flux",
-							Source: "gamma:gamma",
+							Source: "gamma",
 							Start: ast.Position{
 								Column: 3,
 								Line:   128,
@@ -4905,11 +4905,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 14,
+								Column: 8,
 								Line:   129,
 							},
 							File:   "math.flux",
-							Source: "hypot:hypot",
+							Source: "hypot",
 							Start: ast.Position{
 								Column: 3,
 								Line:   129,
@@ -4957,11 +4957,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 14,
+								Column: 8,
 								Line:   130,
 							},
 							File:   "math.flux",
-							Source: "ilogb:ilogb",
+							Source: "ilogb",
 							Start: ast.Position{
 								Column: 3,
 								Line:   130,
@@ -5009,11 +5009,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 12,
+								Column: 7,
 								Line:   131,
 							},
 							File:   "math.flux",
-							Source: "mInf:mInf",
+							Source: "mInf",
 							Start: ast.Position{
 								Column: 3,
 								Line:   131,
@@ -5061,11 +5061,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 14,
+								Column: 8,
 								Line:   132,
 							},
 							File:   "math.flux",
-							Source: "isInf:isInf",
+							Source: "isInf",
 							Start: ast.Position{
 								Column: 3,
 								Line:   132,
@@ -5113,11 +5113,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 14,
+								Column: 8,
 								Line:   133,
 							},
 							File:   "math.flux",
-							Source: "isNaN:isNaN",
+							Source: "isNaN",
 							Start: ast.Position{
 								Column: 3,
 								Line:   133,
@@ -5165,11 +5165,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 8,
+								Column: 5,
 								Line:   134,
 							},
 							File:   "math.flux",
-							Source: "j0:j0",
+							Source: "j0",
 							Start: ast.Position{
 								Column: 3,
 								Line:   134,
@@ -5217,11 +5217,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 8,
+								Column: 5,
 								Line:   135,
 							},
 							File:   "math.flux",
-							Source: "j1:j1",
+							Source: "j1",
 							Start: ast.Position{
 								Column: 3,
 								Line:   135,
@@ -5269,11 +5269,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 8,
+								Column: 5,
 								Line:   136,
 							},
 							File:   "math.flux",
-							Source: "jn:jn",
+							Source: "jn",
 							Start: ast.Position{
 								Column: 3,
 								Line:   136,
@@ -5321,11 +5321,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 14,
+								Column: 8,
 								Line:   137,
 							},
 							File:   "math.flux",
-							Source: "ldexp:ldexp",
+							Source: "ldexp",
 							Start: ast.Position{
 								Column: 3,
 								Line:   137,
@@ -5373,11 +5373,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 16,
+								Column: 9,
 								Line:   138,
 							},
 							File:   "math.flux",
-							Source: "lgamma:lgamma",
+							Source: "lgamma",
 							Start: ast.Position{
 								Column: 3,
 								Line:   138,
@@ -5425,11 +5425,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 10,
+								Column: 6,
 								Line:   139,
 							},
 							File:   "math.flux",
-							Source: "log:log",
+							Source: "log",
 							Start: ast.Position{
 								Column: 3,
 								Line:   139,
@@ -5477,11 +5477,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 14,
+								Column: 8,
 								Line:   140,
 							},
 							File:   "math.flux",
-							Source: "log10:log10",
+							Source: "log10",
 							Start: ast.Position{
 								Column: 3,
 								Line:   140,
@@ -5529,11 +5529,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 14,
+								Column: 8,
 								Line:   141,
 							},
 							File:   "math.flux",
-							Source: "log1p:log1p",
+							Source: "log1p",
 							Start: ast.Position{
 								Column: 3,
 								Line:   141,
@@ -5581,11 +5581,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 12,
+								Column: 7,
 								Line:   142,
 							},
 							File:   "math.flux",
-							Source: "log2:log2",
+							Source: "log2",
 							Start: ast.Position{
 								Column: 3,
 								Line:   142,
@@ -5633,11 +5633,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 12,
+								Column: 7,
 								Line:   143,
 							},
 							File:   "math.flux",
-							Source: "logb:logb",
+							Source: "logb",
 							Start: ast.Position{
 								Column: 3,
 								Line:   143,
@@ -5685,11 +5685,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 12,
+								Column: 7,
 								Line:   144,
 							},
 							File:   "math.flux",
-							Source: "mMax:mMax",
+							Source: "mMax",
 							Start: ast.Position{
 								Column: 3,
 								Line:   144,
@@ -5737,11 +5737,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 12,
+								Column: 7,
 								Line:   145,
 							},
 							File:   "math.flux",
-							Source: "mMin:mMin",
+							Source: "mMin",
 							Start: ast.Position{
 								Column: 3,
 								Line:   145,
@@ -5789,11 +5789,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 10,
+								Column: 6,
 								Line:   146,
 							},
 							File:   "math.flux",
-							Source: "mod:mod",
+							Source: "mod",
 							Start: ast.Position{
 								Column: 3,
 								Line:   146,
@@ -5835,6 +5835,110 @@ var pkgAST = &ast.Package{
 							},
 						},
 						Name: "mod",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 7,
+								Line:   147,
+							},
+							File:   "math.flux",
+							Source: "modf",
+							Start: ast.Position{
+								Column: 3,
+								Line:   147,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 7,
+									Line:   147,
+								},
+								File:   "math.flux",
+								Source: "modf",
+								Start: ast.Position{
+									Column: 3,
+									Line:   147,
+								},
+							},
+						},
+						Name: "modf",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 12,
+									Line:   147,
+								},
+								File:   "math.flux",
+								Source: "modf",
+								Start: ast.Position{
+									Column: 8,
+									Line:   147,
+								},
+							},
+						},
+						Name: "modf",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 6,
+								Line:   148,
+							},
+							File:   "math.flux",
+							Source: "NaN",
+							Start: ast.Position{
+								Column: 3,
+								Line:   148,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 6,
+									Line:   148,
+								},
+								File:   "math.flux",
+								Source: "NaN",
+								Start: ast.Position{
+									Column: 3,
+									Line:   148,
+								},
+							},
+						},
+						Name: "NaN",
+					},
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 10,
+									Line:   148,
+								},
+								File:   "math.flux",
+								Source: "NaN",
+								Start: ast.Position{
+									Column: 7,
+									Line:   148,
+								},
+							},
+						},
+						Name: "NaN",
 					},
 				}, &ast.Property{
 					BaseNode: ast.BaseNode{
@@ -5842,114 +5946,10 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 12,
-								Line:   147,
-							},
-							File:   "math.flux",
-							Source: "modf:modf",
-							Start: ast.Position{
-								Column: 3,
-								Line:   147,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 7,
-									Line:   147,
-								},
-								File:   "math.flux",
-								Source: "modf",
-								Start: ast.Position{
-									Column: 3,
-									Line:   147,
-								},
-							},
-						},
-						Name: "modf",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 12,
-									Line:   147,
-								},
-								File:   "math.flux",
-								Source: "modf",
-								Start: ast.Position{
-									Column: 8,
-									Line:   147,
-								},
-							},
-						},
-						Name: "modf",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 10,
-								Line:   148,
-							},
-							File:   "math.flux",
-							Source: "NaN:NaN",
-							Start: ast.Position{
-								Column: 3,
-								Line:   148,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 6,
-									Line:   148,
-								},
-								File:   "math.flux",
-								Source: "NaN",
-								Start: ast.Position{
-									Column: 3,
-									Line:   148,
-								},
-							},
-						},
-						Name: "NaN",
-					},
-					Value: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 10,
-									Line:   148,
-								},
-								File:   "math.flux",
-								Source: "NaN",
-								Start: ast.Position{
-									Column: 7,
-									Line:   148,
-								},
-							},
-						},
-						Name: "NaN",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 22,
 								Line:   149,
 							},
 							File:   "math.flux",
-							Source: "nextafter:nextafter",
+							Source: "nextafter",
 							Start: ast.Position{
 								Column: 3,
 								Line:   149,
@@ -5997,11 +5997,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 10,
+								Column: 6,
 								Line:   150,
 							},
 							File:   "math.flux",
-							Source: "pow:pow",
+							Source: "pow",
 							Start: ast.Position{
 								Column: 3,
 								Line:   150,
@@ -6049,11 +6049,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 14,
+								Column: 8,
 								Line:   151,
 							},
 							File:   "math.flux",
-							Source: "pow10:pow10",
+							Source: "pow10",
 							Start: ast.Position{
 								Column: 3,
 								Line:   151,
@@ -6101,11 +6101,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 22,
+								Column: 12,
 								Line:   152,
 							},
 							File:   "math.flux",
-							Source: "remainder:remainder",
+							Source: "remainder",
 							Start: ast.Position{
 								Column: 3,
 								Line:   152,
@@ -6153,11 +6153,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 14,
+								Column: 8,
 								Line:   153,
 							},
 							File:   "math.flux",
-							Source: "round:round",
+							Source: "round",
 							Start: ast.Position{
 								Column: 3,
 								Line:   153,
@@ -6205,11 +6205,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 26,
+								Column: 14,
 								Line:   154,
 							},
 							File:   "math.flux",
-							Source: "roundtoeven:roundtoeven",
+							Source: "roundtoeven",
 							Start: ast.Position{
 								Column: 3,
 								Line:   154,
@@ -6257,11 +6257,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 18,
+								Column: 10,
 								Line:   155,
 							},
 							File:   "math.flux",
-							Source: "signbit:signbit",
+							Source: "signbit",
 							Start: ast.Position{
 								Column: 3,
 								Line:   155,
@@ -6309,11 +6309,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 10,
+								Column: 6,
 								Line:   156,
 							},
 							File:   "math.flux",
-							Source: "sin:sin",
+							Source: "sin",
 							Start: ast.Position{
 								Column: 3,
 								Line:   156,
@@ -6361,11 +6361,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 16,
+								Column: 9,
 								Line:   157,
 							},
 							File:   "math.flux",
-							Source: "sincos:sincos",
+							Source: "sincos",
 							Start: ast.Position{
 								Column: 3,
 								Line:   157,
@@ -6413,11 +6413,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 12,
+								Column: 7,
 								Line:   158,
 							},
 							File:   "math.flux",
-							Source: "sinh:sinh",
+							Source: "sinh",
 							Start: ast.Position{
 								Column: 3,
 								Line:   158,
@@ -6465,11 +6465,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 12,
+								Column: 7,
 								Line:   159,
 							},
 							File:   "math.flux",
-							Source: "sqrt:sqrt",
+							Source: "sqrt",
 							Start: ast.Position{
 								Column: 3,
 								Line:   159,
@@ -6517,11 +6517,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 10,
+								Column: 6,
 								Line:   160,
 							},
 							File:   "math.flux",
-							Source: "tan:tan",
+							Source: "tan",
 							Start: ast.Position{
 								Column: 3,
 								Line:   160,
@@ -6569,11 +6569,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 12,
+								Column: 7,
 								Line:   161,
 							},
 							File:   "math.flux",
-							Source: "tanh:tanh",
+							Source: "tanh",
 							Start: ast.Position{
 								Column: 3,
 								Line:   161,
@@ -6621,11 +6621,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 14,
+								Column: 8,
 								Line:   162,
 							},
 							File:   "math.flux",
-							Source: "trunc:trunc",
+							Source: "trunc",
 							Start: ast.Position{
 								Column: 3,
 								Line:   162,
@@ -6673,11 +6673,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 8,
+								Column: 5,
 								Line:   163,
 							},
 							File:   "math.flux",
-							Source: "y0:y0",
+							Source: "y0",
 							Start: ast.Position{
 								Column: 3,
 								Line:   163,
@@ -6725,11 +6725,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 8,
+								Column: 5,
 								Line:   164,
 							},
 							File:   "math.flux",
-							Source: "y1:y1",
+							Source: "y1",
 							Start: ast.Position{
 								Column: 3,
 								Line:   164,
@@ -6777,11 +6777,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 8,
+								Column: 5,
 								Line:   165,
 							},
 							File:   "math.flux",
-							Source: "yn:yn",
+							Source: "yn",
 							Start: ast.Position{
 								Column: 3,
 								Line:   165,
@@ -6825,6 +6825,7 @@ var pkgAST = &ast.Package{
 						Name: "yn",
 					},
 				}},
+				With: nil,
 			},
 		}},
 		Imports: nil,

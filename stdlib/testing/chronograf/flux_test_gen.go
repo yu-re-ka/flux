@@ -225,11 +225,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 69,
+													Column: 47,
 													Line:   93,
 												},
 												File:   "aggregate_window_count_test.flux",
-												Source: "start: 2018-05-22T00:00:00Z, stop: 2018-05-22T00:01:00Z",
+												Source: "start: 2018-05-22T00:00:00Z, stop",
 												Start: ast.Position{
 													Column: 14,
 													Line:   93,
@@ -241,11 +241,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors: nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 41,
+														Column: 19,
 														Line:   93,
 													},
 													File:   "aggregate_window_count_test.flux",
-													Source: "start: 2018-05-22T00:00:00Z",
+													Source: "start",
 													Start: ast.Position{
 														Column: 14,
 														Line:   93,
@@ -293,11 +293,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors: nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 69,
+														Column: 47,
 														Line:   93,
 													},
 													File:   "aggregate_window_count_test.flux",
-													Source: "stop: 2018-05-22T00:01:00Z",
+													Source: "stop",
 													Start: ast.Position{
 														Column: 43,
 														Line:   93,
@@ -341,6 +341,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Value: parser.MustParseTime("2018-05-22T00:01:00Z"),
 											},
 										}},
+										With: nil,
 									}},
 									BaseNode: ast.BaseNode{
 										Errors: nil,
@@ -398,11 +399,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 77,
+												Column: 17,
 												Line:   94,
 											},
 											File:   "aggregate_window_count_test.flux",
-											Source: "fn: (r) => r._measurement == \"disk\" or r._measurement == \"cpu\"",
+											Source: "fn",
 											Start: ast.Position{
 												Column: 15,
 												Line:   94,
@@ -414,11 +415,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 77,
+													Column: 17,
 													Line:   94,
 												},
 												File:   "aggregate_window_count_test.flux",
-												Source: "fn: (r) => r._measurement == \"disk\" or r._measurement == \"cpu\"",
+												Source: "fn",
 												Start: ast.Position{
 													Column: 15,
 													Line:   94,
@@ -693,6 +694,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											}},
 										},
 									}},
+									With: nil,
 								}},
 								BaseNode: ast.BaseNode{
 									Errors: nil,
@@ -750,11 +752,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 48,
+											Column: 17,
 											Line:   95,
 										},
 										File:   "aggregate_window_count_test.flux",
-										Source: "fn: (r) => r.host == \"host.local\"",
+										Source: "fn",
 										Start: ast.Position{
 											Column: 15,
 											Line:   95,
@@ -766,11 +768,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 48,
+												Column: 17,
 												Line:   95,
 											},
 											File:   "aggregate_window_count_test.flux",
-											Source: "fn: (r) => r.host == \"host.local\"",
+											Source: "fn",
 											Start: ast.Position{
 												Column: 15,
 												Line:   95,
@@ -938,6 +940,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										}},
 									},
 								}},
+								With: nil,
 							}},
 							BaseNode: ast.BaseNode{
 								Errors: nil,
@@ -995,11 +998,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 45,
+										Column: 38,
 										Line:   96,
 									},
 									File:   "aggregate_window_count_test.flux",
-									Source: "every: 30s, fn: count",
+									Source: "every: 30s, fn",
 									Start: ast.Position{
 										Column: 24,
 										Line:   96,
@@ -1011,11 +1014,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 34,
+											Column: 29,
 											Line:   96,
 										},
 										File:   "aggregate_window_count_test.flux",
-										Source: "every: 30s",
+										Source: "every",
 										Start: ast.Position{
 											Column: 24,
 											Line:   96,
@@ -1066,11 +1069,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 45,
+											Column: 38,
 											Line:   96,
 										},
 										File:   "aggregate_window_count_test.flux",
-										Source: "fn: count",
+										Source: "fn",
 										Start: ast.Position{
 											Column: 36,
 											Line:   96,
@@ -1114,6 +1117,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Name: "count",
 								},
 							}},
+							With: nil,
 						}},
 						BaseNode: ast.BaseNode{
 							Errors: nil,
@@ -1273,11 +1277,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 43,
+										Column: 9,
 										Line:   99,
 									},
 									File:   "aggregate_window_count_test.flux",
-									Source: "input: testing.loadStorage(csv: inData)",
+									Source: "input",
 									Start: ast.Position{
 										Column: 4,
 										Line:   99,
@@ -1308,11 +1312,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 42,
+												Column: 34,
 												Line:   99,
 											},
 											File:   "aggregate_window_count_test.flux",
-											Source: "csv: inData",
+											Source: "csv",
 											Start: ast.Position{
 												Column: 31,
 												Line:   99,
@@ -1324,11 +1328,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 42,
+													Column: 34,
 													Line:   99,
 												},
 												File:   "aggregate_window_count_test.flux",
-												Source: "csv: inData",
+												Source: "csv",
 												Start: ast.Position{
 													Column: 31,
 													Line:   99,
@@ -1372,6 +1376,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Name: "inData",
 										},
 									}},
+									With: nil,
 								}},
 								BaseNode: ast.BaseNode{
 									Errors: nil,
@@ -1447,11 +1452,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 80,
+										Column: 49,
 										Line:   99,
 									},
 									File:   "aggregate_window_count_test.flux",
-									Source: "want: testing.loadMem(csv: outData)",
+									Source: "want",
 									Start: ast.Position{
 										Column: 45,
 										Line:   99,
@@ -1482,11 +1487,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 79,
+												Column: 70,
 												Line:   99,
 											},
 											File:   "aggregate_window_count_test.flux",
-											Source: "csv: outData",
+											Source: "csv",
 											Start: ast.Position{
 												Column: 67,
 												Line:   99,
@@ -1498,11 +1503,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 79,
+													Column: 70,
 													Line:   99,
 												},
 												File:   "aggregate_window_count_test.flux",
-												Source: "csv: outData",
+												Source: "csv",
 												Start: ast.Position{
 													Column: 67,
 													Line:   99,
@@ -1546,6 +1551,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Name: "outData",
 										},
 									}},
+									With: nil,
 								}},
 								BaseNode: ast.BaseNode{
 									Errors: nil,
@@ -1621,11 +1627,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 105,
+										Column: 84,
 										Line:   99,
 									},
 									File:   "aggregate_window_count_test.flux",
-									Source: "fn: agg_window_count_fn",
+									Source: "fn",
 									Start: ast.Position{
 										Column: 82,
 										Line:   99,
@@ -1669,6 +1675,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Name: "agg_window_count_fn",
 							},
 						}},
+						With: nil,
 					},
 					Params: nil,
 				},
@@ -1982,11 +1989,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 69,
+													Column: 47,
 													Line:   91,
 												},
 												File:   "aggregate_window_mean_test.flux",
-												Source: "start: 2018-05-22T00:00:00Z, stop: 2018-05-22T00:01:00Z",
+												Source: "start: 2018-05-22T00:00:00Z, stop",
 												Start: ast.Position{
 													Column: 14,
 													Line:   91,
@@ -1998,11 +2005,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors: nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 41,
+														Column: 19,
 														Line:   91,
 													},
 													File:   "aggregate_window_mean_test.flux",
-													Source: "start: 2018-05-22T00:00:00Z",
+													Source: "start",
 													Start: ast.Position{
 														Column: 14,
 														Line:   91,
@@ -2050,11 +2057,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors: nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 69,
+														Column: 47,
 														Line:   91,
 													},
 													File:   "aggregate_window_mean_test.flux",
-													Source: "stop: 2018-05-22T00:01:00Z",
+													Source: "stop",
 													Start: ast.Position{
 														Column: 43,
 														Line:   91,
@@ -2098,6 +2105,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Value: parser.MustParseTime("2018-05-22T00:01:00Z"),
 											},
 										}},
+										With: nil,
 									}},
 									BaseNode: ast.BaseNode{
 										Errors: nil,
@@ -2155,11 +2163,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 77,
+												Column: 17,
 												Line:   92,
 											},
 											File:   "aggregate_window_mean_test.flux",
-											Source: "fn: (r) => r._measurement == \"disk\" or r._measurement == \"mem\"",
+											Source: "fn",
 											Start: ast.Position{
 												Column: 15,
 												Line:   92,
@@ -2171,11 +2179,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 77,
+													Column: 17,
 													Line:   92,
 												},
 												File:   "aggregate_window_mean_test.flux",
-												Source: "fn: (r) => r._measurement == \"disk\" or r._measurement == \"mem\"",
+												Source: "fn",
 												Start: ast.Position{
 													Column: 15,
 													Line:   92,
@@ -2450,6 +2458,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											}},
 										},
 									}},
+									With: nil,
 								}},
 								BaseNode: ast.BaseNode{
 									Errors: nil,
@@ -2507,11 +2516,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 49,
+											Column: 17,
 											Line:   93,
 										},
 										File:   "aggregate_window_mean_test.flux",
-										Source: "fn: (r) => r.host == \"host.remote\"",
+										Source: "fn",
 										Start: ast.Position{
 											Column: 15,
 											Line:   93,
@@ -2523,11 +2532,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 49,
+												Column: 17,
 												Line:   93,
 											},
 											File:   "aggregate_window_mean_test.flux",
-											Source: "fn: (r) => r.host == \"host.remote\"",
+											Source: "fn",
 											Start: ast.Position{
 												Column: 15,
 												Line:   93,
@@ -2695,6 +2704,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										}},
 									},
 								}},
+								With: nil,
 							}},
 							BaseNode: ast.BaseNode{
 								Errors: nil,
@@ -2752,11 +2762,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 44,
+										Column: 38,
 										Line:   94,
 									},
 									File:   "aggregate_window_mean_test.flux",
-									Source: "every: 30s, fn: mean",
+									Source: "every: 30s, fn",
 									Start: ast.Position{
 										Column: 24,
 										Line:   94,
@@ -2768,11 +2778,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 34,
+											Column: 29,
 											Line:   94,
 										},
 										File:   "aggregate_window_mean_test.flux",
-										Source: "every: 30s",
+										Source: "every",
 										Start: ast.Position{
 											Column: 24,
 											Line:   94,
@@ -2823,11 +2833,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 44,
+											Column: 38,
 											Line:   94,
 										},
 										File:   "aggregate_window_mean_test.flux",
-										Source: "fn: mean",
+										Source: "fn",
 										Start: ast.Position{
 											Column: 36,
 											Line:   94,
@@ -2871,6 +2881,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Name: "mean",
 								},
 							}},
+							With: nil,
 						}},
 						BaseNode: ast.BaseNode{
 							Errors: nil,
@@ -3030,11 +3041,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 43,
+										Column: 9,
 										Line:   97,
 									},
 									File:   "aggregate_window_mean_test.flux",
-									Source: "input: testing.loadStorage(csv: inData)",
+									Source: "input",
 									Start: ast.Position{
 										Column: 4,
 										Line:   97,
@@ -3065,11 +3076,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 42,
+												Column: 34,
 												Line:   97,
 											},
 											File:   "aggregate_window_mean_test.flux",
-											Source: "csv: inData",
+											Source: "csv",
 											Start: ast.Position{
 												Column: 31,
 												Line:   97,
@@ -3081,11 +3092,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 42,
+													Column: 34,
 													Line:   97,
 												},
 												File:   "aggregate_window_mean_test.flux",
-												Source: "csv: inData",
+												Source: "csv",
 												Start: ast.Position{
 													Column: 31,
 													Line:   97,
@@ -3129,6 +3140,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Name: "inData",
 										},
 									}},
+									With: nil,
 								}},
 								BaseNode: ast.BaseNode{
 									Errors: nil,
@@ -3204,11 +3216,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 80,
+										Column: 49,
 										Line:   97,
 									},
 									File:   "aggregate_window_mean_test.flux",
-									Source: "want: testing.loadMem(csv: outData)",
+									Source: "want",
 									Start: ast.Position{
 										Column: 45,
 										Line:   97,
@@ -3239,11 +3251,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 79,
+												Column: 70,
 												Line:   97,
 											},
 											File:   "aggregate_window_mean_test.flux",
-											Source: "csv: outData",
+											Source: "csv",
 											Start: ast.Position{
 												Column: 67,
 												Line:   97,
@@ -3255,11 +3267,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 79,
+													Column: 70,
 													Line:   97,
 												},
 												File:   "aggregate_window_mean_test.flux",
-												Source: "csv: outData",
+												Source: "csv",
 												Start: ast.Position{
 													Column: 67,
 													Line:   97,
@@ -3303,6 +3315,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Name: "outData",
 										},
 									}},
+									With: nil,
 								}},
 								BaseNode: ast.BaseNode{
 									Errors: nil,
@@ -3378,11 +3391,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 104,
+										Column: 84,
 										Line:   97,
 									},
 									File:   "aggregate_window_mean_test.flux",
-									Source: "fn: agg_window_mean_fn",
+									Source: "fn",
 									Start: ast.Position{
 										Column: 82,
 										Line:   97,
@@ -3426,6 +3439,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Name: "agg_window_mean_fn",
 							},
 						}},
+						With: nil,
 					},
 					Params: nil,
 				},
@@ -3742,11 +3756,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors: nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 69,
+																Column: 47,
 																Line:   96,
 															},
 															File:   "aggregate_window_median_test.flux",
-															Source: "start: 2018-05-22T00:00:00Z, stop: 2018-05-22T00:01:00Z",
+															Source: "start: 2018-05-22T00:00:00Z, stop",
 															Start: ast.Position{
 																Column: 14,
 																Line:   96,
@@ -3758,11 +3772,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Errors: nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 41,
+																	Column: 19,
 																	Line:   96,
 																},
 																File:   "aggregate_window_median_test.flux",
-																Source: "start: 2018-05-22T00:00:00Z",
+																Source: "start",
 																Start: ast.Position{
 																	Column: 14,
 																	Line:   96,
@@ -3810,11 +3824,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Errors: nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 69,
+																	Column: 47,
 																	Line:   96,
 																},
 																File:   "aggregate_window_median_test.flux",
-																Source: "stop: 2018-05-22T00:01:00Z",
+																Source: "stop",
 																Start: ast.Position{
 																	Column: 43,
 																	Line:   96,
@@ -3858,6 +3872,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Value: parser.MustParseTime("2018-05-22T00:01:00Z"),
 														},
 													}},
+													With: nil,
 												}},
 												BaseNode: ast.BaseNode{
 													Errors: nil,
@@ -3915,11 +3930,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors: nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 77,
+															Column: 17,
 															Line:   97,
 														},
 														File:   "aggregate_window_median_test.flux",
-														Source: "fn: (r) => r._measurement == \"disk\" or r._measurement == \"mem\"",
+														Source: "fn",
 														Start: ast.Position{
 															Column: 15,
 															Line:   97,
@@ -3931,11 +3946,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors: nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 77,
+																Column: 17,
 																Line:   97,
 															},
 															File:   "aggregate_window_median_test.flux",
-															Source: "fn: (r) => r._measurement == \"disk\" or r._measurement == \"mem\"",
+															Source: "fn",
 															Start: ast.Position{
 																Column: 15,
 																Line:   97,
@@ -4210,6 +4225,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														}},
 													},
 												}},
+												With: nil,
 											}},
 											BaseNode: ast.BaseNode{
 												Errors: nil,
@@ -4267,11 +4283,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors: nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 49,
+														Column: 17,
 														Line:   98,
 													},
 													File:   "aggregate_window_median_test.flux",
-													Source: "fn: (r) => r.host == \"host.remote\"",
+													Source: "fn",
 													Start: ast.Position{
 														Column: 15,
 														Line:   98,
@@ -4283,11 +4299,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors: nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 49,
+															Column: 17,
 															Line:   98,
 														},
 														File:   "aggregate_window_median_test.flux",
-														Source: "fn: (r) => r.host == \"host.remote\"",
+														Source: "fn",
 														Start: ast.Position{
 															Column: 15,
 															Line:   98,
@@ -4455,6 +4471,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													}},
 												},
 											}},
+											With: nil,
 										}},
 										BaseNode: ast.BaseNode{
 											Errors: nil,
@@ -4512,11 +4529,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 26,
+													Column: 21,
 													Line:   99,
 												},
 												File:   "aggregate_window_median_test.flux",
-												Source: "period: 30s",
+												Source: "period",
 												Start: ast.Position{
 													Column: 15,
 													Line:   99,
@@ -4528,11 +4545,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors: nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 26,
+														Column: 21,
 														Line:   99,
 													},
 													File:   "aggregate_window_median_test.flux",
-													Source: "period: 30s",
+													Source: "period",
 													Start: ast.Position{
 														Column: 15,
 														Line:   99,
@@ -4579,6 +4596,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												}},
 											},
 										}},
+										With: nil,
 									}},
 									BaseNode: ast.BaseNode{
 										Errors: nil,
@@ -4740,11 +4758,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 77,
+										Column: 67,
 										Line:   102,
 									},
 									File:   "aggregate_window_median_test.flux",
-									Source: "columns: [\"_value\", \"_time\", \"_start\", \"_stop\"], mode: \"except\"",
+									Source: "columns: [\"_value\", \"_time\", \"_start\", \"_stop\"], mode",
 									Start: ast.Position{
 										Column: 14,
 										Line:   102,
@@ -4756,11 +4774,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 61,
+											Column: 21,
 											Line:   102,
 										},
 										File:   "aggregate_window_median_test.flux",
-										Source: "columns: [\"_value\", \"_time\", \"_start\", \"_stop\"]",
+										Source: "columns",
 										Start: ast.Position{
 											Column: 14,
 											Line:   102,
@@ -4876,11 +4894,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 77,
+											Column: 67,
 											Line:   102,
 										},
 										File:   "aggregate_window_median_test.flux",
-										Source: "mode: \"except\"",
+										Source: "mode",
 										Start: ast.Position{
 											Column: 63,
 											Line:   102,
@@ -4924,6 +4942,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Value: "except",
 								},
 							}},
+							With: nil,
 						}},
 						BaseNode: ast.BaseNode{
 							Errors: nil,
@@ -5083,11 +5102,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 43,
+										Column: 9,
 										Line:   105,
 									},
 									File:   "aggregate_window_median_test.flux",
-									Source: "input: testing.loadStorage(csv: inData)",
+									Source: "input",
 									Start: ast.Position{
 										Column: 4,
 										Line:   105,
@@ -5118,11 +5137,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 42,
+												Column: 34,
 												Line:   105,
 											},
 											File:   "aggregate_window_median_test.flux",
-											Source: "csv: inData",
+											Source: "csv",
 											Start: ast.Position{
 												Column: 31,
 												Line:   105,
@@ -5134,11 +5153,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 42,
+													Column: 34,
 													Line:   105,
 												},
 												File:   "aggregate_window_median_test.flux",
-												Source: "csv: inData",
+												Source: "csv",
 												Start: ast.Position{
 													Column: 31,
 													Line:   105,
@@ -5182,6 +5201,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Name: "inData",
 										},
 									}},
+									With: nil,
 								}},
 								BaseNode: ast.BaseNode{
 									Errors: nil,
@@ -5257,11 +5277,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 80,
+										Column: 49,
 										Line:   105,
 									},
 									File:   "aggregate_window_median_test.flux",
-									Source: "want: testing.loadMem(csv: outData)",
+									Source: "want",
 									Start: ast.Position{
 										Column: 45,
 										Line:   105,
@@ -5292,11 +5312,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 79,
+												Column: 70,
 												Line:   105,
 											},
 											File:   "aggregate_window_median_test.flux",
-											Source: "csv: outData",
+											Source: "csv",
 											Start: ast.Position{
 												Column: 67,
 												Line:   105,
@@ -5308,11 +5328,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 79,
+													Column: 70,
 													Line:   105,
 												},
 												File:   "aggregate_window_median_test.flux",
-												Source: "csv: outData",
+												Source: "csv",
 												Start: ast.Position{
 													Column: 67,
 													Line:   105,
@@ -5356,6 +5376,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Name: "outData",
 										},
 									}},
+									With: nil,
 								}},
 								BaseNode: ast.BaseNode{
 									Errors: nil,
@@ -5431,11 +5452,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 106,
+										Column: 84,
 										Line:   105,
 									},
 									File:   "aggregate_window_median_test.flux",
-									Source: "fn: agg_window_median_fn",
+									Source: "fn",
 									Start: ast.Position{
 										Column: 82,
 										Line:   105,
@@ -5479,6 +5500,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Name: "agg_window_median_fn",
 							},
 						}},
+						With: nil,
 					},
 					Params: nil,
 				},

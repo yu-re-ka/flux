@@ -325,11 +325,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 14,
+								Column: 8,
 								Line:   14,
 							},
 							File:   "strings.flux",
-							Source: "title:title",
+							Source: "title",
 							Start: ast.Position{
 								Column: 3,
 								Line:   14,
@@ -377,11 +377,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 18,
+								Column: 10,
 								Line:   15,
 							},
 							File:   "strings.flux",
-							Source: "toUpper:toUpper",
+							Source: "toUpper",
 							Start: ast.Position{
 								Column: 3,
 								Line:   15,
@@ -429,11 +429,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 18,
+								Column: 10,
 								Line:   16,
 							},
 							File:   "strings.flux",
-							Source: "toLower:toLower",
+							Source: "toLower",
 							Start: ast.Position{
 								Column: 3,
 								Line:   16,
@@ -481,11 +481,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 12,
+								Column: 7,
 								Line:   17,
 							},
 							File:   "strings.flux",
-							Source: "trim:trim",
+							Source: "trim",
 							Start: ast.Position{
 								Column: 3,
 								Line:   17,
@@ -533,11 +533,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 24,
+								Column: 13,
 								Line:   18,
 							},
 							File:   "strings.flux",
-							Source: "trimPrefix:trimPrefix",
+							Source: "trimPrefix",
 							Start: ast.Position{
 								Column: 3,
 								Line:   18,
@@ -585,11 +585,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 22,
+								Column: 12,
 								Line:   19,
 							},
 							File:   "strings.flux",
-							Source: "trimSpace:trimSpace",
+							Source: "trimSpace",
 							Start: ast.Position{
 								Column: 3,
 								Line:   19,
@@ -637,11 +637,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 24,
+								Column: 13,
 								Line:   20,
 							},
 							File:   "strings.flux",
-							Source: "trimSuffix:trimSuffix",
+							Source: "trimSuffix",
 							Start: ast.Position{
 								Column: 3,
 								Line:   20,
@@ -685,6 +685,7 @@ var pkgAST = &ast.Package{
 						Name: "trimSuffix",
 					},
 				}},
+				With: nil,
 			},
 		}},
 		Imports: nil,
