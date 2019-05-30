@@ -2,7 +2,6 @@ package semantic
 
 import (
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/influxdata/flux/ast"
@@ -18,15 +17,14 @@ func GenerateConstraints(node Node, annotator Annotator, importer Importer) (*Co
 		cs: &Constraints{
 			f:           annotator.f,
 			annotations: annotator.annotations,
-			kindConst:   make(map[Kvar][]Kind),
-			typeKinds:   make(map[Tvar]Kvar),
+			kindConst:   make(map[Tvar][]Kind),
 		},
 		env:      NewEnv(),
 		err:      new(error),
 		importer: importer,
 	}
 	Walk(NewScopedVisitor(cg), node)
-	log.Println("GenerateConstraints", cg.cs)
+	//log.Println("GenerateConstraints", cg.cs)
 	return cg.cs, *cg.err
 }
 
@@ -166,7 +164,6 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 			return nil, fmt.Errorf("undefined identifier %q", n.Name)
 		}
 		t := v.cs.Instantiate(scheme, n.Location())
-		log.Println("IdentifierExpression", n.Name, scheme, t)
 		return t, nil
 	case *ReturnStatement:
 		return v.lookup(n.Argument)
@@ -333,7 +330,7 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 		return ft.ret, nil
 	case *ObjectExpression:
 		properties := make(map[string]PolyType, len(n.Properties))
-		upper := make(LabelSet, 0, len(properties))
+		upper := make([]string, 0, len(properties))
 		for _, field := range n.Properties {
 			t, err := v.lookup(field.Value)
 			if err != nil {
@@ -342,37 +339,11 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 			properties[field.Key.Key()] = t
 			upper = append(upper, field.Key.Key())
 		}
-		var with *Tvar
-		if n.With != nil {
-			t, err := v.lookup(n.With)
-			if err != nil {
-				return nil, err
-			}
-			tv, ok := t.(Tvar)
-			if !ok {
-				return nil, errors.New("object 'with' identifier must be a type variable")
-			}
-			for _, k := range v.cs.kindConst[tv] {
-				obj, ok := k.(ObjectKind)
-				if !ok {
-					return nil, errors.New("object 'with' identifier must be have only object kind constraints")
-				}
-				if obj.upper.isAllLabels() {
-					continue
-				}
-				for _, p := range obj.upper {
-					properties[p] = obj.properties[p]
-				}
-				upper = upper.union(obj.upper)
-			}
-		}
 		v.cs.AddKindConst(nodeVar, ObjectKind{
-			with:       with,
 			properties: properties,
 			lower:      nil,
 			upper:      upper,
 		})
-
 		return nodeVar, nil
 	case *Property:
 		return v.lookup(n.Value)
@@ -495,10 +466,8 @@ type Constraints struct {
 	annotations map[Node]annotation
 
 	typeConst []TypeConstraint
-	kindConst map[Kvar][]Kind
-	typeKinds map[Tvar]Kvar
+	kindConst map[Tvar][]Kind
 }
-type Kvar int
 
 func (c *Constraints) Copy() *Constraints {
 	n := &Constraints{
@@ -506,7 +475,6 @@ func (c *Constraints) Copy() *Constraints {
 		annotations: make(map[Node]annotation, len(c.annotations)),
 		typeConst:   make([]TypeConstraint, len(c.typeConst)),
 		kindConst:   make(map[Tvar][]Kind, len(c.kindConst)),
-		typeKinds:   make(map[Kvar]Tvar, len(c.typeKinds)),
 	}
 	*n.f = *c.f
 	for k, v := range c.annotations {
@@ -517,9 +485,6 @@ func (c *Constraints) Copy() *Constraints {
 		kinds := make([]Kind, len(v))
 		copy(kinds, v)
 		n.kindConst[k] = kinds
-	}
-	for t, k := range c.typeKinds {
-		n.typeKinds[t] = k
 	}
 	return n
 }
@@ -542,28 +507,16 @@ func (c *Constraints) AddTypeConst(l, r PolyType, loc ast.SourceLocation) {
 	})
 }
 
-func (c *Constraints) lookupKindTvar(kv Kvar) Tvar {
-	kv, ok := c.typeKinds[tv]
-	if !ok {
-		kv = Kvar(c.f.Fresh())
-		c.typeKinds[tv] = kv
-	}
-	return kv
-}
-func (c *Constraints) AddKindConst(kv Kvar, k Kind) {
-	c.kindConst[kv] = append(c.kindConst[kv], k)
+func (c *Constraints) AddKindConst(tv Tvar, k Kind) {
+	c.kindConst[tv] = append(c.kindConst[tv], k)
 }
 
 // Instantiate produces a new poly type where the free variables from the scheme have been made fresh.
 // This way each new instantiation of a scheme is independent of the other but all have the same constraint structure.
 func (c *Constraints) Instantiate(s Scheme, loc ast.SourceLocation) (t PolyType) {
-	defer func() {
-		log.Println("Instantiate", s, t)
-	}()
 	if len(s.Free) == 0 {
 		return s.T
 	}
-
 	// Create a substituion for the new type variables
 	subst := make(Substitution, len(s.Free))
 	for _, tv := range s.Free {
@@ -573,14 +526,12 @@ func (c *Constraints) Instantiate(s Scheme, loc ast.SourceLocation) (t PolyType)
 
 	// Add any new kind constraints
 	for _, tv := range s.Free {
-		kv := c.typeKinds[tv]
-		ks, ok := c.kindConst[kv]
+		ks, ok := c.kindConst[tv]
 		if ok {
 			ntv := subst.ApplyTvar(tv)
-			c.typeKinds[ntv] = kv
 			for _, k := range ks {
 				nk := subst.ApplyKind(k)
-				c.AddKindConst(kv, nk)
+				c.AddKindConst(ntv, nk)
 			}
 		}
 	}
@@ -602,13 +553,7 @@ func (c *Constraints) Instantiate(s Scheme, loc ast.SourceLocation) (t PolyType)
 func (c *Constraints) String() string {
 	var builder strings.Builder
 	builder.WriteString("{\nannotations:\n")
-	nodes := make([]Node, 0, len(c.annotations))
-	for n := range c.annotations {
-		nodes = append(nodes, n)
-	}
-	SortNodes(nodes)
-	for _, n := range nodes {
-		ann := c.annotations[n]
+	for n, ann := range c.annotations {
 		fmt.Fprintf(&builder, "%T@%v = %v,\n", n, n.Location(), ann.Var)
 	}
 	builder.WriteString("types:\n")
