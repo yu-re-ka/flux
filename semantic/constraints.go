@@ -18,8 +18,8 @@ func GenerateConstraints(node Node, annotator Annotator, importer Importer) (*Co
 		cs: &Constraints{
 			f:           annotator.f,
 			annotations: annotator.annotations,
-			kindConst:   make(map[Kvar][]Kind),
-			typeKinds:   make(map[Tvar]Kvar),
+			kindConst:   make(map[Tvar][]Kind),
+			typeKinds:   make(map[Kvar]Tvar),
 		},
 		env:      NewEnv(),
 		err:      new(error),
@@ -495,8 +495,8 @@ type Constraints struct {
 	annotations map[Node]annotation
 
 	typeConst []TypeConstraint
-	kindConst map[Kvar][]Kind
-	typeKinds map[Tvar]Kvar
+	kindConst map[Tvar][]Kind
+	typeKinds map[Kvar]Tvar
 }
 type Kvar int
 
@@ -543,15 +543,14 @@ func (c *Constraints) AddTypeConst(l, r PolyType, loc ast.SourceLocation) {
 }
 
 func (c *Constraints) lookupKindTvar(kv Kvar) Tvar {
-	kv, ok := c.typeKinds[tv]
+	tv, ok := c.typeKinds[kv]
 	if !ok {
-		kv = Kvar(c.f.Fresh())
-		c.typeKinds[tv] = kv
+		c.typeKinds[kv] = tv
 	}
-	return kv
+	return tv
 }
-func (c *Constraints) AddKindConst(kv Kvar, k Kind) {
-	c.kindConst[kv] = append(c.kindConst[kv], k)
+func (c *Constraints) AddKindConst(tv Tvar, k Kind) {
+	c.kindConst[tv] = append(c.kindConst[tv], k)
 }
 
 // Instantiate produces a new poly type where the free variables from the scheme have been made fresh.

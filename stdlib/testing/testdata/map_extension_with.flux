@@ -15,7 +15,7 @@ inData = "
 "
 
 outData = "
-#datatype,string,long,dateTime:RFC3339,long,string,string,string
+#datatype,string,long,dateTime:RFC3339,double,string,string,string
 #group,false,false,false,false,true,true,true
 #default,_result,,,,,,
 ,result,table,_time,_value,_field,_measurement,host
