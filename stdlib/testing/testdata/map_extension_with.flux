@@ -27,7 +27,7 @@ outData = "
 t_map = (table=<-) =>
 	(table
 		|> map(fn: (r) =>
-			({r with _value: float(v: r._value)})))
+			({r with _value: float(v:r._value)})))
 
 test _map = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_map})

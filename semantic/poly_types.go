@@ -833,6 +833,7 @@ func (k ObjectKind) resolveType(kinds map[Tvar]Kind) (Type, error) {
 			properties[l] = t
 		}
 	}
+
 	return NewObjectType(properties), nil
 }
 func (k ObjectKind) MonoType() (Type, bool) {

@@ -571,18 +571,18 @@ func (c *Constraints) Instantiate(s Scheme, loc ast.SourceLocation) (t PolyType)
 	}
 
 	// Add any new kind constraints
-	for _, tv := range s.Free {
-		kv := c.typeKinds[tv]
-		ks, ok := c.kindConst[kv]
-		if ok {
-			ntv := subst.ApplyTvar(tv)
-			c.typeKinds[ntv] = kv
-			for _, k := range ks {
-				nk := subst.ApplyKind(k)
-				c.AddKindConst(kv, nk)
-			}
-		}
-	}
+	//for _, tv := range s.Free {
+	//	kv := c.kindConst[tv]
+	//	ks, ok := c.typeKinds[kv]
+	//	if ok {
+	//		ntv := subst.ApplyTvar(tv)
+	//		c.typeKinds[ntv] = kv
+	//		for _, k := range ks {
+	//			nk := subst.ApplyKind(k)
+	//			c.AddKindConst(kv, nk)
+	//		}
+	//	}
+	//}
 
 	// Add any new type constraints
 	for _, tc := range c.typeConst {
