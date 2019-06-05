@@ -53,6 +53,7 @@ func (c compiledFn) validate(input values.Object) error {
 	if len(properties) != len(sig.Parameters) {
 		return errors.New("mismatched parameters and properties")
 	}
+	// TODO(adam): this type check needs to be more flexible, particularly for object types
 	for k, v := range sig.Parameters {
 		if properties[k] != v {
 			return fmt.Errorf("parameter %q has the wrong type, expected %v got %v", k, v, properties[k])
