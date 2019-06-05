@@ -55,7 +55,15 @@ func (c compiledFn) validate(input values.Object) error {
 	}
 	for k, v := range sig.Parameters {
 		if properties[k] != v {
-			return fmt.Errorf("parameter %q has the wrong type, expected %v got %v", k, v, properties[k])
+			if v.Nature() == semantic.Object && properties[k].Nature() == semantic.Object {
+				for f, _ := range v.Properties() {
+					if _, ok := properties[k].Properties()[f]; !ok {
+						return fmt.Errorf("parameter %q has the wrong type, expected %v got %v", k, v, properties[k])
+					}
+				}
+			} else {
+				return fmt.Errorf("parameter %q has the wrong type, expected %v got %v", k, v, properties[k])
+			}
 		}
 	}
 	return nil
