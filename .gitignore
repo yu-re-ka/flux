@@ -8,3 +8,6 @@ vendor
 internal/rust/parser/target/
 internal/rust/parser/pkg
 internal/rust/site/node_modules
+node_modules
+.cache
+dist
