@@ -5,6 +5,7 @@ package stdlib
 import (
 	ast "github.com/influxdata/flux/ast"
 	fluxtests "github.com/influxdata/flux/stdlib/influxdata/influxdb/v1/fluxtests"
+	ledger "github.com/influxdata/flux/stdlib/ledger"
 	chronograf "github.com/influxdata/flux/stdlib/testing/chronograf"
 	testdata "github.com/influxdata/flux/stdlib/testing/testdata"
 )
@@ -12,6 +13,7 @@ import (
 var FluxTestPackages = func() []*ast.Package {
 	var pkgs []*ast.Package
 	pkgs = append(pkgs, fluxtests.FluxTestPackages...)
+	pkgs = append(pkgs, ledger.FluxTestPackages...)
 	pkgs = append(pkgs, chronograf.FluxTestPackages...)
 	pkgs = append(pkgs, testdata.FluxTestPackages...)
 	return pkgs
