@@ -2,7 +2,6 @@ package semantic
 
 import (
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/influxdata/flux/ast"
@@ -26,7 +25,7 @@ func GenerateConstraints(node Node, annotator Annotator, importer Importer) (*Co
 		importer: importer,
 	}
 	Walk(NewScopedVisitor(cg), node)
-	log.Println("GenerateConstraints", cg.cs)
+	//log.Println("GenerateConstraints", cg.cs)
 	return cg.cs, *cg.err
 }
 
@@ -166,7 +165,7 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 			return nil, fmt.Errorf("undefined identifier %q", n.Name)
 		}
 		t := v.cs.Instantiate(scheme, n.Location())
-		log.Println("IdentifierExpression", n.Name, scheme, t)
+		//log.Println("IdentifierExpression", n.Name, scheme, t)
 		return t, nil
 	case *ReturnStatement:
 		return v.lookup(n.Argument)
@@ -556,9 +555,9 @@ func (c *Constraints) AddKindConst(tv Tvar, k Kind) {
 // Instantiate produces a new poly type where the free variables from the scheme have been made fresh.
 // This way each new instantiation of a scheme is independent of the other but all have the same constraint structure.
 func (c *Constraints) Instantiate(s Scheme, loc ast.SourceLocation) (t PolyType) {
-	defer func() {
-		log.Println("Instantiate", s, t)
-	}()
+	//defer func() {
+	//	log.Println("Instantiate", s, t)
+	//}()
 	if len(s.Free) == 0 {
 		return s.T
 	}

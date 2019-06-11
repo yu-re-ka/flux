@@ -228,11 +228,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors: nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 47,
+																Column: 69,
 																Line:   93,
 															},
 															File:   "measurement_tag_keys_test.flux",
-															Source: "start: 2018-01-01T00:00:00Z, stop",
+															Source: "start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z",
 															Start: ast.Position{
 																Column: 14,
 																Line:   93,
@@ -244,11 +244,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Errors: nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 19,
+																	Column: 41,
 																	Line:   93,
 																},
 																File:   "measurement_tag_keys_test.flux",
-																Source: "start",
+																Source: "start: 2018-01-01T00:00:00Z",
 																Start: ast.Position{
 																	Column: 14,
 																	Line:   93,
@@ -296,11 +296,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Errors: nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 47,
+																	Column: 69,
 																	Line:   93,
 																},
 																File:   "measurement_tag_keys_test.flux",
-																Source: "stop",
+																Source: "stop: 2019-01-01T00:00:00Z",
 																Start: ast.Position{
 																	Column: 43,
 																	Line:   93,
@@ -402,11 +402,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors: nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 17,
+															Column: 49,
 															Line:   94,
 														},
 														File:   "measurement_tag_keys_test.flux",
-														Source: "fn",
+														Source: "fn: (r) => r._measurement == \"swp\"",
 														Start: ast.Position{
 															Column: 15,
 															Line:   94,
@@ -418,11 +418,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors: nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 17,
+																Column: 49,
 																Line:   94,
 															},
 															File:   "measurement_tag_keys_test.flux",
-															Source: "fn",
+															Source: "fn: (r) => r._measurement == \"swp\"",
 															Start: ast.Position{
 																Column: 15,
 																Line:   94,
@@ -648,11 +648,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors: nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 17,
+														Column: 49,
 														Line:   95,
 													},
 													File:   "measurement_tag_keys_test.flux",
-													Source: "fn",
+													Source: "fn: (r) => r.host == \"host.global\"",
 													Start: ast.Position{
 														Column: 15,
 														Line:   95,
@@ -664,11 +664,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors: nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 17,
+															Column: 49,
 															Line:   95,
 														},
 														File:   "measurement_tag_keys_test.flux",
-														Source: "fn",
+														Source: "fn: (r) => r.host == \"host.global\"",
 														Start: ast.Position{
 															Column: 15,
 															Line:   95,
@@ -946,11 +946,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 20,
+												Column: 32,
 												Line:   97,
 											},
 											File:   "measurement_tag_keys_test.flux",
-											Source: "columns",
+											Source: "columns: [\"_value\"]",
 											Start: ast.Position{
 												Column: 13,
 												Line:   97,
@@ -962,11 +962,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 20,
+													Column: 32,
 													Line:   97,
 												},
 												File:   "measurement_tag_keys_test.flux",
-												Source: "columns",
+												Source: "columns: [\"_value\"]",
 												Start: ast.Position{
 													Column: 13,
 													Line:   97,
@@ -1291,11 +1291,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 12,
+										Column: 45,
 										Line:   102,
 									},
 									File:   "measurement_tag_keys_test.flux",
-									Source: "input",
+									Source: "input: testing.loadStorage(csv: input)",
 									Start: ast.Position{
 										Column: 7,
 										Line:   102,
@@ -1326,11 +1326,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 37,
+												Column: 44,
 												Line:   102,
 											},
 											File:   "measurement_tag_keys_test.flux",
-											Source: "csv",
+											Source: "csv: input",
 											Start: ast.Position{
 												Column: 34,
 												Line:   102,
@@ -1342,11 +1342,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 37,
+													Column: 44,
 													Line:   102,
 												},
 												File:   "measurement_tag_keys_test.flux",
-												Source: "csv",
+												Source: "csv: input",
 												Start: ast.Position{
 													Column: 34,
 													Line:   102,
@@ -1466,11 +1466,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 51,
+										Column: 81,
 										Line:   102,
 									},
 									File:   "measurement_tag_keys_test.flux",
-									Source: "want",
+									Source: "want: testing.loadMem(csv: output)",
 									Start: ast.Position{
 										Column: 47,
 										Line:   102,
@@ -1501,11 +1501,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 72,
+												Column: 80,
 												Line:   102,
 											},
 											File:   "measurement_tag_keys_test.flux",
-											Source: "csv",
+											Source: "csv: output",
 											Start: ast.Position{
 												Column: 69,
 												Line:   102,
@@ -1517,11 +1517,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 72,
+													Column: 80,
 													Line:   102,
 												},
 												File:   "measurement_tag_keys_test.flux",
-												Source: "csv",
+												Source: "csv: output",
 												Start: ast.Position{
 													Column: 69,
 													Line:   102,
@@ -1641,11 +1641,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 85,
+										Column: 110,
 										Line:   102,
 									},
 									File:   "measurement_tag_keys_test.flux",
-									Source: "fn",
+									Source: "fn: measurement_tag_keys_fn",
 									Start: ast.Position{
 										Column: 83,
 										Line:   102,
@@ -2006,11 +2006,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors: nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 47,
+																Column: 69,
 																Line:   81,
 															},
 															File:   "measurement_tag_values_test.flux",
-															Source: "start: 2018-01-01T00:00:00Z, stop",
+															Source: "start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z",
 															Start: ast.Position{
 																Column: 14,
 																Line:   81,
@@ -2022,11 +2022,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Errors: nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 19,
+																	Column: 41,
 																	Line:   81,
 																},
 																File:   "measurement_tag_values_test.flux",
-																Source: "start",
+																Source: "start: 2018-01-01T00:00:00Z",
 																Start: ast.Position{
 																	Column: 14,
 																	Line:   81,
@@ -2074,11 +2074,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Errors: nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 47,
+																	Column: 69,
 																	Line:   81,
 																},
 																File:   "measurement_tag_values_test.flux",
-																Source: "stop",
+																Source: "stop: 2019-01-01T00:00:00Z",
 																Start: ast.Position{
 																	Column: 43,
 																	Line:   81,
@@ -2180,11 +2180,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors: nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 17,
+															Column: 49,
 															Line:   82,
 														},
 														File:   "measurement_tag_values_test.flux",
-														Source: "fn",
+														Source: "fn: (r) => r._measurement == \"sys\"",
 														Start: ast.Position{
 															Column: 15,
 															Line:   82,
@@ -2196,11 +2196,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors: nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 17,
+																Column: 49,
 																Line:   82,
 															},
 															File:   "measurement_tag_values_test.flux",
-															Source: "fn",
+															Source: "fn: (r) => r._measurement == \"sys\"",
 															Start: ast.Position{
 																Column: 15,
 																Line:   82,
@@ -2426,11 +2426,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors: nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 17,
+														Column: 48,
 														Line:   83,
 													},
 													File:   "measurement_tag_values_test.flux",
-													Source: "fn",
+													Source: "fn: (r) => r.host == \"host.local\"",
 													Start: ast.Position{
 														Column: 15,
 														Line:   83,
@@ -2442,11 +2442,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors: nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 17,
+															Column: 48,
 															Line:   83,
 														},
 														File:   "measurement_tag_values_test.flux",
-														Source: "fn",
+														Source: "fn: (r) => r.host == \"host.local\"",
 														Start: ast.Position{
 															Column: 15,
 															Line:   83,
@@ -2672,11 +2672,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 20,
+													Column: 32,
 													Line:   84,
 												},
 												File:   "measurement_tag_values_test.flux",
-												Source: "columns",
+												Source: "columns: [\"_field\"]",
 												Start: ast.Position{
 													Column: 13,
 													Line:   84,
@@ -2688,11 +2688,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors: nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 20,
+														Column: 32,
 														Line:   84,
 													},
 													File:   "measurement_tag_values_test.flux",
-													Source: "columns",
+													Source: "columns: [\"_field\"]",
 													Start: ast.Position{
 														Column: 13,
 														Line:   84,
@@ -2863,11 +2863,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 23,
+											Column: 33,
 											Line:   86,
 										},
 										File:   "measurement_tag_values_test.flux",
-										Source: "column",
+										Source: "column: \"_field\"",
 										Start: ast.Position{
 											Column: 17,
 											Line:   86,
@@ -2879,11 +2879,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 23,
+												Column: 33,
 												Line:   86,
 											},
 											File:   "measurement_tag_values_test.flux",
-											Source: "column",
+											Source: "column: \"_field\"",
 											Start: ast.Position{
 												Column: 17,
 												Line:   86,
@@ -3139,11 +3139,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 12,
+										Column: 45,
 										Line:   90,
 									},
 									File:   "measurement_tag_values_test.flux",
-									Source: "input",
+									Source: "input: testing.loadStorage(csv: input)",
 									Start: ast.Position{
 										Column: 7,
 										Line:   90,
@@ -3174,11 +3174,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 37,
+												Column: 44,
 												Line:   90,
 											},
 											File:   "measurement_tag_values_test.flux",
-											Source: "csv",
+											Source: "csv: input",
 											Start: ast.Position{
 												Column: 34,
 												Line:   90,
@@ -3190,11 +3190,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 37,
+													Column: 44,
 													Line:   90,
 												},
 												File:   "measurement_tag_values_test.flux",
-												Source: "csv",
+												Source: "csv: input",
 												Start: ast.Position{
 													Column: 34,
 													Line:   90,
@@ -3314,11 +3314,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 51,
+										Column: 81,
 										Line:   90,
 									},
 									File:   "measurement_tag_values_test.flux",
-									Source: "want",
+									Source: "want: testing.loadMem(csv: output)",
 									Start: ast.Position{
 										Column: 47,
 										Line:   90,
@@ -3349,11 +3349,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 72,
+												Column: 80,
 												Line:   90,
 											},
 											File:   "measurement_tag_values_test.flux",
-											Source: "csv",
+											Source: "csv: output",
 											Start: ast.Position{
 												Column: 69,
 												Line:   90,
@@ -3365,11 +3365,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 72,
+													Column: 80,
 													Line:   90,
 												},
 												File:   "measurement_tag_values_test.flux",
-												Source: "csv",
+												Source: "csv: output",
 												Start: ast.Position{
 													Column: 69,
 													Line:   90,
@@ -3489,11 +3489,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 85,
+										Column: 112,
 										Line:   90,
 									},
 									File:   "measurement_tag_values_test.flux",
-									Source: "fn",
+									Source: "fn: measurement_tag_values_fn",
 									Start: ast.Position{
 										Column: 83,
 										Line:   90,
@@ -3853,11 +3853,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors: nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 47,
+															Column: 69,
 															Line:   49,
 														},
 														File:   "show_measurements_test.flux",
-														Source: "start: 2018-01-01T00:00:00Z, stop",
+														Source: "start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z",
 														Start: ast.Position{
 															Column: 14,
 															Line:   49,
@@ -3869,11 +3869,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors: nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 19,
+																Column: 41,
 																Line:   49,
 															},
 															File:   "show_measurements_test.flux",
-															Source: "start",
+															Source: "start: 2018-01-01T00:00:00Z",
 															Start: ast.Position{
 																Column: 14,
 																Line:   49,
@@ -3921,11 +3921,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors: nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 47,
+																Column: 69,
 																Line:   49,
 															},
 															File:   "show_measurements_test.flux",
-															Source: "stop",
+															Source: "stop: 2019-01-01T00:00:00Z",
 															Start: ast.Position{
 																Column: 43,
 																Line:   49,
@@ -4027,11 +4027,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors: nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 17,
+														Column: 30,
 														Line:   50,
 													},
 													File:   "show_measurements_test.flux",
-													Source: "fn",
+													Source: "fn: (r) => true",
 													Start: ast.Position{
 														Column: 15,
 														Line:   50,
@@ -4043,11 +4043,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors: nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 17,
+															Column: 30,
 															Line:   50,
 														},
 														File:   "show_measurements_test.flux",
-														Source: "fn",
+														Source: "fn: (r) => true",
 														Start: ast.Position{
 															Column: 15,
 															Line:   50,
@@ -4202,11 +4202,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 20,
+													Column: 38,
 													Line:   51,
 												},
 												File:   "show_measurements_test.flux",
-												Source: "columns",
+												Source: "columns: [\"_measurement\"]",
 												Start: ast.Position{
 													Column: 13,
 													Line:   51,
@@ -4218,11 +4218,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors: nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 20,
+														Column: 38,
 														Line:   51,
 													},
 													File:   "show_measurements_test.flux",
-													Source: "columns",
+													Source: "columns: [\"_measurement\"]",
 													Start: ast.Position{
 														Column: 13,
 														Line:   51,
@@ -4393,11 +4393,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 23,
+											Column: 39,
 											Line:   53,
 										},
 										File:   "show_measurements_test.flux",
-										Source: "column",
+										Source: "column: \"_measurement\"",
 										Start: ast.Position{
 											Column: 17,
 											Line:   53,
@@ -4409,11 +4409,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 23,
+												Column: 39,
 												Line:   53,
 											},
 											File:   "show_measurements_test.flux",
-											Source: "column",
+											Source: "column: \"_measurement\"",
 											Start: ast.Position{
 												Column: 17,
 												Line:   53,
@@ -4669,11 +4669,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 12,
+										Column: 45,
 										Line:   57,
 									},
 									File:   "show_measurements_test.flux",
-									Source: "input",
+									Source: "input: testing.loadStorage(csv: input)",
 									Start: ast.Position{
 										Column: 7,
 										Line:   57,
@@ -4704,11 +4704,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 37,
+												Column: 44,
 												Line:   57,
 											},
 											File:   "show_measurements_test.flux",
-											Source: "csv",
+											Source: "csv: input",
 											Start: ast.Position{
 												Column: 34,
 												Line:   57,
@@ -4720,11 +4720,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 37,
+													Column: 44,
 													Line:   57,
 												},
 												File:   "show_measurements_test.flux",
-												Source: "csv",
+												Source: "csv: input",
 												Start: ast.Position{
 													Column: 34,
 													Line:   57,
@@ -4844,11 +4844,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 51,
+										Column: 81,
 										Line:   57,
 									},
 									File:   "show_measurements_test.flux",
-									Source: "want",
+									Source: "want: testing.loadMem(csv: output)",
 									Start: ast.Position{
 										Column: 47,
 										Line:   57,
@@ -4879,11 +4879,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 72,
+												Column: 80,
 												Line:   57,
 											},
 											File:   "show_measurements_test.flux",
-											Source: "csv",
+											Source: "csv: output",
 											Start: ast.Position{
 												Column: 69,
 												Line:   57,
@@ -4895,11 +4895,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 72,
+													Column: 80,
 													Line:   57,
 												},
 												File:   "show_measurements_test.flux",
-												Source: "csv",
+												Source: "csv: output",
 												Start: ast.Position{
 													Column: 69,
 													Line:   57,
@@ -5019,11 +5019,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 85,
+										Column: 107,
 										Line:   57,
 									},
 									File:   "show_measurements_test.flux",
-									Source: "fn",
+									Source: "fn: show_measurements_fn",
 									Start: ast.Position{
 										Column: 83,
 										Line:   57,
@@ -5383,11 +5383,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors: nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 47,
+															Column: 69,
 															Line:   71,
 														},
 														File:   "show_tag_keys_test.flux",
-														Source: "start: 2018-01-01T00:00:00Z, stop",
+														Source: "start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z",
 														Start: ast.Position{
 															Column: 14,
 															Line:   71,
@@ -5399,11 +5399,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors: nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 19,
+																Column: 41,
 																Line:   71,
 															},
 															File:   "show_tag_keys_test.flux",
-															Source: "start",
+															Source: "start: 2018-01-01T00:00:00Z",
 															Start: ast.Position{
 																Column: 14,
 																Line:   71,
@@ -5451,11 +5451,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors: nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 47,
+																Column: 69,
 																Line:   71,
 															},
 															File:   "show_tag_keys_test.flux",
-															Source: "stop",
+															Source: "stop: 2019-01-01T00:00:00Z",
 															Start: ast.Position{
 																Column: 43,
 																Line:   71,
@@ -5557,11 +5557,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors: nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 17,
+														Column: 30,
 														Line:   72,
 													},
 													File:   "show_tag_keys_test.flux",
-													Source: "fn",
+													Source: "fn: (r) => true",
 													Start: ast.Position{
 														Column: 15,
 														Line:   72,
@@ -5573,11 +5573,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors: nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 17,
+															Column: 30,
 															Line:   72,
 														},
 														File:   "show_tag_keys_test.flux",
-														Source: "fn",
+														Source: "fn: (r) => true",
 														Start: ast.Position{
 															Column: 15,
 															Line:   72,
@@ -5784,11 +5784,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 20,
+												Column: 32,
 												Line:   74,
 											},
 											File:   "show_tag_keys_test.flux",
-											Source: "columns",
+											Source: "columns: [\"_value\"]",
 											Start: ast.Position{
 												Column: 13,
 												Line:   74,
@@ -5800,11 +5800,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 20,
+													Column: 32,
 													Line:   74,
 												},
 												File:   "show_tag_keys_test.flux",
-												Source: "columns",
+												Source: "columns: [\"_value\"]",
 												Start: ast.Position{
 													Column: 13,
 													Line:   74,
@@ -6129,11 +6129,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 12,
+										Column: 45,
 										Line:   79,
 									},
 									File:   "show_tag_keys_test.flux",
-									Source: "input",
+									Source: "input: testing.loadStorage(csv: input)",
 									Start: ast.Position{
 										Column: 7,
 										Line:   79,
@@ -6164,11 +6164,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 37,
+												Column: 44,
 												Line:   79,
 											},
 											File:   "show_tag_keys_test.flux",
-											Source: "csv",
+											Source: "csv: input",
 											Start: ast.Position{
 												Column: 34,
 												Line:   79,
@@ -6180,11 +6180,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 37,
+													Column: 44,
 													Line:   79,
 												},
 												File:   "show_tag_keys_test.flux",
-												Source: "csv",
+												Source: "csv: input",
 												Start: ast.Position{
 													Column: 34,
 													Line:   79,
@@ -6304,11 +6304,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 51,
+										Column: 81,
 										Line:   79,
 									},
 									File:   "show_tag_keys_test.flux",
-									Source: "want",
+									Source: "want: testing.loadMem(csv: output)",
 									Start: ast.Position{
 										Column: 47,
 										Line:   79,
@@ -6339,11 +6339,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 72,
+												Column: 80,
 												Line:   79,
 											},
 											File:   "show_tag_keys_test.flux",
-											Source: "csv",
+											Source: "csv: output",
 											Start: ast.Position{
 												Column: 69,
 												Line:   79,
@@ -6355,11 +6355,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 72,
+													Column: 80,
 													Line:   79,
 												},
 												File:   "show_tag_keys_test.flux",
-												Source: "csv",
+												Source: "csv: output",
 												Start: ast.Position{
 													Column: 69,
 													Line:   79,
@@ -6479,11 +6479,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 85,
+										Column: 103,
 										Line:   79,
 									},
 									File:   "show_tag_keys_test.flux",
-									Source: "fn",
+									Source: "fn: show_tag_keys_fn",
 									Start: ast.Position{
 										Column: 83,
 										Line:   79,
@@ -6843,11 +6843,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors: nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 47,
+															Column: 69,
 															Line:   51,
 														},
 														File:   "show_tag_values_test.flux",
-														Source: "start: 2018-01-01T00:00:00Z, stop",
+														Source: "start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z",
 														Start: ast.Position{
 															Column: 14,
 															Line:   51,
@@ -6859,11 +6859,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors: nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 19,
+																Column: 41,
 																Line:   51,
 															},
 															File:   "show_tag_values_test.flux",
-															Source: "start",
+															Source: "start: 2018-01-01T00:00:00Z",
 															Start: ast.Position{
 																Column: 14,
 																Line:   51,
@@ -6911,11 +6911,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors: nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 47,
+																Column: 69,
 																Line:   51,
 															},
 															File:   "show_tag_values_test.flux",
-															Source: "stop",
+															Source: "stop: 2019-01-01T00:00:00Z",
 															Start: ast.Position{
 																Column: 43,
 																Line:   51,
@@ -7017,11 +7017,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors: nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 17,
+														Column: 30,
 														Line:   52,
 													},
 													File:   "show_tag_values_test.flux",
-													Source: "fn",
+													Source: "fn: (r) => true",
 													Start: ast.Position{
 														Column: 15,
 														Line:   52,
@@ -7033,11 +7033,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors: nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 17,
+															Column: 30,
 															Line:   52,
 														},
 														File:   "show_tag_values_test.flux",
-														Source: "fn",
+														Source: "fn: (r) => true",
 														Start: ast.Position{
 															Column: 15,
 															Line:   52,
@@ -7192,11 +7192,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 20,
+													Column: 32,
 													Line:   53,
 												},
 												File:   "show_tag_values_test.flux",
-												Source: "columns",
+												Source: "columns: [\"_field\"]",
 												Start: ast.Position{
 													Column: 13,
 													Line:   53,
@@ -7208,11 +7208,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors: nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 20,
+														Column: 32,
 														Line:   53,
 													},
 													File:   "show_tag_values_test.flux",
-													Source: "columns",
+													Source: "columns: [\"_field\"]",
 													Start: ast.Position{
 														Column: 13,
 														Line:   53,
@@ -7383,11 +7383,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 23,
+											Column: 33,
 											Line:   55,
 										},
 										File:   "show_tag_values_test.flux",
-										Source: "column",
+										Source: "column: \"_field\"",
 										Start: ast.Position{
 											Column: 17,
 											Line:   55,
@@ -7399,11 +7399,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 23,
+												Column: 33,
 												Line:   55,
 											},
 											File:   "show_tag_values_test.flux",
-											Source: "column",
+											Source: "column: \"_field\"",
 											Start: ast.Position{
 												Column: 17,
 												Line:   55,
@@ -7659,11 +7659,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 12,
+										Column: 45,
 										Line:   59,
 									},
 									File:   "show_tag_values_test.flux",
-									Source: "input",
+									Source: "input: testing.loadStorage(csv: input)",
 									Start: ast.Position{
 										Column: 7,
 										Line:   59,
@@ -7694,11 +7694,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 37,
+												Column: 44,
 												Line:   59,
 											},
 											File:   "show_tag_values_test.flux",
-											Source: "csv",
+											Source: "csv: input",
 											Start: ast.Position{
 												Column: 34,
 												Line:   59,
@@ -7710,11 +7710,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 37,
+													Column: 44,
 													Line:   59,
 												},
 												File:   "show_tag_values_test.flux",
-												Source: "csv",
+												Source: "csv: input",
 												Start: ast.Position{
 													Column: 34,
 													Line:   59,
@@ -7834,11 +7834,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 51,
+										Column: 81,
 										Line:   59,
 									},
 									File:   "show_tag_values_test.flux",
-									Source: "want",
+									Source: "want: testing.loadMem(csv: output)",
 									Start: ast.Position{
 										Column: 47,
 										Line:   59,
@@ -7869,11 +7869,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 72,
+												Column: 80,
 												Line:   59,
 											},
 											File:   "show_tag_values_test.flux",
-											Source: "csv",
+											Source: "csv: output",
 											Start: ast.Position{
 												Column: 69,
 												Line:   59,
@@ -7885,11 +7885,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 72,
+													Column: 80,
 													Line:   59,
 												},
 												File:   "show_tag_values_test.flux",
-												Source: "csv",
+												Source: "csv: output",
 												Start: ast.Position{
 													Column: 69,
 													Line:   59,
@@ -8009,11 +8009,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 85,
+										Column: 105,
 										Line:   59,
 									},
 									File:   "show_tag_values_test.flux",
-									Source: "fn",
+									Source: "fn: show_tag_values_fn",
 									Start: ast.Position{
 										Column: 83,
 										Line:   59,
