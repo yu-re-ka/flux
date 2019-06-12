@@ -21,11 +21,11 @@ var pkgAST = &ast.Package{
 			Errors: nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
-					Column: 66,
-					Line:   18,
+					Column: 6,
+					Line:   28,
 				},
 				File:   "ledger.flux",
-				Source: "package ledger\n\nimport \"strings\"\n\n// From reads a ledger (hledger) file and produces a single table with each posting as a row.\nbuiltin from\n\nassets = (tables=<-) =>\n    tables\n        |> filter(fn: (r) => strings.toLower(v:r.l0) == \"assets\")\n\nexpenses = (tables=<-) =>\n    tables\n        |> filter(fn: (r) => strings.toLower(v:r.l0) == \"expenses\")\n\nincome = (tables=<-) =>\n    tables\n        |> filter(fn: (r) => strings.toLower(v:r.l0) == \"income\")",
+				Source: "package ledger\n\nimport \"strings\"\n\n// From reads a ledger (hledger) file and produces a single table with each posting as a row.\nbuiltin from\n\nassets = (tables=<-) =>\n    tables\n        |> filter(fn: (r) => strings.toLower(v:r.l0) == \"assets\")\n\nliabilities = (tables=<-) =>\n    tables\n        |> filter(fn: (r) => strings.toLower(v:r.l0) == \"liabilities\")\n\nexpenses = (tables=<-) =>\n    tables\n        |> filter(fn: (r) => strings.toLower(v:r.l0) == \"expenses\")\n\nincome = (tables=<-) =>\n    tables\n        |> filter(fn: (r) => strings.toLower(v:r.l0) == \"income\")\n\nbalancesheet = (tables=<-) => {\n        liabilities = tables |> liabilities() |> sum()\n        assets = tables |> assets () |> sum()\n        return join(tables:{assets, liabilities}, on:[\"commodity\"])\n    }",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -558,11 +558,11 @@ var pkgAST = &ast.Package{
 				Errors: nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 68,
+						Column: 71,
 						Line:   14,
 					},
 					File:   "ledger.flux",
-					Source: "expenses = (tables=<-) =>\n    tables\n        |> filter(fn: (r) => strings.toLower(v:r.l0) == \"expenses\")",
+					Source: "liabilities = (tables=<-) =>\n    tables\n        |> filter(fn: (r) => strings.toLower(v:r.l0) == \"liabilities\")",
 					Start: ast.Position{
 						Column: 1,
 						Line:   12,
@@ -574,31 +574,31 @@ var pkgAST = &ast.Package{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 9,
+							Column: 12,
 							Line:   12,
 						},
 						File:   "ledger.flux",
-						Source: "expenses",
+						Source: "liabilities",
 						Start: ast.Position{
 							Column: 1,
 							Line:   12,
 						},
 					},
 				},
-				Name: "expenses",
+				Name: "liabilities",
 			},
 			Init: &ast.FunctionExpression{
 				BaseNode: ast.BaseNode{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 68,
+							Column: 71,
 							Line:   14,
 						},
 						File:   "ledger.flux",
-						Source: "(tables=<-) =>\n    tables\n        |> filter(fn: (r) => strings.toLower(v:r.l0) == \"expenses\")",
+						Source: "(tables=<-) =>\n    tables\n        |> filter(fn: (r) => strings.toLower(v:r.l0) == \"liabilities\")",
 						Start: ast.Position{
-							Column: 12,
+							Column: 15,
 							Line:   12,
 						},
 					},
@@ -626,11 +626,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 68,
+								Column: 71,
 								Line:   14,
 							},
 							File:   "ledger.flux",
-							Source: "tables\n        |> filter(fn: (r) => strings.toLower(v:r.l0) == \"expenses\")",
+							Source: "tables\n        |> filter(fn: (r) => strings.toLower(v:r.l0) == \"liabilities\")",
 							Start: ast.Position{
 								Column: 5,
 								Line:   13,
@@ -643,11 +643,11 @@ var pkgAST = &ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 67,
+										Column: 70,
 										Line:   14,
 									},
 									File:   "ledger.flux",
-									Source: "fn: (r) => strings.toLower(v:r.l0) == \"expenses\"",
+									Source: "fn: (r) => strings.toLower(v:r.l0) == \"liabilities\"",
 									Start: ast.Position{
 										Column: 19,
 										Line:   14,
@@ -659,11 +659,11 @@ var pkgAST = &ast.Package{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 67,
+											Column: 70,
 											Line:   14,
 										},
 										File:   "ledger.flux",
-										Source: "fn: (r) => strings.toLower(v:r.l0) == \"expenses\"",
+										Source: "fn: (r) => strings.toLower(v:r.l0) == \"liabilities\"",
 										Start: ast.Position{
 											Column: 19,
 											Line:   14,
@@ -693,11 +693,11 @@ var pkgAST = &ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 67,
+												Column: 70,
 												Line:   14,
 											},
 											File:   "ledger.flux",
-											Source: "(r) => strings.toLower(v:r.l0) == \"expenses\"",
+											Source: "(r) => strings.toLower(v:r.l0) == \"liabilities\"",
 											Start: ast.Position{
 												Column: 23,
 												Line:   14,
@@ -709,11 +709,11 @@ var pkgAST = &ast.Package{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 67,
+													Column: 70,
 													Line:   14,
 												},
 												File:   "ledger.flux",
-												Source: "strings.toLower(v:r.l0) == \"expenses\"",
+												Source: "strings.toLower(v:r.l0) == \"liabilities\"",
 												Start: ast.Position{
 													Column: 30,
 													Line:   14,
@@ -901,18 +901,18 @@ var pkgAST = &ast.Package{
 												Errors: nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 67,
+														Column: 70,
 														Line:   14,
 													},
 													File:   "ledger.flux",
-													Source: "\"expenses\"",
+													Source: "\"liabilities\"",
 													Start: ast.Position{
 														Column: 57,
 														Line:   14,
 													},
 												},
 											},
-											Value: "expenses",
+											Value: "liabilities",
 										},
 									},
 									Params: []*ast.Property{&ast.Property{
@@ -944,6 +944,493 @@ var pkgAST = &ast.Package{
 													Start: ast.Position{
 														Column: 24,
 														Line:   14,
+													},
+												},
+											},
+											Name: "r",
+										},
+										Value: nil,
+									}},
+								},
+							}},
+						}},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 71,
+									Line:   14,
+								},
+								File:   "ledger.flux",
+								Source: "filter(fn: (r) => strings.toLower(v:r.l0) == \"liabilities\")",
+								Start: ast.Position{
+									Column: 12,
+									Line:   14,
+								},
+							},
+						},
+						Callee: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 18,
+										Line:   14,
+									},
+									File:   "ledger.flux",
+									Source: "filter",
+									Start: ast.Position{
+										Column: 12,
+										Line:   14,
+									},
+								},
+							},
+							Name: "filter",
+						},
+					},
+				},
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 25,
+								Line:   12,
+							},
+							File:   "ledger.flux",
+							Source: "tables=<-",
+							Start: ast.Position{
+								Column: 16,
+								Line:   12,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 22,
+									Line:   12,
+								},
+								File:   "ledger.flux",
+								Source: "tables",
+								Start: ast.Position{
+									Column: 16,
+									Line:   12,
+								},
+							},
+						},
+						Name: "tables",
+					},
+					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 25,
+								Line:   12,
+							},
+							File:   "ledger.flux",
+							Source: "<-",
+							Start: ast.Position{
+								Column: 23,
+								Line:   12,
+							},
+						},
+					}},
+				}},
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 68,
+						Line:   18,
+					},
+					File:   "ledger.flux",
+					Source: "expenses = (tables=<-) =>\n    tables\n        |> filter(fn: (r) => strings.toLower(v:r.l0) == \"expenses\")",
+					Start: ast.Position{
+						Column: 1,
+						Line:   16,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 9,
+							Line:   16,
+						},
+						File:   "ledger.flux",
+						Source: "expenses",
+						Start: ast.Position{
+							Column: 1,
+							Line:   16,
+						},
+					},
+				},
+				Name: "expenses",
+			},
+			Init: &ast.FunctionExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 68,
+							Line:   18,
+						},
+						File:   "ledger.flux",
+						Source: "(tables=<-) =>\n    tables\n        |> filter(fn: (r) => strings.toLower(v:r.l0) == \"expenses\")",
+						Start: ast.Position{
+							Column: 12,
+							Line:   16,
+						},
+					},
+				},
+				Body: &ast.PipeExpression{
+					Argument: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 11,
+									Line:   17,
+								},
+								File:   "ledger.flux",
+								Source: "tables",
+								Start: ast.Position{
+									Column: 5,
+									Line:   17,
+								},
+							},
+						},
+						Name: "tables",
+					},
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 68,
+								Line:   18,
+							},
+							File:   "ledger.flux",
+							Source: "tables\n        |> filter(fn: (r) => strings.toLower(v:r.l0) == \"expenses\")",
+							Start: ast.Position{
+								Column: 5,
+								Line:   17,
+							},
+						},
+					},
+					Call: &ast.CallExpression{
+						Arguments: []ast.Expression{&ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 67,
+										Line:   18,
+									},
+									File:   "ledger.flux",
+									Source: "fn: (r) => strings.toLower(v:r.l0) == \"expenses\"",
+									Start: ast.Position{
+										Column: 19,
+										Line:   18,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 67,
+											Line:   18,
+										},
+										File:   "ledger.flux",
+										Source: "fn: (r) => strings.toLower(v:r.l0) == \"expenses\"",
+										Start: ast.Position{
+											Column: 19,
+											Line:   18,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 21,
+												Line:   18,
+											},
+											File:   "ledger.flux",
+											Source: "fn",
+											Start: ast.Position{
+												Column: 19,
+												Line:   18,
+											},
+										},
+									},
+									Name: "fn",
+								},
+								Value: &ast.FunctionExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 67,
+												Line:   18,
+											},
+											File:   "ledger.flux",
+											Source: "(r) => strings.toLower(v:r.l0) == \"expenses\"",
+											Start: ast.Position{
+												Column: 23,
+												Line:   18,
+											},
+										},
+									},
+									Body: &ast.BinaryExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 67,
+													Line:   18,
+												},
+												File:   "ledger.flux",
+												Source: "strings.toLower(v:r.l0) == \"expenses\"",
+												Start: ast.Position{
+													Column: 30,
+													Line:   18,
+												},
+											},
+										},
+										Left: &ast.CallExpression{
+											Arguments: []ast.Expression{&ast.ObjectExpression{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 52,
+															Line:   18,
+														},
+														File:   "ledger.flux",
+														Source: "v:r.l0",
+														Start: ast.Position{
+															Column: 46,
+															Line:   18,
+														},
+													},
+												},
+												Properties: []*ast.Property{&ast.Property{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 52,
+																Line:   18,
+															},
+															File:   "ledger.flux",
+															Source: "v:r.l0",
+															Start: ast.Position{
+																Column: 46,
+																Line:   18,
+															},
+														},
+													},
+													Key: &ast.Identifier{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 47,
+																	Line:   18,
+																},
+																File:   "ledger.flux",
+																Source: "v",
+																Start: ast.Position{
+																	Column: 46,
+																	Line:   18,
+																},
+															},
+														},
+														Name: "v",
+													},
+													Value: &ast.MemberExpression{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 52,
+																	Line:   18,
+																},
+																File:   "ledger.flux",
+																Source: "r.l0",
+																Start: ast.Position{
+																	Column: 48,
+																	Line:   18,
+																},
+															},
+														},
+														Object: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 49,
+																		Line:   18,
+																	},
+																	File:   "ledger.flux",
+																	Source: "r",
+																	Start: ast.Position{
+																		Column: 48,
+																		Line:   18,
+																	},
+																},
+															},
+															Name: "r",
+														},
+														Property: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 52,
+																		Line:   18,
+																	},
+																	File:   "ledger.flux",
+																	Source: "l0",
+																	Start: ast.Position{
+																		Column: 50,
+																		Line:   18,
+																	},
+																},
+															},
+															Name: "l0",
+														},
+													},
+												}},
+											}},
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 53,
+														Line:   18,
+													},
+													File:   "ledger.flux",
+													Source: "strings.toLower(v:r.l0)",
+													Start: ast.Position{
+														Column: 30,
+														Line:   18,
+													},
+												},
+											},
+											Callee: &ast.MemberExpression{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 45,
+															Line:   18,
+														},
+														File:   "ledger.flux",
+														Source: "strings.toLower",
+														Start: ast.Position{
+															Column: 30,
+															Line:   18,
+														},
+													},
+												},
+												Object: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 37,
+																Line:   18,
+															},
+															File:   "ledger.flux",
+															Source: "strings",
+															Start: ast.Position{
+																Column: 30,
+																Line:   18,
+															},
+														},
+													},
+													Name: "strings",
+												},
+												Property: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 45,
+																Line:   18,
+															},
+															File:   "ledger.flux",
+															Source: "toLower",
+															Start: ast.Position{
+																Column: 38,
+																Line:   18,
+															},
+														},
+													},
+													Name: "toLower",
+												},
+											},
+										},
+										Operator: 15,
+										Right: &ast.StringLiteral{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 67,
+														Line:   18,
+													},
+													File:   "ledger.flux",
+													Source: "\"expenses\"",
+													Start: ast.Position{
+														Column: 57,
+														Line:   18,
+													},
+												},
+											},
+											Value: "expenses",
+										},
+									},
+									Params: []*ast.Property{&ast.Property{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 25,
+													Line:   18,
+												},
+												File:   "ledger.flux",
+												Source: "r",
+												Start: ast.Position{
+													Column: 24,
+													Line:   18,
+												},
+											},
+										},
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 25,
+														Line:   18,
+													},
+													File:   "ledger.flux",
+													Source: "r",
+													Start: ast.Position{
+														Column: 24,
+														Line:   18,
 													},
 												},
 											},
@@ -959,13 +1446,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 68,
-									Line:   14,
+									Line:   18,
 								},
 								File:   "ledger.flux",
 								Source: "filter(fn: (r) => strings.toLower(v:r.l0) == \"expenses\")",
 								Start: ast.Position{
 									Column: 12,
-									Line:   14,
+									Line:   18,
 								},
 							},
 						},
@@ -975,13 +1462,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 18,
-										Line:   14,
+										Line:   18,
 									},
 									File:   "ledger.flux",
 									Source: "filter",
 									Start: ast.Position{
 										Column: 12,
-										Line:   14,
+										Line:   18,
 									},
 								},
 							},
@@ -995,13 +1482,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 22,
-								Line:   12,
+								Line:   16,
 							},
 							File:   "ledger.flux",
 							Source: "tables=<-",
 							Start: ast.Position{
 								Column: 13,
-								Line:   12,
+								Line:   16,
 							},
 						},
 					},
@@ -1011,13 +1498,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 19,
-									Line:   12,
+									Line:   16,
 								},
 								File:   "ledger.flux",
 								Source: "tables",
 								Start: ast.Position{
 									Column: 13,
-									Line:   12,
+									Line:   16,
 								},
 							},
 						},
@@ -1028,13 +1515,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 22,
-								Line:   12,
+								Line:   16,
 							},
 							File:   "ledger.flux",
 							Source: "<-",
 							Start: ast.Position{
 								Column: 20,
-								Line:   12,
+								Line:   16,
 							},
 						},
 					}},
@@ -1046,13 +1533,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 66,
-						Line:   18,
+						Line:   22,
 					},
 					File:   "ledger.flux",
 					Source: "income = (tables=<-) =>\n    tables\n        |> filter(fn: (r) => strings.toLower(v:r.l0) == \"income\")",
 					Start: ast.Position{
 						Column: 1,
-						Line:   16,
+						Line:   20,
 					},
 				},
 			},
@@ -1062,13 +1549,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 7,
-							Line:   16,
+							Line:   20,
 						},
 						File:   "ledger.flux",
 						Source: "income",
 						Start: ast.Position{
 							Column: 1,
-							Line:   16,
+							Line:   20,
 						},
 					},
 				},
@@ -1080,13 +1567,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 66,
-							Line:   18,
+							Line:   22,
 						},
 						File:   "ledger.flux",
 						Source: "(tables=<-) =>\n    tables\n        |> filter(fn: (r) => strings.toLower(v:r.l0) == \"income\")",
 						Start: ast.Position{
 							Column: 10,
-							Line:   16,
+							Line:   20,
 						},
 					},
 				},
@@ -1097,13 +1584,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 11,
-									Line:   17,
+									Line:   21,
 								},
 								File:   "ledger.flux",
 								Source: "tables",
 								Start: ast.Position{
 									Column: 5,
-									Line:   17,
+									Line:   21,
 								},
 							},
 						},
@@ -1114,13 +1601,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 66,
-								Line:   18,
+								Line:   22,
 							},
 							File:   "ledger.flux",
 							Source: "tables\n        |> filter(fn: (r) => strings.toLower(v:r.l0) == \"income\")",
 							Start: ast.Position{
 								Column: 5,
-								Line:   17,
+								Line:   21,
 							},
 						},
 					},
@@ -1131,13 +1618,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 65,
-										Line:   18,
+										Line:   22,
 									},
 									File:   "ledger.flux",
 									Source: "fn: (r) => strings.toLower(v:r.l0) == \"income\"",
 									Start: ast.Position{
 										Column: 19,
-										Line:   18,
+										Line:   22,
 									},
 								},
 							},
@@ -1147,13 +1634,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 65,
-											Line:   18,
+											Line:   22,
 										},
 										File:   "ledger.flux",
 										Source: "fn: (r) => strings.toLower(v:r.l0) == \"income\"",
 										Start: ast.Position{
 											Column: 19,
-											Line:   18,
+											Line:   22,
 										},
 									},
 								},
@@ -1163,13 +1650,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 21,
-												Line:   18,
+												Line:   22,
 											},
 											File:   "ledger.flux",
 											Source: "fn",
 											Start: ast.Position{
 												Column: 19,
-												Line:   18,
+												Line:   22,
 											},
 										},
 									},
@@ -1181,13 +1668,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 65,
-												Line:   18,
+												Line:   22,
 											},
 											File:   "ledger.flux",
 											Source: "(r) => strings.toLower(v:r.l0) == \"income\"",
 											Start: ast.Position{
 												Column: 23,
-												Line:   18,
+												Line:   22,
 											},
 										},
 									},
@@ -1197,13 +1684,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 65,
-													Line:   18,
+													Line:   22,
 												},
 												File:   "ledger.flux",
 												Source: "strings.toLower(v:r.l0) == \"income\"",
 												Start: ast.Position{
 													Column: 30,
-													Line:   18,
+													Line:   22,
 												},
 											},
 										},
@@ -1214,13 +1701,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 52,
-															Line:   18,
+															Line:   22,
 														},
 														File:   "ledger.flux",
 														Source: "v:r.l0",
 														Start: ast.Position{
 															Column: 46,
-															Line:   18,
+															Line:   22,
 														},
 													},
 												},
@@ -1230,13 +1717,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 52,
-																Line:   18,
+																Line:   22,
 															},
 															File:   "ledger.flux",
 															Source: "v:r.l0",
 															Start: ast.Position{
 																Column: 46,
-																Line:   18,
+																Line:   22,
 															},
 														},
 													},
@@ -1246,13 +1733,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 47,
-																	Line:   18,
+																	Line:   22,
 																},
 																File:   "ledger.flux",
 																Source: "v",
 																Start: ast.Position{
 																	Column: 46,
-																	Line:   18,
+																	Line:   22,
 																},
 															},
 														},
@@ -1264,13 +1751,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 52,
-																	Line:   18,
+																	Line:   22,
 																},
 																File:   "ledger.flux",
 																Source: "r.l0",
 																Start: ast.Position{
 																	Column: 48,
-																	Line:   18,
+																	Line:   22,
 																},
 															},
 														},
@@ -1280,13 +1767,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 49,
-																		Line:   18,
+																		Line:   22,
 																	},
 																	File:   "ledger.flux",
 																	Source: "r",
 																	Start: ast.Position{
 																		Column: 48,
-																		Line:   18,
+																		Line:   22,
 																	},
 																},
 															},
@@ -1298,13 +1785,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 52,
-																		Line:   18,
+																		Line:   22,
 																	},
 																	File:   "ledger.flux",
 																	Source: "l0",
 																	Start: ast.Position{
 																		Column: 50,
-																		Line:   18,
+																		Line:   22,
 																	},
 																},
 															},
@@ -1318,13 +1805,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 53,
-														Line:   18,
+														Line:   22,
 													},
 													File:   "ledger.flux",
 													Source: "strings.toLower(v:r.l0)",
 													Start: ast.Position{
 														Column: 30,
-														Line:   18,
+														Line:   22,
 													},
 												},
 											},
@@ -1334,13 +1821,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 45,
-															Line:   18,
+															Line:   22,
 														},
 														File:   "ledger.flux",
 														Source: "strings.toLower",
 														Start: ast.Position{
 															Column: 30,
-															Line:   18,
+															Line:   22,
 														},
 													},
 												},
@@ -1350,13 +1837,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 37,
-																Line:   18,
+																Line:   22,
 															},
 															File:   "ledger.flux",
 															Source: "strings",
 															Start: ast.Position{
 																Column: 30,
-																Line:   18,
+																Line:   22,
 															},
 														},
 													},
@@ -1368,13 +1855,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 45,
-																Line:   18,
+																Line:   22,
 															},
 															File:   "ledger.flux",
 															Source: "toLower",
 															Start: ast.Position{
 																Column: 38,
-																Line:   18,
+																Line:   22,
 															},
 														},
 													},
@@ -1389,13 +1876,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 65,
-														Line:   18,
+														Line:   22,
 													},
 													File:   "ledger.flux",
 													Source: "\"income\"",
 													Start: ast.Position{
 														Column: 57,
-														Line:   18,
+														Line:   22,
 													},
 												},
 											},
@@ -1408,13 +1895,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 25,
-													Line:   18,
+													Line:   22,
 												},
 												File:   "ledger.flux",
 												Source: "r",
 												Start: ast.Position{
 													Column: 24,
-													Line:   18,
+													Line:   22,
 												},
 											},
 										},
@@ -1424,13 +1911,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 25,
-														Line:   18,
+														Line:   22,
 													},
 													File:   "ledger.flux",
 													Source: "r",
 													Start: ast.Position{
 														Column: 24,
-														Line:   18,
+														Line:   22,
 													},
 												},
 											},
@@ -1446,13 +1933,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 66,
-									Line:   18,
+									Line:   22,
 								},
 								File:   "ledger.flux",
 								Source: "filter(fn: (r) => strings.toLower(v:r.l0) == \"income\")",
 								Start: ast.Position{
 									Column: 12,
-									Line:   18,
+									Line:   22,
 								},
 							},
 						},
@@ -1462,13 +1949,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 18,
-										Line:   18,
+										Line:   22,
 									},
 									File:   "ledger.flux",
 									Source: "filter",
 									Start: ast.Position{
 										Column: 12,
-										Line:   18,
+										Line:   22,
 									},
 								},
 							},
@@ -1482,13 +1969,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 20,
-								Line:   16,
+								Line:   20,
 							},
 							File:   "ledger.flux",
 							Source: "tables=<-",
 							Start: ast.Position{
 								Column: 11,
-								Line:   16,
+								Line:   20,
 							},
 						},
 					},
@@ -1498,13 +1985,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 17,
-									Line:   16,
+									Line:   20,
 								},
 								File:   "ledger.flux",
 								Source: "tables",
 								Start: ast.Position{
 									Column: 11,
-									Line:   16,
+									Line:   20,
 								},
 							},
 						},
@@ -1515,13 +2002,686 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 20,
-								Line:   16,
+								Line:   20,
 							},
 							File:   "ledger.flux",
 							Source: "<-",
 							Start: ast.Position{
 								Column: 18,
-								Line:   16,
+								Line:   20,
+							},
+						},
+					}},
+				}},
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 6,
+						Line:   28,
+					},
+					File:   "ledger.flux",
+					Source: "balancesheet = (tables=<-) => {\n        liabilities = tables |> liabilities() |> sum()\n        assets = tables |> assets () |> sum()\n        return join(tables:{assets, liabilities}, on:[\"commodity\"])\n    }",
+					Start: ast.Position{
+						Column: 1,
+						Line:   24,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 13,
+							Line:   24,
+						},
+						File:   "ledger.flux",
+						Source: "balancesheet",
+						Start: ast.Position{
+							Column: 1,
+							Line:   24,
+						},
+					},
+				},
+				Name: "balancesheet",
+			},
+			Init: &ast.FunctionExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 6,
+							Line:   28,
+						},
+						File:   "ledger.flux",
+						Source: "(tables=<-) => {\n        liabilities = tables |> liabilities() |> sum()\n        assets = tables |> assets () |> sum()\n        return join(tables:{assets, liabilities}, on:[\"commodity\"])\n    }",
+						Start: ast.Position{
+							Column: 16,
+							Line:   24,
+						},
+					},
+				},
+				Body: &ast.Block{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 6,
+								Line:   28,
+							},
+							File:   "ledger.flux",
+							Source: "{\n        liabilities = tables |> liabilities() |> sum()\n        assets = tables |> assets () |> sum()\n        return join(tables:{assets, liabilities}, on:[\"commodity\"])\n    }",
+							Start: ast.Position{
+								Column: 31,
+								Line:   24,
+							},
+						},
+					},
+					Body: []ast.Statement{&ast.VariableAssignment{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 55,
+									Line:   25,
+								},
+								File:   "ledger.flux",
+								Source: "liabilities = tables |> liabilities() |> sum()",
+								Start: ast.Position{
+									Column: 9,
+									Line:   25,
+								},
+							},
+						},
+						ID: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 20,
+										Line:   25,
+									},
+									File:   "ledger.flux",
+									Source: "liabilities",
+									Start: ast.Position{
+										Column: 9,
+										Line:   25,
+									},
+								},
+							},
+							Name: "liabilities",
+						},
+						Init: &ast.PipeExpression{
+							Argument: &ast.PipeExpression{
+								Argument: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 29,
+												Line:   25,
+											},
+											File:   "ledger.flux",
+											Source: "tables",
+											Start: ast.Position{
+												Column: 23,
+												Line:   25,
+											},
+										},
+									},
+									Name: "tables",
+								},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 46,
+											Line:   25,
+										},
+										File:   "ledger.flux",
+										Source: "tables |> liabilities()",
+										Start: ast.Position{
+											Column: 23,
+											Line:   25,
+										},
+									},
+								},
+								Call: &ast.CallExpression{
+									Arguments: nil,
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 46,
+												Line:   25,
+											},
+											File:   "ledger.flux",
+											Source: "liabilities()",
+											Start: ast.Position{
+												Column: 33,
+												Line:   25,
+											},
+										},
+									},
+									Callee: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 44,
+													Line:   25,
+												},
+												File:   "ledger.flux",
+												Source: "liabilities",
+												Start: ast.Position{
+													Column: 33,
+													Line:   25,
+												},
+											},
+										},
+										Name: "liabilities",
+									},
+								},
+							},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 55,
+										Line:   25,
+									},
+									File:   "ledger.flux",
+									Source: "tables |> liabilities() |> sum()",
+									Start: ast.Position{
+										Column: 23,
+										Line:   25,
+									},
+								},
+							},
+							Call: &ast.CallExpression{
+								Arguments: nil,
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 55,
+											Line:   25,
+										},
+										File:   "ledger.flux",
+										Source: "sum()",
+										Start: ast.Position{
+											Column: 50,
+											Line:   25,
+										},
+									},
+								},
+								Callee: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 53,
+												Line:   25,
+											},
+											File:   "ledger.flux",
+											Source: "sum",
+											Start: ast.Position{
+												Column: 50,
+												Line:   25,
+											},
+										},
+									},
+									Name: "sum",
+								},
+							},
+						},
+					}, &ast.VariableAssignment{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 46,
+									Line:   26,
+								},
+								File:   "ledger.flux",
+								Source: "assets = tables |> assets () |> sum()",
+								Start: ast.Position{
+									Column: 9,
+									Line:   26,
+								},
+							},
+						},
+						ID: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 15,
+										Line:   26,
+									},
+									File:   "ledger.flux",
+									Source: "assets",
+									Start: ast.Position{
+										Column: 9,
+										Line:   26,
+									},
+								},
+							},
+							Name: "assets",
+						},
+						Init: &ast.PipeExpression{
+							Argument: &ast.PipeExpression{
+								Argument: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 24,
+												Line:   26,
+											},
+											File:   "ledger.flux",
+											Source: "tables",
+											Start: ast.Position{
+												Column: 18,
+												Line:   26,
+											},
+										},
+									},
+									Name: "tables",
+								},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 37,
+											Line:   26,
+										},
+										File:   "ledger.flux",
+										Source: "tables |> assets ()",
+										Start: ast.Position{
+											Column: 18,
+											Line:   26,
+										},
+									},
+								},
+								Call: &ast.CallExpression{
+									Arguments: nil,
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 37,
+												Line:   26,
+											},
+											File:   "ledger.flux",
+											Source: "assets ()",
+											Start: ast.Position{
+												Column: 28,
+												Line:   26,
+											},
+										},
+									},
+									Callee: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 34,
+													Line:   26,
+												},
+												File:   "ledger.flux",
+												Source: "assets",
+												Start: ast.Position{
+													Column: 28,
+													Line:   26,
+												},
+											},
+										},
+										Name: "assets",
+									},
+								},
+							},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 46,
+										Line:   26,
+									},
+									File:   "ledger.flux",
+									Source: "tables |> assets () |> sum()",
+									Start: ast.Position{
+										Column: 18,
+										Line:   26,
+									},
+								},
+							},
+							Call: &ast.CallExpression{
+								Arguments: nil,
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 46,
+											Line:   26,
+										},
+										File:   "ledger.flux",
+										Source: "sum()",
+										Start: ast.Position{
+											Column: 41,
+											Line:   26,
+										},
+									},
+								},
+								Callee: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 44,
+												Line:   26,
+											},
+											File:   "ledger.flux",
+											Source: "sum",
+											Start: ast.Position{
+												Column: 41,
+												Line:   26,
+											},
+										},
+									},
+									Name: "sum",
+								},
+							},
+						},
+					}, &ast.ReturnStatement{
+						Argument: &ast.CallExpression{
+							Arguments: []ast.Expression{&ast.ObjectExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 67,
+											Line:   27,
+										},
+										File:   "ledger.flux",
+										Source: "tables:{assets, liabilities}, on:[\"commodity\"]",
+										Start: ast.Position{
+											Column: 21,
+											Line:   27,
+										},
+									},
+								},
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 49,
+												Line:   27,
+											},
+											File:   "ledger.flux",
+											Source: "tables:{assets, liabilities}",
+											Start: ast.Position{
+												Column: 21,
+												Line:   27,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 27,
+													Line:   27,
+												},
+												File:   "ledger.flux",
+												Source: "tables",
+												Start: ast.Position{
+													Column: 21,
+													Line:   27,
+												},
+											},
+										},
+										Name: "tables",
+									},
+									Value: &ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 49,
+													Line:   27,
+												},
+												File:   "ledger.flux",
+												Source: "{assets, liabilities}",
+												Start: ast.Position{
+													Column: 28,
+													Line:   27,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc:    nil,
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 35,
+															Line:   27,
+														},
+														File:   "ledger.flux",
+														Source: "assets",
+														Start: ast.Position{
+															Column: 29,
+															Line:   27,
+														},
+													},
+												},
+												Name: "assets",
+											},
+											Value: nil,
+										}, &ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc:    nil,
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 48,
+															Line:   27,
+														},
+														File:   "ledger.flux",
+														Source: "liabilities",
+														Start: ast.Position{
+															Column: 37,
+															Line:   27,
+														},
+													},
+												},
+												Name: "liabilities",
+											},
+											Value: nil,
+										}},
+									},
+								}, &ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 67,
+												Line:   27,
+											},
+											File:   "ledger.flux",
+											Source: "on:[\"commodity\"]",
+											Start: ast.Position{
+												Column: 51,
+												Line:   27,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 53,
+													Line:   27,
+												},
+												File:   "ledger.flux",
+												Source: "on",
+												Start: ast.Position{
+													Column: 51,
+													Line:   27,
+												},
+											},
+										},
+										Name: "on",
+									},
+									Value: &ast.ArrayExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 67,
+													Line:   27,
+												},
+												File:   "ledger.flux",
+												Source: "[\"commodity\"]",
+												Start: ast.Position{
+													Column: 54,
+													Line:   27,
+												},
+											},
+										},
+										Elements: []ast.Expression{&ast.StringLiteral{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 66,
+														Line:   27,
+													},
+													File:   "ledger.flux",
+													Source: "\"commodity\"",
+													Start: ast.Position{
+														Column: 55,
+														Line:   27,
+													},
+												},
+											},
+											Value: "commodity",
+										}},
+									},
+								}},
+							}},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 68,
+										Line:   27,
+									},
+									File:   "ledger.flux",
+									Source: "join(tables:{assets, liabilities}, on:[\"commodity\"])",
+									Start: ast.Position{
+										Column: 16,
+										Line:   27,
+									},
+								},
+							},
+							Callee: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 20,
+											Line:   27,
+										},
+										File:   "ledger.flux",
+										Source: "join",
+										Start: ast.Position{
+											Column: 16,
+											Line:   27,
+										},
+									},
+								},
+								Name: "join",
+							},
+						},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 68,
+									Line:   27,
+								},
+								File:   "ledger.flux",
+								Source: "return join(tables:{assets, liabilities}, on:[\"commodity\"])",
+								Start: ast.Position{
+									Column: 9,
+									Line:   27,
+								},
+							},
+						},
+					}},
+				},
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 26,
+								Line:   24,
+							},
+							File:   "ledger.flux",
+							Source: "tables=<-",
+							Start: ast.Position{
+								Column: 17,
+								Line:   24,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 23,
+									Line:   24,
+								},
+								File:   "ledger.flux",
+								Source: "tables",
+								Start: ast.Position{
+									Column: 17,
+									Line:   24,
+								},
+							},
+						},
+						Name: "tables",
+					},
+					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 26,
+								Line:   24,
+							},
+							File:   "ledger.flux",
+							Source: "<-",
+							Start: ast.Position{
+								Column: 24,
+								Line:   24,
 							},
 						},
 					}},
