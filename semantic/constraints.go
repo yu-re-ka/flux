@@ -18,7 +18,6 @@ func GenerateConstraints(node Node, annotator Annotator, importer Importer) (*Co
 			f:           annotator.f,
 			annotations: annotator.annotations,
 			kindConst:   make(map[Tvar][]Kind),
-			typeKinds:   make(map[Kvar]Tvar),
 		},
 		env:      NewEnv(),
 		err:      new(error),
@@ -165,7 +164,6 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 			return nil, fmt.Errorf("undefined identifier %q", n.Name)
 		}
 		t := v.cs.Instantiate(scheme, n.Location())
-		//log.Println("IdentifierExpression", n.Name, scheme, t)
 		return t, nil
 	case *ReturnStatement:
 		return v.lookup(n.Argument)
@@ -332,7 +330,7 @@ func (v ConstraintGenerator) typeof(n Node) (PolyType, error) {
 		return ft.ret, nil
 	case *ObjectExpression:
 		properties := make(map[string]PolyType, len(n.Properties))
-		upper := make(LabelSet, 0, len(properties))
+		upper := make([]string, 0, len(properties))
 		for _, field := range n.Properties {
 			t, err := v.lookup(field.Value)
 			if err != nil {
@@ -495,9 +493,7 @@ type Constraints struct {
 
 	typeConst []TypeConstraint
 	kindConst map[Tvar][]Kind
-	typeKinds map[Kvar]Tvar
 }
-type Kvar int
 
 func (c *Constraints) Copy() *Constraints {
 	n := &Constraints{
@@ -505,7 +501,6 @@ func (c *Constraints) Copy() *Constraints {
 		annotations: make(map[Node]annotation, len(c.annotations)),
 		typeConst:   make([]TypeConstraint, len(c.typeConst)),
 		kindConst:   make(map[Tvar][]Kind, len(c.kindConst)),
-		typeKinds:   make(map[Kvar]Tvar, len(c.typeKinds)),
 	}
 	*n.f = *c.f
 	for k, v := range c.annotations {
@@ -516,9 +511,6 @@ func (c *Constraints) Copy() *Constraints {
 		kinds := make([]Kind, len(v))
 		copy(kinds, v)
 		n.kindConst[k] = kinds
-	}
-	for t, k := range c.typeKinds {
-		n.typeKinds[t] = k
 	}
 	return n
 }
@@ -541,13 +533,6 @@ func (c *Constraints) AddTypeConst(l, r PolyType, loc ast.SourceLocation) {
 	})
 }
 
-func (c *Constraints) lookupKindTvar(kv Kvar) Tvar {
-	tv, ok := c.typeKinds[kv]
-	if !ok {
-		c.typeKinds[kv] = tv
-	}
-	return tv
-}
 func (c *Constraints) AddKindConst(tv Tvar, k Kind) {
 	c.kindConst[tv] = append(c.kindConst[tv], k)
 }
@@ -555,13 +540,9 @@ func (c *Constraints) AddKindConst(tv Tvar, k Kind) {
 // Instantiate produces a new poly type where the free variables from the scheme have been made fresh.
 // This way each new instantiation of a scheme is independent of the other but all have the same constraint structure.
 func (c *Constraints) Instantiate(s Scheme, loc ast.SourceLocation) (t PolyType) {
-	//defer func() {
-	//	log.Println("Instantiate", s, t)
-	//}()
 	if len(s.Free) == 0 {
 		return s.T
 	}
-
 	// Create a substituion for the new type variables
 	subst := make(Substitution, len(s.Free))
 	for _, tv := range s.Free {
@@ -570,18 +551,16 @@ func (c *Constraints) Instantiate(s Scheme, loc ast.SourceLocation) (t PolyType)
 	}
 
 	// Add any new kind constraints
-	//for _, tv := range s.Free {
-	//	kv := c.kindConst[tv]
-	//	ks, ok := c.typeKinds[kv]
-	//	if ok {
-	//		ntv := subst.ApplyTvar(tv)
-	//		c.typeKinds[ntv] = kv
-	//		for _, k := range ks {
-	//			nk := subst.ApplyKind(k)
-	//			c.AddKindConst(kv, nk)
-	//		}
-	//	}
-	//}
+	for _, tv := range s.Free {
+		ks, ok := c.kindConst[tv]
+		if ok {
+			ntv := subst.ApplyTvar(tv)
+			for _, k := range ks {
+				nk := subst.ApplyKind(k)
+				c.AddKindConst(ntv, nk)
+			}
+		}
+	}
 
 	// Add any new type constraints
 	for _, tc := range c.typeConst {

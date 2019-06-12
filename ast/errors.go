@@ -30,7 +30,7 @@ func check(n Node) int {
 		hasImplicit := false
 		hasExplicit := false
 		for _, p := range n.Properties {
-			if p.Value == nil {
+			if p.Value == nil && p.BaseNode.Errors == nil {
 				hasImplicit = true
 				if s, ok := p.Key.(*StringLiteral); ok {
 					p.Errors = append(p.Errors, Error{

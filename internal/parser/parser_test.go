@@ -1349,8 +1349,9 @@ import "path/bar"
 			},
 		},
 		{
-			name: "implicit and explicit keys object literal error",
-			raw:  `x = {a, b:c}`,
+			name:  "implicit and explicit keys object literal error",
+			raw:   `x = {a, b:c}`,
+			nerrs: 1,
 			want: &ast.File{
 				BaseNode: base("1:1", "1:13"),
 				Body: []ast.Statement{
@@ -5387,8 +5388,7 @@ string"
 						},
 						Init: &ast.ObjectExpression{
 							BaseNode: ast.BaseNode{
-								Loc:    loc("1:5", "1:19"),
-								Errors: []ast.Error{{Msg: `expected comma in property list, got COLON (":")`}},
+								Loc: loc("1:5", "1:19"),
 							},
 							Properties: []*ast.Property{
 								{
@@ -5417,8 +5417,11 @@ string"
 										Errors: []ast.Error{{Msg: "missing property key"}},
 									},
 									Value: &ast.IntegerLiteral{
-										BaseNode: base("1:16", "1:18"),
-										Value:    30,
+										BaseNode: ast.BaseNode{
+											Loc:    loc("1:16", "1:18"),
+											Errors: []ast.Error{{Msg: `expected comma in property list, got COLON (":")`}},
+										},
+										Value: 30,
 									},
 								},
 							},

@@ -1064,8 +1064,9 @@ func (p *parser) parseObjectBody() *ast.ObjectExpression {
 			Properties: properties,
 		}
 	default:
-		// TODO(nathanielc): BadExpression.
-		return nil
+		return &ast.ObjectExpression{
+			Properties: p.parsePropertyList(),
+		}
 	}
 
 }
@@ -1094,14 +1095,22 @@ func (p *parser) parsePropertyListSuffix(key ast.PropertyKey) []*ast.Property {
 	var properties []*ast.Property
 	prop := p.parsePropertySuffix(key)
 	properties = append(properties, prop)
-	switch _, tok, _ := p.peek(); tok {
+	// if there's not more, return
+	if !p.more() {
+		return properties
+	}
+
+	switch _, tok, lit := p.peek(); tok {
 	case token.COMMA:
 		p.consume()
-		rest := p.parsePropertyList()
-		properties = append(properties, rest...)
+
 	default:
-		// Nothing to do
+		p.errs = append(p.errs, ast.Error{
+			Msg: fmt.Sprintf("expected comma in property list, got %s (%q)", tok, lit),
+		})
 	}
+
+	properties = append(properties, p.parsePropertyList()...)
 	return properties
 }
 
@@ -1149,13 +1158,17 @@ func (p *parser) parsePropertySuffix(key ast.PropertyKey) *ast.Property {
 	property := &ast.Property{
 		Key: key,
 	}
+	var loc ast.BaseNode
 	if _, tok, _ := p.peek(); tok == token.COLON {
 		p.consume()
 		property.Value = p.parsePropertyValue()
+		loc = p.baseNode(p.sourceLocation(
+			locStart(key),
+			locEnd(property.Value)))
+	} else {
+		loc = p.baseNode(p.sourceLocation(locStart(key), locEnd(key)))
 	}
-	loc := p.baseNode(p.sourceLocation(
-		locStart(key),
-		locEnd(property.Value)))
+
 	property.BaseNode = loc
 	return property
 }
