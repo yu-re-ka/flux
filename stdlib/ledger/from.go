@@ -201,6 +201,15 @@ type resultDecoder struct {
 	name string
 	tree *parse.Tree
 	a    *memory.Allocator
+
+	timeCol,
+	commodityCol,
+	txCol,
+	clearedCol,
+	pendingCol,
+	lStart,
+	lStop,
+	valueCol int
 }
 
 func newResultDecoder(name string, a *memory.Allocator) *resultDecoder {
@@ -235,51 +244,48 @@ func (d *resultDecoder) Tables() flux.TableIterator {
 // implement flux.TableIterator
 
 func (d *resultDecoder) Do(f func(flux.Table) error) error {
-	tbls, err := d.parseTable()
+	tbl, err := d.parseTable()
 	if err != nil {
 		return err
 	}
-	for _, tbl := range tbls {
-		err := f(tbl)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
+	return f(tbl)
 }
 
-func (d *resultDecoder) parseTable() (tbls []flux.Table, err error) {
-	// Use a file level max so that all tables have the same schema
+func (d *resultDecoder) parseTable() (flux.Table, error) {
+	builder := execute.NewColListTableBuilder(
+		execute.NewGroupKey(nil, nil),
+		d.a,
+	)
+	maxDepth := 0
+	for _, n := range d.tree.Root.Nodes {
+		depth := nodeMaxDepth(n)
+		if depth > maxDepth {
+			maxDepth = depth
+		}
+	}
+	err := d.buildCols(builder, maxDepth)
+	if err != nil {
+		return nil, err
+	}
+	for _, n := range d.tree.Root.Nodes {
+		d.build(builder, n)
+	}
+
+	return builder.Table()
+}
+
+func nodeMaxDepth(n parse.Node) int {
 	max := 0
-	for _, n := range d.tree.Root.Nodes {
-		xn, ok := n.(*parse.XactNode)
-		if !ok {
-			// Ignore non transaction nodes
-			continue
-		}
-		depth := maxDepth(xn)
-		if depth > max {
-			max = depth
+	switch n := n.(type) {
+	case *parse.XactNode:
+		d := xactMaxDepth(n)
+		if d > max {
+			max = d
 		}
 	}
-
-	// Build each table
-	for _, n := range d.tree.Root.Nodes {
-		xn, ok := n.(*parse.XactNode)
-		if !ok {
-			// Ignore non transaction nodes
-			continue
-		}
-		tbl, err := d.buildTbl(xn, max)
-		if err != nil {
-			return nil, err
-		}
-		tbls = append(tbls, tbl)
-	}
-	return
+	return max
 }
-
-func maxDepth(n *parse.XactNode) int {
+func xactMaxDepth(n *parse.XactNode) int {
 	max := 0
 	for _, p := range n.Postings {
 		accs := accounts(p.Account)
@@ -290,105 +296,102 @@ func maxDepth(n *parse.XactNode) int {
 	return max
 }
 
-const (
-	timeCol      = 0
-	commodityCol = 1
-	txCol        = 2
-	clearedCol   = 3
-	pendingCol   = 4
-	lStart       = 5
-)
-
-func (d *resultDecoder) buildTbl(n *parse.XactNode, max int) (flux.Table, error) {
-	// Determine cols
-	var cols []flux.ColMeta
-	cols = append(cols, flux.ColMeta{
+func (d *resultDecoder) buildCols(builder execute.TableBuilder, max int) error {
+	var err error
+	d.timeCol, err = builder.AddCol(flux.ColMeta{
 		Label: execute.DefaultTimeColLabel,
 		Type:  flux.TTime,
 	})
-	cols = append(cols, flux.ColMeta{
+	if err != nil {
+		return err
+	}
+	d.commodityCol, err = builder.AddCol(flux.ColMeta{
 		Label: "commodity",
 		Type:  flux.TString,
 	})
-	cols = append(cols, flux.ColMeta{
+	if err != nil {
+		return err
+	}
+	d.txCol, err = builder.AddCol(flux.ColMeta{
 		Label: "tx",
 		Type:  flux.TString,
 	})
-	cols = append(cols, flux.ColMeta{
+	if err != nil {
+		return err
+	}
+	d.clearedCol, err = builder.AddCol(flux.ColMeta{
 		Label: "cleared",
 		Type:  flux.TBool,
 	})
-	cols = append(cols, flux.ColMeta{
+	if err != nil {
+		return err
+	}
+	d.pendingCol, err = builder.AddCol(flux.ColMeta{
 		Label: "pending",
 		Type:  flux.TBool,
 	})
-	lStop := 0
+	if err != nil {
+		return err
+	}
 	for i := 0; i < max; i++ {
-		cols = append(cols, flux.ColMeta{
+		j, err := builder.AddCol(flux.ColMeta{
 			Label: "l" + strconv.Itoa(i),
 			Type:  flux.TString,
 		})
-		lStop = len(cols)
+		if err != nil {
+			return err
+		}
+		if i == 0 {
+			d.lStart = j
+		}
+		d.lStop = j
 	}
-	valueCol := len(cols)
-	cols = append(cols, flux.ColMeta{
+	d.valueCol, err = builder.AddCol(flux.ColMeta{
 		Label: execute.DefaultValueColLabel,
 		Type:  flux.TFloat,
 	})
-	// Determine key
-	com := commodity(n)
-	key := execute.NewGroupKey(cols[timeCol:timeCol+3], []values.Value{
-		values.NewTime(values.ConvertTime(n.Date)),
-		values.NewString(com),
-		values.NewString(n.Description),
-	})
-
-	// Create builder
-	builder := execute.NewColListTableBuilder(key, d.a)
-	for _, c := range cols {
-		builder.AddCol(c)
+	if err != nil {
+		return err
 	}
-	// build table
-	buildXactNode(builder, n, com, lStop, valueCol)
-
-	return builder.Table()
+	return nil
 }
 
-func buildXactNode(builder execute.TableBuilder, n *parse.XactNode, com string, lStop, valueCol int) {
+func (d *resultDecoder) build(builder execute.TableBuilder, n parse.Node) {
+	switch n := n.(type) {
+	case *parse.XactNode:
+		d.buildXactNode(builder, n)
+	}
+}
+
+func (d *resultDecoder) buildXactNode(builder execute.TableBuilder, n *parse.XactNode) {
 	amountSum := 0.0
+	defaultCom := ""
 	for _, p := range n.Postings {
 		if p.Amount != nil {
 			amountSum += amount(p.Amount)
+			defaultCom = p.Amount.Commodity
 		}
 	}
 	for _, p := range n.Postings {
-		builder.AppendTime(timeCol, values.ConvertTime(n.Date))
-		builder.AppendString(commodityCol, com)
-		builder.AppendString(txCol, n.Description)
-		builder.AppendBool(clearedCol, n.IsCleared)
-		builder.AppendBool(pendingCol, n.IsPending)
+		builder.AppendTime(d.timeCol, values.ConvertTime(n.Date))
+		builder.AppendString(d.txCol, n.Description)
+		builder.AppendBool(d.clearedCol, n.IsCleared)
+		builder.AppendBool(d.pendingCol, n.IsPending)
 		accs := accounts(p.Account)
 		for i, a := range accs {
-			builder.AppendString(lStart+i, a)
+			builder.AppendString(d.lStart+i, a)
 		}
-		for i := lStart + len(accs); i < lStop; i++ {
+		for i := d.lStart + len(accs); i <= d.lStop; i++ {
 			builder.AppendNil(i)
 		}
 		if p.Amount == nil {
-			builder.AppendFloat(valueCol, -amountSum)
+			builder.AppendFloat(d.valueCol, -amountSum)
+			builder.AppendString(d.commodityCol, defaultCom)
 		} else {
-			builder.AppendFloat(valueCol, amount(p.Amount))
+			builder.AppendFloat(d.valueCol, amount(p.Amount))
+			builder.AppendString(d.commodityCol, p.Amount.Commodity)
 		}
 	}
-}
-
-func commodity(n *parse.XactNode) (c string) {
-	for _, p := range n.Postings {
-		if p.Amount != nil && p.Amount.Commodity != "" {
-			return p.Amount.Commodity
-		}
-	}
-	return
 }
 
 func amount(n *parse.AmountNode) float64 {

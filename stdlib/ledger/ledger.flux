@@ -22,7 +22,7 @@ income = (tables=<-) =>
         |> filter(fn: (r) => strings.toLower(v:r.l0) == "income")
 
 balancesheet = (tables=<-) => {
-        liabilities = tables |> liabilities() |> sum()
-        assets = tables |> assets () |> sum()
-        return join(tables:{assets, liabilities}, on:["commodity"])
+        liabilities = tables |> liabilities() |> group(columns:["_stop", "commodity"]) |> sum()
+        assets = tables |> assets() |> group(columns:["_stop", "commodity"]) |> sum()
+        return join(tables:{assets, liabilities}, on:["_stop", "commodity"])
     }
