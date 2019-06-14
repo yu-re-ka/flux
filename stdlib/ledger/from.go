@@ -1,9 +1,7 @@
 package ledger
 
 import (
-	"context"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"os"
 	"strconv"
@@ -128,163 +126,84 @@ func createFromLedgerSource(prSpec plan.ProcedureSpec, dsid execute.DatasetID, a
 		raw = string(ledgerBytes)
 	}
 
-	return &LedgerSource{
-		id:        dsid,
-		name:      name,
-		raw:       raw,
-		allocator: a.Allocator(),
-	}, nil
+	return execute.CreateSourceFromDecoder(
+		&LedgerSource{
+			name:      name,
+			raw:       raw,
+			allocator: a.Allocator(),
+		},
+		dsid,
+		a,
+	)
 }
 
 type LedgerSource struct {
-	id        execute.DatasetID
 	name      string
 	raw       string
-	ts        []execute.Transformation
 	allocator *memory.Allocator
+	read      bool
 }
 
-func (c *LedgerSource) AddTransformation(t execute.Transformation) {
-	c.ts = append(c.ts, t)
+// Connect to underlying data.
+func (s *LedgerSource) Connect() error {
+	return nil
 }
 
-func (c *LedgerSource) Run(ctx context.Context) {
-	var err error
-	var max execute.Time
-	maxSet := false
-	for _, t := range c.ts {
-		// For each downstream transformation, instantiate a new result
-		// decoder. This way a table instance goes to one and only one
-		// transformation. Unlike other sources, tables from ledger sources
-		// are not read-only. They contain mutable state and therefore
-		// cannot be shared among goroutines.
-		decoder := newResultDecoder(c.name, c.allocator)
-		result, decodeErr := decoder.Decode(strings.NewReader(c.raw))
-		if decodeErr != nil {
-			err = decodeErr
-			goto FINISH
-		}
-		err = result.Tables().Do(func(tbl flux.Table) error {
-			err := t.Process(c.id, tbl)
-			if err != nil {
-				return err
-			}
-			if idx := execute.ColIdx(execute.DefaultStopColLabel, tbl.Key().Cols()); idx >= 0 {
-				if stop := tbl.Key().ValueTime(idx); !maxSet || stop > max {
-					max = stop
-					maxSet = true
-				}
-			}
-			return nil
-		})
-		if err != nil {
-			goto FINISH
-		}
+// Fetch reports if there are more tables to consume.
+// The ledger source only ever returns a single table.
+func (s *LedgerSource) Fetch() (bool, error) {
+	if s.read {
+		return false, nil
 	}
-
-	if maxSet {
-		for _, t := range c.ts {
-			if err = t.UpdateWatermark(c.id, max); err != nil {
-				goto FINISH
-			}
-		}
-	}
-
-FINISH:
-	for _, t := range c.ts {
-		err = errors.Wrap(err, "error in ledger.from()")
-		t.Finish(c.id, err)
-	}
+	s.read = true
+	return true, nil
 }
 
-type resultDecoder struct {
-	name string
-	tree *parse.Tree
-	a    *memory.Allocator
-
-	timeCol,
-	commodityCol,
-	txCol,
-	clearedCol,
-	pendingCol,
-	lStart,
-	lStop,
-	valueCol int
-}
-
-func newResultDecoder(name string, a *memory.Allocator) *resultDecoder {
-	return &resultDecoder{
-		name: name,
-		a:    a,
-	}
-}
-
-func (d *resultDecoder) Decode(r io.Reader) (flux.Result, error) {
-	raw, err := ioutil.ReadAll(r)
-	if err != nil {
-		return nil, err
-	}
-	tree := parse.New(d.name, string(raw))
+// Decode produces a flux.Table.
+func (s *LedgerSource) Decode() (flux.Table, error) {
+	tree := parse.New(s.name, string(s.raw))
 	if err := tree.Parse(); err != nil {
 		return nil, err
 	}
-	d.tree = tree
-	return d, nil
-}
-
-// implement flux.Result
-
-func (d *resultDecoder) Name() string {
-	return d.name
-}
-func (d *resultDecoder) Tables() flux.TableIterator {
-	return d
-}
-
-// implement flux.TableIterator
-
-func (d *resultDecoder) Do(f func(flux.Table) error) error {
-	tbl, err := d.parseTable()
-	if err != nil {
-		return err
-	}
-	return f(tbl)
-}
-
-func (d *resultDecoder) parseTable() (flux.Table, error) {
 	builder := execute.NewColListTableBuilder(
 		execute.NewGroupKey(nil, nil),
-		d.a,
+		s.allocator,
 	)
-	maxDepth := 0
-	for _, n := range d.tree.Root.Nodes {
-		depth := nodeMaxDepth(n)
-		if depth > maxDepth {
-			maxDepth = depth
+	max := maxDepth(tree)
+	valueCol := buildCols(builder, max)
+	for _, n := range tree.Root.Nodes {
+		xn, ok := n.(*parse.XactNode)
+		if !ok {
+			continue // skip non transaction nodes
 		}
-	}
-	err := d.buildCols(builder, maxDepth)
-	if err != nil {
-		return nil, err
-	}
-	for _, n := range d.tree.Root.Nodes {
-		d.build(builder, n)
+		build(builder, xn, valueCol)
 	}
 
 	return builder.Table()
 }
 
-func nodeMaxDepth(n parse.Node) int {
-	max := 0
-	switch n := n.(type) {
-	case *parse.XactNode:
-		d := xactMaxDepth(n)
-		if d > max {
-			max = d
+// Closes the ledger source.
+func (s *LedgerSource) Close() error {
+	return nil
+}
+
+// maxDepth returns the maximum account depth of tree.
+func maxDepth(tree *parse.Tree) int {
+	maxDepth := 0
+	for _, n := range tree.Root.Nodes {
+		xn, ok := n.(*parse.XactNode)
+		if !ok {
+			continue // skip non transaction nodes
+		}
+		depth := xactMaxDepth(xn)
+		if depth > maxDepth {
+			maxDepth = depth
 		}
 	}
-	return max
+	return maxDepth
 }
+
+// xactMaxDepth returns the maximum account depth of n.
 func xactMaxDepth(n *parse.XactNode) int {
 	max := 0
 	for _, p := range n.Postings {
@@ -296,104 +215,91 @@ func xactMaxDepth(n *parse.XactNode) int {
 	return max
 }
 
-func (d *resultDecoder) buildCols(builder execute.TableBuilder, max int) error {
-	var err error
-	d.timeCol, err = builder.AddCol(flux.ColMeta{
+const (
+	// constant indexes of the ledger schema
+	timeCol      = 0
+	commodityCol = 1
+	txCol        = 2
+	clearedCol   = 3
+	pendingCol   = 4
+	lStart       = 5
+)
+
+// buildCols adds the columns to the builder
+// based on the ledger schema and max accont depth.
+func buildCols(builder execute.TableBuilder, max int) (valueCol int) {
+	builder.AddCol(flux.ColMeta{
 		Label: execute.DefaultTimeColLabel,
 		Type:  flux.TTime,
 	})
-	if err != nil {
-		return err
-	}
-	d.commodityCol, err = builder.AddCol(flux.ColMeta{
+	builder.AddCol(flux.ColMeta{
 		Label: "commodity",
 		Type:  flux.TString,
 	})
-	if err != nil {
-		return err
-	}
-	d.txCol, err = builder.AddCol(flux.ColMeta{
+	builder.AddCol(flux.ColMeta{
 		Label: "tx",
 		Type:  flux.TString,
 	})
-	if err != nil {
-		return err
-	}
-	d.clearedCol, err = builder.AddCol(flux.ColMeta{
+	builder.AddCol(flux.ColMeta{
 		Label: "cleared",
 		Type:  flux.TBool,
 	})
-	if err != nil {
-		return err
-	}
-	d.pendingCol, err = builder.AddCol(flux.ColMeta{
+	builder.AddCol(flux.ColMeta{
 		Label: "pending",
 		Type:  flux.TBool,
 	})
-	if err != nil {
-		return err
-	}
 	for i := 0; i < max; i++ {
-		j, err := builder.AddCol(flux.ColMeta{
+		builder.AddCol(flux.ColMeta{
 			Label: "l" + strconv.Itoa(i),
 			Type:  flux.TString,
 		})
-		if err != nil {
-			return err
-		}
-		if i == 0 {
-			d.lStart = j
-		}
-		d.lStop = j
 	}
-	d.valueCol, err = builder.AddCol(flux.ColMeta{
+	valueCol, _ = builder.AddCol(flux.ColMeta{
 		Label: execute.DefaultValueColLabel,
 		Type:  flux.TFloat,
 	})
-	if err != nil {
-		return err
+	return
+}
+
+// build appends rows to builder based on the postings in the n.
+func build(builder execute.TableBuilder, n *parse.XactNode, valueCol int) error {
+	for _, p := range n.Postings {
+		builder.AppendTime(timeCol, values.ConvertTime(n.Date))
+		builder.AppendString(txCol, n.Description)
+		builder.AppendBool(clearedCol, n.IsCleared)
+		builder.AppendBool(pendingCol, n.IsPending)
+		accs := accounts(p.Account)
+		for i, a := range accs {
+			builder.AppendString(lStart+i, a)
+		}
+		for i := lStart + len(accs); i < valueCol; i++ {
+			builder.AppendNil(i)
+		}
+		if p.Amount == nil {
+			amountSum := 0.0
+			commodity := ""
+			for _, p := range n.Postings {
+				if p.Amount != nil {
+					if commodity == "" {
+						commodity = p.Amount.Commodity
+					}
+					if commodity != p.Amount.Commodity {
+						return errors.New("when multiple commodities are present all amounts must be specified explicitly")
+					}
+					amountSum += amount(p.Amount)
+				}
+			}
+			builder.AppendFloat(valueCol, -amountSum)
+			builder.AppendString(commodityCol, commodity)
+		} else {
+			builder.AppendFloat(valueCol, amount(p.Amount))
+			builder.AppendString(commodityCol, p.Amount.Commodity)
+		}
 	}
 	return nil
 }
 
-func (d *resultDecoder) build(builder execute.TableBuilder, n parse.Node) {
-	switch n := n.(type) {
-	case *parse.XactNode:
-		d.buildXactNode(builder, n)
-	}
-}
-
-func (d *resultDecoder) buildXactNode(builder execute.TableBuilder, n *parse.XactNode) {
-	amountSum := 0.0
-	defaultCom := ""
-	for _, p := range n.Postings {
-		if p.Amount != nil {
-			amountSum += amount(p.Amount)
-			defaultCom = p.Amount.Commodity
-		}
-	}
-	for _, p := range n.Postings {
-		builder.AppendTime(d.timeCol, values.ConvertTime(n.Date))
-		builder.AppendString(d.txCol, n.Description)
-		builder.AppendBool(d.clearedCol, n.IsCleared)
-		builder.AppendBool(d.pendingCol, n.IsPending)
-		accs := accounts(p.Account)
-		for i, a := range accs {
-			builder.AppendString(d.lStart+i, a)
-		}
-		for i := d.lStart + len(accs); i <= d.lStop; i++ {
-			builder.AppendNil(i)
-		}
-		if p.Amount == nil {
-			builder.AppendFloat(d.valueCol, -amountSum)
-			builder.AppendString(d.commodityCol, defaultCom)
-		} else {
-			builder.AppendFloat(d.valueCol, amount(p.Amount))
-			builder.AppendString(d.commodityCol, p.Amount.Commodity)
-		}
-	}
-}
-
+// amount returns the the value of a given amount node.
 func amount(n *parse.AmountNode) float64 {
 	f, _ := strconv.ParseFloat(n.Quantity, 64)
 	if n.Negative {
@@ -402,6 +308,7 @@ func amount(n *parse.AmountNode) float64 {
 	return f
 }
 
+// accounts parses an account string into its list of sub accounts
 func accounts(a string) []string {
 	return strings.Split(a, ":")
 }
