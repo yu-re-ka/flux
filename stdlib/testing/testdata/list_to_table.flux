@@ -14,3 +14,5 @@ fn = (list=<-) => {
         |> range(start: 2018-05-22T19:53:26Z)
         |> map(fn: (r) => ({time: r[0], value: r[1], field: r[2], measurement: r[3], host: r[4]}))
 }
+
+table = fn(list)
