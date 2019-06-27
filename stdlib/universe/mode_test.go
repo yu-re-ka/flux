@@ -45,6 +45,136 @@ func TestMode_Process(t *testing.T) {
 			}},
 		},
 		{
+			name: "no mode",
+			spec: &universe.ModeProcedureSpec{Column: "tag1"},
+			data: []flux.Table{
+				&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "tag0", Type: flux.TString},
+						{Label: "tag1", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), 2.0, "a", "b"},
+						{execute.Time(2), 2.0, "a", "c"},
+						{execute.Time(3), 2.0, "a", "b"},
+						{execute.Time(4), 2.0, "a", "d"},
+						{execute.Time(5), 2.0, "a", "d"},
+						{execute.Time(6), 2.0, "a", "c"},
+					},
+				},
+			},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_value", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{nil},
+				},
+			}},
+		},
+		{
+			name: "multiple modes",
+			spec: &universe.ModeProcedureSpec{Column: "tag1"},
+			data: []flux.Table{
+				&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "tag0", Type: flux.TString},
+						{Label: "tag1", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), 2.0, "a", "d"},
+						{execute.Time(2), 2.0, "a", "c"},
+						{execute.Time(3), 2.0, "a", "d"},
+						{execute.Time(4), 2.0, "a", "b"},
+						{execute.Time(5), 2.0, "a", "b"},
+						{execute.Time(6), 2.0, "a", "c"},
+						{execute.Time(7), 2.0, "a", "e"},
+					},
+				},
+			},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_value", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{"d"},
+					{"c"},
+					{"b"},
+				},
+			}},
+		},
+		{
+			name: "multiple modes v2",
+			spec: &universe.ModeProcedureSpec{Column: "tag1"},
+			data: []flux.Table{
+				&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "tag0", Type: flux.TString},
+						{Label: "tag1", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), 2.0, "a", "b"},
+						{execute.Time(2), 2.0, "a", "b"},
+						{execute.Time(3), 2.0, "a", "c"},
+						{execute.Time(4), 2.0, "a", "c"},
+						{execute.Time(5), 2.0, "a", "d"},
+						{execute.Time(6), 2.0, "a", "d"},
+						{execute.Time(7), 2.0, "a", "e"},
+					},
+				},
+			},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_value", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{"b"},
+					{"c"},
+					{"d"},
+				},
+			}},
+		},
+		{
+			name: "multiple modes v3",
+			spec: &universe.ModeProcedureSpec{Column: "tag1"},
+			data: []flux.Table{
+				&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "tag0", Type: flux.TString},
+						{Label: "tag1", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), 2.0, "a", "b"},
+						{execute.Time(2), 2.0, "a", "b"},
+						{execute.Time(3), 2.0, "a", "b"},
+						{execute.Time(4), 2.0, "a", "b"},
+						{execute.Time(5), 2.0, "a", "c"},
+						{execute.Time(6), 2.0, "a", "c"},
+						{execute.Time(7), 2.0, "a", "c"},
+						{execute.Time(8), 2.0, "a", "c"},
+						{execute.Time(9), 2.0, "a", "d"},
+					},
+				},
+			},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_value", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{"b"},
+					{"c"},
+				},
+			}},
+		},
+		{
 			name: "column outside group key",
 			spec: &universe.ModeProcedureSpec{Column: "tag1"},
 			data: []flux.Table{
@@ -190,6 +320,7 @@ func TestMode_Process(t *testing.T) {
 				},
 				Data: [][]interface{}{
 					{nil},
+					{"b"},
 				},
 			}},
 		},

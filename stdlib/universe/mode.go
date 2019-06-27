@@ -8,7 +8,7 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/semantic"	
+	"github.com/influxdata/flux/semantic"
 )
 
 const ModeKind = "mode"
@@ -203,7 +203,7 @@ func (t *modeTransformation) Process(id execute.DatasetID, tbl flux.Table) error
 	}
 
 	var (
-		//nullMode   bool
+		numNil     int64
 		boolMode   map[bool]int64
 		intMode    map[int64]int64
 		uintMode   map[uint64]int64
@@ -234,21 +234,45 @@ func (t *modeTransformation) Process(id execute.DatasetID, tbl flux.Table) error
 			// Check mode
 			switch col.Type {
 			case flux.TBool:
+				if cr.Bools(j).IsNull(i) {
+					numNil++
+					continue
+				}
 				v := cr.Bools(j).Value(i)
 				boolMode[v]++
 			case flux.TInt:
+				if cr.Ints(j).IsNull(i) {
+					numNil++
+					continue
+				}
 				v := cr.Ints(j).Value(i)
 				intMode[v]++
 			case flux.TUInt:
+				if cr.UInts(j).IsNull(i) {
+					numNil++
+					continue
+				}
 				v := cr.UInts(j).Value(i)
 				uintMode[v]++
 			case flux.TFloat:
+				if cr.Floats(j).IsNull(i) {
+					numNil++
+					continue
+				}
 				v := cr.Floats(j).Value(i)
 				floatMode[v]++
 			case flux.TString:
+				if cr.Strings(j).IsNull(i) {
+					numNil++
+					continue
+				}
 				v := cr.Strings(j).ValueString(i)
 				stringMode[v]++
 			case flux.TTime:
+				if cr.Times(j).IsNull(i) {
+					numNil++
+					continue
+				}
 				v := values.Time(cr.Times(j).Value(i))
 				timeMode[v]++
 			}
@@ -257,83 +281,227 @@ func (t *modeTransformation) Process(id execute.DatasetID, tbl flux.Table) error
 		switch col.Type {
 		case flux.TBool:
 			storedVals := []bool{}
-
-			v := false
 			n := int64(0)
 			for k := range boolMode {
+				// if there are more of this than the current most, it is the new mode
 				if boolMode[k] > n {
-					v = k
+					storedVals = nil
+					storedVals = append(storedVals, k)
 					n = boolMode[k]
+					// if there are the same amount of this than the current mode, add it to the current mode(s)
+				} else if boolMode[k] == n {
+					storedVals = append(storedVals, k)
 				}
 			}
-			if err := builder.AppendBool(colIdx, v); err != nil {
-				return err
+			// if all the values were added, there is no mode
+			if len(storedVals) == len(boolMode) {
+				if err := builder.AppendNil(colIdx); err != nil {
+					return err
+				}
+			} else if numNil > n {
+				if err := builder.AppendNil(colIdx); err != nil {
+					return err
+				}
+			} else if numNil == n {
+				if err := builder.AppendNil(colIdx); err != nil {
+					return err
+				}
+				for j := range storedVals {
+					if err := builder.AppendBool(colIdx, storedVals[j]); err != nil {
+						return err
+					}
+				}
+			} else {
+				for j := range storedVals {
+					if err := builder.AppendBool(colIdx, storedVals[j]); err != nil {
+						return err
+					}
+				}
 			}
 		case flux.TInt:
-			v := int64(0)
+			storedVals := []int64{}
 			n := int64(0)
 			for k := range intMode {
 				if intMode[k] > n {
-					v = k
+					storedVals = nil
+					storedVals = append(storedVals, k)
 					n = intMode[k]
+				} else if intMode[k] == n {
+					storedVals = append(storedVals, k)
 				}
 			}
-			if err := builder.AppendInt(colIdx, v); err != nil {
-				return err
+			if len(storedVals) == len(intMode) {
+				if err := builder.AppendNil(colIdx); err != nil {
+					return err
+				}
+			} else if numNil > n {
+				if err := builder.AppendNil(colIdx); err != nil {
+					return err
+				}
+			} else if numNil == n {
+				if err := builder.AppendNil(colIdx); err != nil {
+					return err
+				}
+				for j := range storedVals {
+					if err := builder.AppendInt(colIdx, storedVals[j]); err != nil {
+						return err
+					}
+				}
+			} else {
+				for j := range storedVals {
+					if err := builder.AppendInt(colIdx, storedVals[j]); err != nil {
+						return err
+					}
+				}
 			}
 		case flux.TUInt:
-			v := uint64(0)
+			storedVals := []uint64{}
 			n := int64(0)
 			for k := range uintMode {
 				if uintMode[k] > n {
-					v = k
+					storedVals = nil
+					storedVals = append(storedVals, k)
 					n = uintMode[k]
+				} else if uintMode[k] == n {
+					storedVals = append(storedVals, k)
 				}
 			}
-			if err := builder.AppendUInt(colIdx, v); err != nil {
-				return err
+			if len(storedVals) == len(uintMode) {
+				if err := builder.AppendNil(colIdx); err != nil {
+					return err
+				}
+			} else if numNil > n {
+				if err := builder.AppendNil(colIdx); err != nil {
+					return err
+				}
+			} else if numNil == n {
+				if err := builder.AppendNil(colIdx); err != nil {
+					return err
+				}
+				for j := range storedVals {
+					if err := builder.AppendUInt(colIdx, storedVals[j]); err != nil {
+						return err
+					}
+				}
+			} else {
+				for j := range storedVals {
+					if err := builder.AppendUInt(colIdx, storedVals[j]); err != nil {
+						return err
+					}
+				}
 			}
 		case flux.TFloat:
-			v := float64(0)
+			storedVals := []float64{}
 			n := int64(0)
 			for k := range floatMode {
 				if floatMode[k] > n {
-					v = k
+					storedVals = nil
+					storedVals = append(storedVals, k)
 					n = floatMode[k]
+				} else if floatMode[k] == n {
+					storedVals = append(storedVals, k)
 				}
 			}
-			if err := builder.AppendFloat(colIdx, v); err != nil {
-				return err
+			if len(storedVals) == len(floatMode) {
+				if err := builder.AppendNil(colIdx); err != nil {
+					return err
+				}
+			} else if numNil > n {
+				if err := builder.AppendNil(colIdx); err != nil {
+					return err
+				}
+			} else if numNil == n {
+				if err := builder.AppendNil(colIdx); err != nil {
+					return err
+				}
+				for j := range storedVals {
+					if err := builder.AppendFloat(colIdx, storedVals[j]); err != nil {
+						return err
+					}
+				}
+			} else {
+				for j := range storedVals {
+					if err := builder.AppendFloat(colIdx, storedVals[j]); err != nil {
+						return err
+					}
+				}
 			}
 		case flux.TString:
 			/*
 			* In the test file mode_test.go, the last test should result in the mode being nil.
 			* Here, I can't initialize v to be nil since I'll need to eventually AppendString(coldIdx, v),
-			* which requires a valid string to append (it cannot take nil as an argument). 
-			*/
-			v := ""
+			* which requires a valid string to append (it cannot take nil as an argument).
+			 */
+			storedVals := []string{}
 			n := int64(0)
 			for k := range stringMode {
 				if stringMode[k] > n {
-					v = k
+					storedVals = nil
+					storedVals = append(storedVals, k)
 					n = stringMode[k]
+				} else if stringMode[k] == n {
+					storedVals = append(storedVals, k)
 				}
 			}
-			if err := builder.AppendString(colIdx, v); err != nil {
-				return err
+			if len(storedVals) == len(stringMode) {
+				if err := builder.AppendNil(colIdx); err != nil {
+					return err
+				}
+			} else if numNil > n {
+				if err := builder.AppendNil(colIdx); err != nil {
+					return err
+				}
+			} else if numNil == n {
+				if err := builder.AppendNil(colIdx); err != nil {
+					return err
+				}
+				for j := range storedVals {
+					if err := builder.AppendString(colIdx, storedVals[j]); err != nil {
+						return err
+					}
+				}
+			} else {
+				for j := range storedVals {
+					if err := builder.AppendString(colIdx, storedVals[j]); err != nil {
+						return err
+					}
+				}
 			}
 		case flux.TTime:
-			v := execute.Time(0)
+			storedVals := []execute.Time{}
 			n := int64(0)
-			timeMode[v]++
 			for k := range timeMode {
 				if timeMode[k] > n {
-					v = k
+					storedVals = nil
+					storedVals = append(storedVals, k)
 					n = timeMode[k]
+				} else if timeMode[k] == n {
+					storedVals = append(storedVals, k)
 				}
 			}
-			if err := builder.AppendTime(colIdx, v); err != nil {
-				return err
+			if len(storedVals) == len(timeMode) {
+				if err := builder.AppendNil(colIdx); err != nil {
+					return err
+				}
+			} else if numNil > n {
+				if err := builder.AppendNil(colIdx); err != nil {
+					return err
+				}
+			} else if numNil == n {
+				if err := builder.AppendNil(colIdx); err != nil {
+					return err
+				}
+				for j := range storedVals {
+					if err := builder.AppendTime(colIdx, storedVals[j]); err != nil {
+						return err
+					}
+				}
+			} else {
+				for j := range storedVals {
+					if err := builder.AppendTime(colIdx, storedVals[j]); err != nil {
+						return err
+					}
+				}
 			}
 		}
 
