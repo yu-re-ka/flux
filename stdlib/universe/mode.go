@@ -8,7 +8,7 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/semantic"	
 )
 
 const ModeKind = "mode"
@@ -234,87 +234,21 @@ func (t *modeTransformation) Process(id execute.DatasetID, tbl flux.Table) error
 			// Check mode
 			switch col.Type {
 			case flux.TBool:
-				/*
-				if cr.Bools(j).IsNull(i) {
-					if !nullMode {
-						if err := builder.AppendNil(colIdx); err != nil {
-							return err
-						}
-						nullMode = true
-					}
-					continue
-				}
-				*/
 				v := cr.Bools(j).Value(i)
 				boolMode[v]++
 			case flux.TInt:
-				/*
-				if cr.Ints(j).IsNull(i) {
-					if !nullMode {
-						if err := builder.AppendNil(colIdx); err != nil {
-							return err
-						}
-						nullMode = true
-					}
-					continue
-				}
-				*/
 				v := cr.Ints(j).Value(i)
 				intMode[v]++
 			case flux.TUInt:
-				/*
-				if cr.UInts(j).IsNull(i) {
-					if !nullMode {
-						if err := builder.AppendNil(colIdx); err != nil {
-							return err
-						}
-						nullMode = true
-					}
-					continue
-				}
-				*/
 				v := cr.UInts(j).Value(i)
 				uintMode[v]++
 			case flux.TFloat:
-				/*
-				if cr.Floats(j).IsNull(i) {
-					if !nullMode {
-						if err := builder.AppendNil(colIdx); err != nil {
-							return err
-						}
-						nullMode = true
-					}
-					continue
-				}
-				*/
 				v := cr.Floats(j).Value(i)
 				floatMode[v]++
 			case flux.TString:
-				/*
-				if cr.Strings(j).IsNull(i) {
-					if !nullMode {
-						if err := builder.AppendNil(colIdx); err != nil {
-							return err
-						}
-						nullMode = true
-					}
-					continue
-				}
-				*/
 				v := cr.Strings(j).ValueString(i)
 				stringMode[v]++
 			case flux.TTime:
-				/*
-				if cr.Times(j).IsNull(i) {
-					if !nullMode {
-						if err := builder.AppendNil(colIdx); err != nil {
-							return err
-						}
-						nullMode = true
-					}
-					continue
-				}
-				*/
 				v := values.Time(cr.Times(j).Value(i))
 				timeMode[v]++
 			}
@@ -322,6 +256,8 @@ func (t *modeTransformation) Process(id execute.DatasetID, tbl flux.Table) error
 		// Find mode
 		switch col.Type {
 		case flux.TBool:
+			storedVals := []bool{}
+
 			v := false
 			n := int64(0)
 			for k := range boolMode {
