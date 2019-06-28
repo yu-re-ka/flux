@@ -427,11 +427,6 @@ func (t *modeTransformation) Process(id execute.DatasetID, tbl flux.Table) error
 				}
 			}
 		case flux.TString:
-			/*
-			* In the test file mode_test.go, the last test should result in the mode being nil.
-			* Here, I can't initialize v to be nil since I'll need to eventually AppendString(coldIdx, v),
-			* which requires a valid string to append (it cannot take nil as an argument).
-			 */
 			storedVals := []string{}
 			n := int64(0)
 			for k := range stringMode {
