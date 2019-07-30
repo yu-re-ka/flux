@@ -13,7 +13,7 @@ type Stream interface {
 
 type stream struct {
 	t semantic.Type
-	r *io.ReadSeeker
+	r io.ReadSeeker
 }
 
 func (s stream) Type() semantic.Type {
@@ -72,19 +72,23 @@ func (s stream) Function() Function {
 	panic(UnexpectedKind(semantic.Object, semantic.Function))
 }
 
+func (s stream) Stream() Stream {
+	return s
+}
+
 func (s stream) Equal(rhs Value) bool {
-	return s.Type() == rhs.Type() && s.r == rhs.Stream().r
+	panic("implement me")
 }
 
 func (s stream) Read(p []byte) (n int, err error) {
-	panic("implement me")
+	return s.r.Read(p)
 }
 
 func (s stream) Seek(offset int64, whence int) (int64, error) {
-	panic("implement me")
+	return s.r.Seek(offset, whence)
 }
 
-func NewStream(rs *io.ReadSeeker) Stream {
+func NewStream(rs io.ReadSeeker) Stream {
 	return &stream{
 		t: semantic.Object,
 		r: rs,
