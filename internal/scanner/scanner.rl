@@ -91,6 +91,7 @@ import "github.com/influxdata/flux/internal/token"
         "*" => { s.token = token.MUL; fbreak; };
         "/" => { s.token = token.DIV; fbreak; };
         "%" => { s.token = token.MOD; fbreak; };
+        "^" => { s.token = token.POW; fbreak; };
         "==" => { s.token = token.EQ; fbreak; };
         "<" => { s.token = token.LT; fbreak; };
         ">" => { s.token = token.GT; fbreak; };
@@ -131,3 +132,4 @@ func (s *Scanner) exec(cs int) int {
     %% write exec;
     return cs
 }
+

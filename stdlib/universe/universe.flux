@@ -1,6 +1,7 @@
 package universe
 
 import "system"
+import "date"
 
 // now is a function option whose default behaviour is to return the current system time
 option now = system.time
@@ -19,6 +20,8 @@ builtin difference
 builtin distinct
 builtin drop
 builtin duplicate
+builtin elapsed
+builtin exponentialMovingAverage
 builtin fill
 builtin filter
 builtin first
@@ -36,6 +39,8 @@ builtin map
 builtin max
 builtin mean
 builtin min
+builtin mode
+builtin movingAverage
 builtin quantile
 builtin pivot
 builtin range
@@ -74,8 +79,10 @@ builtin contains
 
 // other builtins
 builtin inf
+builtin length // length function for arrays
 builtin linearBins
 builtin logarithmicBins
+builtin sleep // sleep is the identity function with the side effect of delaying execution by a specified duration
 
 // covariance function with automatic join
 cov = (x,y,on,pearsonr=false) =>
@@ -237,10 +244,54 @@ lowestCurrent = (n, column="_value", groupColumns=[], tables=<-) =>
                 _sortLimit: bottom,
             )
 
-toString = (tables=<-) => tables |> map(fn:(r) => string(v:r._value))
-toInt = (tables=<-) => tables |> map(fn:(r) => int(v:r._value))
-toUInt = (tables=<-) => tables |> map(fn:(r) => uint(v:r._value))
-toFloat = (tables=<-) => tables |> map(fn:(r) => float(v:r._value))
-toBool = (tables=<-) => tables |> map(fn:(r) => bool(v:r._value))
-toTime = (tables=<-) => tables |> map(fn:(r) => time(v:r._value))
-toDuration = (tables=<-) => tables |> map(fn:(r) => duration(v:r._value))
+// timedMovingAverage constructs a simple moving average over windows of 'period' duration
+// eg: A 5 year moving average would be called as such:
+//    movingAverage(1y, 5y)
+timedMovingAverage = (every, period, column="_value", tables=<-) =>
+    tables
+        |> window(every: every, period: period)
+        |> mean(column:column)
+        |> duplicate(column: "_stop", as: "_time")
+        |> window(every: inf)
+
+// Double Exponential Moving Average computes the double exponential moving averages of the `_value` column.
+// eg: A 5 point double exponential moving average would be called as such:
+// from(bucket: "telegraf/autogen"):
+//    |> range(start: -7d)
+//    |> tripleEMA(n: 5)
+doubleEMA = (n, tables=<-) =>
+    tables
+          |> exponentialMovingAverage(n:n)
+          |> duplicate(column:"_value", as:"__ema")
+          |> exponentialMovingAverage(n:n)
+          |> map(fn: (r) => ({r with _value: 2.0*r.__ema - r._value}))
+          |> drop(columns: ["__ema"])
+
+
+// Triple Exponential Moving Average computes the triple exponential moving averages of the `_value` column.
+// eg: A 5 point triple exponential moving average would be called as such:
+// from(bucket: "telegraf/autogen"):
+//    |> range(start: -7d)
+//    |> tripleEMA(n: 5)
+tripleEMA = (n, tables=<-) =>
+	tables
+		|> exponentialMovingAverage(n:n)
+		|> duplicate(column:"_value", as:"__ema1")
+		|> exponentialMovingAverage(n:n)
+		|> duplicate(column:"_value", as:"__ema2")
+		|> exponentialMovingAverage(n:n)
+		|> map(fn: (r) => ({r with _value: 3.0*r.__ema1 - 3.0*r.__ema2 + r._value}))
+		|> drop(columns: ["__ema1", "__ema2"])
+
+// truncateTimeColumn takes in a time column t and a Duration unit and truncates each value of t to the given unit via map
+// Change from _time to timeColumn once https://github.com/influxdata/flux/issues/1122 is resolved
+truncateTimeColumn = (timeColumn="_time", unit, tables=<-) =>
+    tables
+        |> map(fn:(r) => ({r with _time: date.truncate(t: r._time, unit: unit)}))
+
+toString   = (tables=<-) => tables |> map(fn:(r) => ({r with _value: string(v:r._value)}))
+toInt      = (tables=<-) => tables |> map(fn:(r) => ({r with _value: int(v:r._value)}))
+toUInt     = (tables=<-) => tables |> map(fn:(r) => ({r with _value: uint(v:r._value)}))
+toFloat    = (tables=<-) => tables |> map(fn:(r) => ({r with _value: float(v:r._value)}))
+toBool     = (tables=<-) => tables |> map(fn:(r) => ({r with _value: bool(v:r._value)}))
+toTime     = (tables=<-) => tables |> map(fn:(r) => ({r with _value: time(v:r._value)}))

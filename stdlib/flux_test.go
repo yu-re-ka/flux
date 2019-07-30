@@ -28,8 +28,6 @@ var skip = map[string]string{
 	"covariance_missing_column_2": "need to support known errors in new test framework (https://github.com/influxdata/flux/issues/536)",
 	"drop_before_rename":          "need to support known errors in new test framework (https://github.com/influxdata/flux/issues/536)",
 	"drop_referenced":             "need to support known errors in new test framework (https://github.com/influxdata/flux/issues/536)",
-	"drop_non_existent":           "need to support known errors in new test framework (https://github.com/influxdata/flux/issues/536)",
-	"keep_non_existent":           "need to support known errors in new test framework (https://github.com/influxdata/flux/issues/536)",
 	"yield":                       "yield requires special test case (https://github.com/influxdata/flux/issues/535)",
 	"task_per_line":               "join produces inconsistent/racy results when table schemas do not match (https://github.com/influxdata/flux/issues/855)",
 	"rowfn_with_import":           "imported libraries are not visible in user-defined functions (https://github.com/influxdata/flux/issues/1000)",
@@ -39,6 +37,9 @@ var skip = map[string]string{
 	"measurement_tag_keys_test":   "unskip chronograf flux tests once filter is refactored (https://github.com/influxdata/flux/issues/1289)",
 	"aggregate_window_mean_test":  "unskip chronograf flux tests once filter is refactored (https://github.com/influxdata/flux/issues/1289)",
 	"aggregate_window_count_test": "unskip chronograf flux tests once filter is refactored (https://github.com/influxdata/flux/issues/1289)",
+
+	"extract_regexp_findStringIndex": "pandas. map does not correctly handled returned arrays (https://github.com/influxdata/flux/issues/1387)",
+	"partition_strings_splitN":       "pandas. map does not correctly handled returned arrays (https://github.com/influxdata/flux/issues/1387)",
 }
 
 func TestFluxEndToEnd(t *testing.T) {
@@ -50,7 +51,6 @@ func BenchmarkFluxEndToEnd(b *testing.B) {
 
 func runEndToEnd(t *testing.T, pkgs []*ast.Package) {
 	for _, pkg := range pkgs {
-		pkg := pkg.Copy().(*ast.Package)
 		name := pkg.Files[0].Name
 		t.Run(name, func(t *testing.T) {
 			n := strings.TrimSuffix(name, ".flux")
@@ -64,7 +64,6 @@ func runEndToEnd(t *testing.T, pkgs []*ast.Package) {
 
 func benchEndToEnd(b *testing.B, pkgs []*ast.Package) {
 	for _, pkg := range pkgs {
-		pkg := pkg.Copy().(*ast.Package)
 		name := pkg.Files[0].Name
 		b.Run(name, func(b *testing.B) {
 			n := strings.TrimSuffix(name, ".flux")
@@ -81,6 +80,7 @@ func benchEndToEnd(b *testing.B, pkgs []*ast.Package) {
 }
 
 func testFlux(t testing.TB, pkg *ast.Package) {
+	pkg = pkg.Copy().(*ast.Package)
 	pkg.Files = append(pkg.Files, stdlib.TestingRunCalls(pkg))
 	c := lang.ASTCompiler{AST: pkg}
 

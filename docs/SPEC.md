@@ -731,16 +731,30 @@ Those variables are shared between the function literal and the surrounding bloc
 #### Call expressions
 
 A call expressions invokes a function with the provided arguments.
-Arguments must be specified using the argument name, positional arguments not supported.
+Arguments must be specified using the argument name, positional arguments are not supported.
 Argument order does not matter.
 When an argument has a default value, it is not required to be specified.
 
     CallExpression = "(" PropertyList ")" .
 
+Call expressions support a short notation in case the name of the argument matches the parameter name.
+This notation can be used only when every argument matches its parameter.
+
 Examples:
 
-    f(a:1, b:9.6)
-    float(v:1)
+```
+add = (a,b) => a + b
+
+a = 1
+b = 2
+
+add(a, b)
+// is the same as
+add(a: a, b: b)
+// both FAIL: cannot mix short and long notation.
+add(a: a, b)
+add(a, b: b)
+```
 
 #### Pipe expressions
 
@@ -808,17 +822,19 @@ The precedence of the operators is given in the table below. Operators with a lo
 |     1    |  `a()`         |       Function call       |
 |          |  `a[]`         |  Member or index access   |
 |          |   `.`          |       Member access       |
-|     2    | `*` `/`        |Multiplication and division|
-|     3    | `+` `-`        | Addition and subtraction  |
-|     4    |`==` `!=`       |   Comparison operators    |
+|     2    |   `^`          |       Exponentiation      |
+|     3    | `*` `/` `%`    | Multiplication, division, |
+|          |                | and modulo                |
+|     4    | `+` `-`        | Addition and subtraction  |
+|     5    |`==` `!=`       |   Comparison operators    |
 |          | `<` `<=`       |                           |
 |          | `>` `>=`       |                           |
 |          |`=~` `!~`       |                           |
-|     5    | `not`          | Unary logical operator    |
+|     6    | `not`          | Unary logical operator    |
 |          | `exists`       | Null check operator       |
-|     6    |  `and`         |        Logical AND        |
-|     7    |  `or`          |        Logical OR         |
-|     8    | `if/then/else` |        Conditional        |
+|     7    |  `and`         |        Logical AND        |
+|     8    |  `or`          |        Logical OR         |
+|     9    | `if/then/else` |        Conditional        |
 
 The operator precedence is encoded directly into the grammar as the following.
 
@@ -839,7 +855,7 @@ The operator precedence is encoded directly into the grammar as the following.
     AdditiveOperator         = "+" | "-" .
     MultiplicativeExpression = PipeExpression
                              | MultiplicativeExpression MultiplicativeOperator PipeExpression .
-    MultiplicativeOperator   = "*" | "/" .
+    MultiplicativeOperator   = "*" | "/" | "%" | "^".
     PipeExpression           = PostfixExpression
                              | PipeExpression PipeOperator UnaryExpression .
     PipeOperator             = "|>" .
@@ -851,6 +867,8 @@ The operator precedence is encoded directly into the grammar as the following.
     PostfixOperator          = MemberExpression
                              | CallExpression
                              | IndexExpression .
+
+Dividing by 0 or using the mod operator with a divisor of 0 will result in an error.
 
 ### Packages
 
@@ -1057,7 +1075,7 @@ Example
 
     builtin from : (bucket: string, bucketID: string) -> stream
 
-### Time constants
+### Date/Time constants
 
 #### Days of the week
 
@@ -1075,7 +1093,6 @@ Saturday  = 6
 ```
 
 
-[IMPL#153](https://github.com/influxdata/flux/issues/153) Add Days of the Week constants
 
 ### Months of the year
 
@@ -1097,7 +1114,6 @@ November  = 11
 December  = 12
 ```
 
-[IMPL#154](https://github.com/influxdata/flux/issues/154) Add Months of the Year constants
 
 ### Time and date functions
 
@@ -1118,7 +1134,15 @@ These are builtin functions that all take a single `time` argument and return an
 * `month` int
     Month returns the month of the year for the provided time in the range `[1-12]`.
 
-[IMPL#155](https://github.com/influxdata/flux/issues/155) Implement Time and date functions
+#### truncate
+
+`date.truncate` takes in a time t and a Duration unit and returns the given time 
+truncated to the given unit.
+
+Examples: 
+- `truncate(t: "2019-06-03T13:59:01.000000000Z", unit: 1s)` returns time `2019-06-03T13:59:01.000000000Z`
+- `truncate(t: "2019-06-03T13:59:01.000000000Z", unit: 1m)` returns time `2019-06-03T13:59:00.000000000Z`
+- `truncate(t: "2019-06-03T13:59:01.000000000Z", unit: 1h)` returns time `2019-06-03T13:00:00.000000000Z`
 
 ### System Time
 
@@ -1392,6 +1416,44 @@ A transformation produces side effects when it is constructed from a function th
 
 Transformations are represented using function types.
 
+Some transformations, for instance `map` and `filter`, are represented using higher-order functions (functions that accepts other functions).
+When specifying the function passed in, _make sure that you use the same names for its parameters_.
+
+`filter`, for instance, accepts argument `fn` which is of type `(r: record) -> bool`.
+An invocation of `filter` must take a function with one argument named `r`:
+
+```
+from(bucket: "db")
+    |> filter(fn: (r) => ...)
+```
+
+This script would fail:
+
+```
+from(bucket: "db")
+    |> filter(fn: (v) => ...)
+
+// FAILS!: 'v' != 'r'.
+```
+
+The reason is simple: Flux does not support positional arguments, so parameter names matter.
+The transformation (in our example, `filter`) must know the name of the parameter in the given function in order to invoke it properly.
+The process happens the other way around, actually:
+our `filter` implementation supposes to invoke a function in this way:
+
+```
+fn(r: <the-record>)
+```
+
+So, you have to:
+
+```
+...
+    |> filter(fn: (r) => ...)
+...
+```
+
+
 ### Built-in transformations
 
 The following functions are preassigned in the universe block.
@@ -1584,6 +1646,9 @@ AggregateWindow has the following properties:
 | timeSrc     | string                                          | TimeSrc is the name of a column from the group key to use as the source for the aggregated time. Defaults to "_stop".                                           |
 | timeDst     | string                                          | TimeDst is the name of a new column in which the aggregated time is placed. Defaults to "_time".                                                                |
 | createEmpty | bool                                            | CreateEmpty, if true, will create empty windows and fill them with a null aggregate value.  Defaults to true.                                                   |
+
+_NOTE_: make sure that `fn`'s parameter names match the ones specified above (see [why](#Transformations)).
+
 Example:
 
 ```
@@ -1610,7 +1675,12 @@ Covariance has the following properties:
 Additionally exactly two columns must be provided to the `columns` property.
 
 Example:
-`from(bucket: "telegraf/autogen") |> range(start:-5m) |> covariance(columns: ["x", "y"])`
+```
+from(bucket: "telegraf/autogen") 
+    |> range(start: -5m) 
+    |> map(fn: (r) => ({r with x: r._value, y: r._value * r._value / 2})) 
+    |> covariance(columns: ["x", "y"])
+```
 
 #### Cov
 
@@ -1721,6 +1791,27 @@ from(bucket: "telegraf/autogen")
 	|> range(start: -5m)
 	|> filter(fn: (r) => r._measurement == "cpu" and r._field == "usage_system")
 	|> median()
+```
+
+##### Mode
+
+Mode produces the mode for a given column. Null is considered as a potential mode if it is present. If there are multiple modes, all of them are returned in a table in sorted order. 
+If there is no mode, null is returned. The following data types are supported: string, float64, int64, uint64, bool, time.
+
+Mode has the following properties: 
+
+| Name   | Type   | Description                                                                  |
+| ----   | ----   | -----------                                                                  |
+| column | string | Column is the column on which to track the mode.  Defaults to `_value`. |
+
+Example: 
+```
+from(bucket:"telegraf/autogen")
+    |> filter(fn: (r) => r._measurement == "mem" AND
+            r._field == "used_percent")
+    |> range(start:-12h)
+    |> window(every:10m)
+    |> mode(column: "host")
 ```
 
 ##### Quantile (aggregate)
@@ -1992,6 +2083,8 @@ Filter has the following properties:
 | ---- | ----                | -----------                                                                                        |
 | fn   | (r: record) -> bool | Fn is a predicate function. Records which evaluate to true, will be included in the output tables. |
 
+_NOTE_: make sure that `fn`'s parameter names match the ones specified above (see [why](#Transformations)).
+
 Example:
 
 ```
@@ -2093,7 +2186,7 @@ LinearBins has the following properties:
 | start     | float | Start is the first value in the returned list.                                                   |
 | width     | float | Width is the distance between subsequent bin values.                                             |
 | count     | int   | Count is the number of bins to create.                                                           |
-| inifinity | bool  | Infinity when true adds an additional bin with a value of positive infinity. Defaults to `true`. |
+| infinity | bool  | Infinity when true adds an additional bin with a value of positive infinity. Defaults to `true`. |
 
 ##### LogarithmicBins
 
@@ -2106,7 +2199,7 @@ LogarithmicBins has the following properties:
 | start     | float | Start is the first value in the returned bin list.                                               |
 | factor    | float | Factor is the multiplier applied to each subsequent bin.                                         |
 | count     | int   | Count is the number of bins to create.                                                           |
-| inifinity | bool  | Infinity when true adds an additional bin with a value of positive infinity. Defaults to `true`. |
+| infinity | bool  | Infinity when true adds an additional bin with a value of positive infinity. Defaults to `true`. |
 
 #### Limit
 
@@ -2141,17 +2234,14 @@ When the output record drops a column that was part of the group key that column
 
 Map has the following properties:
 
-| Name     | Type                  | Description                                                                                               |
-| ----     | ----                  | -----------                                                                                               |
-| fn       | (r: record) -> record | Function to apply to each record.  The return value must be an object.                                    |
-| mergeKey | bool                  | MergeKey indicates if the record returned from fn should be merged with the group key.  Defaults to true. |
+| Name | Type                  | Description                                                            |
+| ---- | ----                  | -----------                                                            |
+| fn   | (r: record) -> record | Function to apply to each record. The return value must be an object.  |
 
+_NOTE_: make sure that `fn`'s parameter names match the ones specified above (see [why](#Transformations)).
 
-When merging, all columns on the group key will be added to the record giving precedence to any columns already present on the record.
-When not merging, only columns defined on the returned record will be present on the output records.
-
-
-[IMPL#816](https://github.com/influxdata/flux/issues/816) Remove mergeKey parameter from map
+The resulting table will only have columns present on the returned record of the map function.
+Use the `with` operator to preserve all columns from the input table in the output table.
 
 Example:
 ```
@@ -2161,7 +2251,8 @@ from(bucket:"telegraf/autogen")
                 r.service == "app-server")
     |> range(start:-12h)
     // Square the value
-    |> map(fn: (r) => r._value * r._value)
+    // The output table has all column from the input table because of the use of `with`.
+    |> map(fn: (r) => ({r with _value: r._value * r._value}))
 ```
 Example (creating a new table):
 ```
@@ -2171,10 +2262,12 @@ from(bucket:"telegraf/autogen")
                 r.service == "app-server")
     |> range(start:-12h)
     // create a new table by copying each row into a new format
-    |> map(fn: (r) => ({_time: r._time, app_server: r._service}))
+    // The output table now only has the columns `_time` and `app_server`.
+    |> map(fn: (r) => ({_time: r._time, app_server: r.service}))
 ```
 
 #### Reduce
+
 Reduce aggregates records in each table according to the reducer `fn`.  The output for each table will be the group key of the table, plus columns corresponding to each field in the reducer object.  
 
 If the reducer record contains a column with the same name as a group key column, then the group key column's value is overwritten, and the outgoing group key is changed.  However, if two reduced tables write to the same destination group key, then the function will error.
@@ -2186,6 +2279,7 @@ Reduce has the following properties:
 | fn       | (r: record, accumulator: 'a) -> 'a | Function to apply to each record with a reducer object of type 'a.  |
 | identity | 'a                  | an initial value to use when creating a reducer. May be used more than once in asynchronous processing use cases.|
 
+_NOTE_: make sure that `fn`'s parameter names match the ones specified above (see [why](#Transformations)).
 
 Example (compute the sum of the value column):
 ```
@@ -2219,8 +2313,6 @@ from(bucket:"telegraf/autogen")
     |> reduce(fn: (r, accumulator) =>
             ({prod: r._value * accumulator.prod}), identity: {prod: 1.0}))
 ```
-
-
 
 #### Range
 
@@ -2273,6 +2365,8 @@ Rename has the following properties:
 | columns | object                     | Columns is a map of old column names to new names. Cannot be used with `fn`.                   |
 | fn      | (column: string) -> string | Fn defines a function mapping between old and new column names. Cannot be used with `columns`. |
 
+_NOTE_: make sure that `fn`'s parameter names match the ones specified above (see [why](#Transformations)).
+
 Example usage:
 
 Rename a single column:
@@ -2303,6 +2397,8 @@ Drop has the following properties:
 | ----    | ----                     | -----------                                                                                           |
 | columns | []string                 | Columns is an array of column to exclude from the resulting table. Cannot be used with `fn`.          |
 | fn      | (column: string) -> bool | Fn is a predicate function, columns that evaluate to true are dropped. Cannot be used with `columns`. |
+
+_NOTE_: make sure that `fn`'s parameter names match the ones specified above (see [why](#Transformations)).
 
 Example Usage:
 
@@ -2335,6 +2431,8 @@ Keep has the following properties:
 | ----    | ----                     | -----------                                                                                        |
 | columns | []string                 | Columns is an array of column to exclude from the resulting table. Cannot be used with `fn`.       |
 | fn      | (column: string) -> bool | Fn is a predicate function, columns that evaluate to true are kept. Cannot be used with `columns`. |
+
+_NOTE_: make sure that `fn`'s parameter names match the ones specified above (see [why](#Transformations)).
 
 Example Usage:
 
@@ -2561,6 +2659,8 @@ KeyValues has the following properties:
 | keyColumns | []string                     | KeyColumns is a list of columns from which values are extracted.                                 |
 | fn         | (schema: schema) -> []string | Fn is a schema function that may by used instead of `keyColumns` to identify the set of columns. |
 
+_NOTE_: make sure that `fn`'s parameter names match the ones specified above (see [why](#Transformations)).
+
 Additional requirements:
 
 * Only one of `keyColumns` or `fn` may be used in a single call.
@@ -2612,7 +2712,6 @@ Given the following input table with group key `["_measurement"]`:
 `keyColumns(keyColumns: ["tagB"])` produces the following error message:
 
     received table with columns [_time, _measurement, _value, tagA] not having key columns [tagB]
-
 
 #### Window
 
@@ -3020,6 +3119,22 @@ from(bucket: "telegraf/autogen")
     |> filter(fn: (r) => r._measurement == "cpu" and r._field == "usage_user")
     |> difference()
 ```
+#### Elapsed
+
+Elapsed returns the elapsed time between subsequent records. 
+
+Given an input table, `elapsed` will return the same table with an additional `elapsed` column and without the first 
+record as elapsed time is not defined. 
+
+Elapsed has the following properties:
+
+| Name        | Type     | Description                                                                                                                                                 |
+| ----        | ----     | -----------                                                                                                                                                 |
+| unit        | duration | The unit in which the elapsed time is returned. Defaults to `1s`.|
+| timeColumn  | string   | Name of the `flux.TTime` column on which to compute the elapsed time. Defaults to `_time`.|
+| columnName  | string   | Name of the column of elapsed times. Defaults to `elapsed`.
+
+Elapsed errors if the timeColumn cannot be found within the given table. 
 
 #### Increase
 
@@ -3053,7 +3168,262 @@ Given the following input table.
     | 00002 | 4      |
     | 00003 | 7      |
     | 00004 | 8      |
+    
+    
+####  Moving Average
 
+Moving Average computes the moving average the `_value` column.
+It means the values of a user-defined period for a defined number of points.
+
+Moving Average has the following properties:
+
+| Name        | Type     | Description
+| ----        | ----     | -----------
+| n           | int      | N specifies the number of points to mean.       
+
+Rules for taking the moving average for numeric types:
+ - the average over a period populated by `n` values is equal to their algebraic mean
+ - the average over a period populated by only null values is null
+ - moving averages that include null values skip over those values
+ - if `n` is less than the number of records in a table, `movingAverage` returns the average of the available values
+ 
+Examples of moving average (`n` = 2):
+
+| _time |   A  |   B  |   C  |   D  | tag |
+|:-----:|:----:|:----:|:----:|:----:|:---:|
+|  0001 | null |   1  |   2  | null |  tv |
+|  0002 |   6  |   2  | null | null |  tv |
+|  0003 |   4  | null |   4  |   4  |  tv |
+
+Result:
+
+| _time |   A  |   B  |   C  |   D  | tag |
+|:-----:|:----:|:----:|:----:|:----:|:---:|
+|  0002 |   6  |  1.5 |   2  | null |  tv |
+|  0003 |   5  |   2  |   4  |   4  |  tv |
+
+Example of script:
+```
+// A 5 point moving average would be called as such:
+from(bucket: "telegraf/autogen"):
+    |> range(start: -7d)
+    |> movingAverage(n: 5)
+```
+
+##### Timed Moving Average
+
+Timed Moving Average means the values of the following records for a defined number of points, for the specified column.
+```
+timedMovingAverage = (every, period, column="_value", tables=<-) =>
+    tables
+        |> window(every: every, period: period)
+        |> mean(column:column)
+        |> duplicate(column: "_stop", as: "_time")
+        |> window(every: inf)
+```
+Timed Moving Average has the following properties:
+
+| Name        | Type     | Description
+| ----        | ----     | -----------
+| every       | duration | Every specifies the frequency of windows.
+| period      | duration | Period specifies the window size to mean.       
+| column      | string   | Column specifies a column to aggregate. Defaults to `"_value"`            
+
+Example:
+```
+// A 5 year moving average would be called as such:
+from(bucket: "telegraf/autogen"):
+    |> range(start: -7y)
+    |> timedMovingAverage(every: 1y, period: 5y)
+```
+
+#### Exponential Moving Average
+
+Exponential Moving Average computes the exponential moving average of the `_value` column.
+It is a weighted moving average that gives more weighting to recent data as opposed to older data.
+
+| Name        | Type     | Description
+| ----        | ----     | -----------
+| n           | int      | N specifies the number of points to mean.       
+
+Rules for taking the exponential moving average for numeric types:
+ - the first value of an exponential moving average over `n` values is the algebraic mean of the first `n` values
+ - subsequent values are calculated as `y(t) = x(t) * k + y(t-1) * (1 - k)`, where 
+    - the constant `k` is defined as `k = 2 / (1 + n)`
+    - `y(t)` is defined as exponential moving average at time `t`
+    - `x(t)` is defined as the value at time `t`
+ - `exponentialMovingAverage` ignores ignores null values and does not count them in calculations
+ 
+ Examples (`n = 2`):
+ 
+ | _time |   A  |   B  |   C  | tag |
+ |:-----:|:----:|:----:|:----:|:---:|
+ |  0001 |   2  | null |   2  |  tv |
+ |  0002 | null |  10  |   4  |  tv |
+ |  0003 |   8  |  20  |   5  |  tv |
+ 
+ Result:
+ 
+ | _time |   A  |   B  |   C  | tag |
+ |:-----:|:----:|:----:|:----:|:---:|
+ |  0002 |   2  |  10  |   3  |  tv |
+ |  0003 |   6  | 16.67| 4.33 |  tv |
+ 
+ 
+Example of script:
+```
+// A 5 point exponential moving average would be called as such:
+from(bucket: "telegraf/autogen"):
+    |> range(start: -7d)
+    |> exponentialMovingAverage(n: 5)
+```
+
+#### Double Exponential Moving Average
+`doubleEMA`
+
+Double Exponential Moving Average computes the double exponential moving averages of the `_value` column.
+It is a weighted moving average that gives more weighting to recent data as opposed to older data, with less lag than a single exponential moving average.
+
+| Name        | Type     | Description
+| ----        | ----     | -----------
+| n           | int      | N specifies the number of points to mean.
+
+A double exponential moving average is defined as `DEMA = 2 * EMA_N - EMA of EMA_N`, where
+- `EMA` is an exponential moving average, and
+- `N = n` is the look-back period.
+
+In flux, `doubleEMA` is defined as
+```
+doubleEMA = (n, tables=<-) =>
+    tables
+          |> exponentialMovingAverage(n:n)
+          |> duplicate(column:"_value", as:"ema")
+          |> exponentialMovingAverage(n:n)
+          |> map(fn: (r) => ({r with _value: 2.0*r.ema - r._value}))
+          |> drop(columns: ["ema"])
+```
+
+The behavior of the exponential moving averages used for calculating the double exponential moving average is the same as defined for `exponentialMovingAverage`
+
+A proper double exponential moving average requires at least `2 * n - 1` values.
+ 
+ Example (`n = 10`):
+ 
+ | _time |_value|result|
+ |:-----:|:----:|:----:|
+ |  0001 |   1  |   -  |
+ |  0002 |   2  |   -  |
+ |  0003 |   3  |   -  |
+ |  0004 |   4  |   -  |
+ |  0005 |   5  |   -  |
+ |  0006 |   6  |   -  |
+ |  0007 |   7  |   -  |
+ |  0008 |   8  |   -  |
+ |  0009 |   9  |   -  |
+ |  0010 |  10  |   -  |
+ |  0011 |  11  |   -  |
+ |  0012 |  12  |   -  |
+ |  0013 |  13  |   -  |
+ |  0014 |  14  |   -  |
+ |  0015 |  15  |   -  |
+ |  0016 |  14  |   -  |
+ |  0017 |  13  |   -  |
+ |  0018 |  12  |   -  |
+ |  0019 |  11  | 13.57|
+ |  0020 |  10  | 12.70|
+ |  0021 |   9  | 11.70|
+ |  0022 |   8  | 10.61|
+ |  0023 |   7  | 9.466|
+ |  0024 |   6  | 8.286|
+ |  0025 |   5  | 7.090|
+ |  0026 |   4  | 5.890|
+ |  0027 |   3  | 4.694|
+ |  0028 |   2  | 3.506|
+ |  0029 |   1  | 2.331|
+ 
+Example of script:
+```
+// A 5 point double exponential moving average would be called as such:
+from(bucket: "telegraf/autogen"):
+    |> range(start: -7d)
+    |> doubleEMA(n: 5)
+```
+
+#### Triple Exponential Moving Average
+`tripleEMA`
+
+Triple Exponential Moving Average computes the triple exponential moving averages of the `_value` column.
+It is a weighted moving average that gives more weighting to recent data as opposed to older data, with less lag than a double or single exponential moving average.
+
+| Name        | Type     | Description
+| ----        | ----     | -----------
+| n           | int      | N specifies the number of points to mean.
+
+A triple exponential moving average is defined as `TEMA = (3 * EMA_1) - (3 * EMA_2) + EMA_3`, where
+- `EMA_1` is the exponential moving average of the original data,
+- `EMA_2` is the exponential moving average of `EMA_1`,
+- `EMA_3` is the exponential moving average of `EMA_2`, and
+- `N = n` is the look-back period.
+
+In flux, `tripleEMA` is defined as
+```
+tripleEMA = (n, tables=<-) =>
+	tables
+		|> exponentialMovingAverage(n:n)
+		|> duplicate(column:"_value", as:"ema1")
+		|> exponentialMovingAverage(n:n)
+		|> duplicate(column:"_value", as:"ema2")
+		|> exponentialMovingAverage(n:n)
+		|> map(fn: (r) => ({r with _value: 3.0*r.ema1 - 3.0*r.ema2 + r._value}))
+		|> drop(columns: ["ema1", "ema2"])
+```
+
+The behavior of the exponential moving averages used for calculating the triple exponential moving average is the same as defined for `exponentialMovingAverage`
+
+A proper double exponential moving average requires at least `3 * n - 2` values.
+ 
+ Example (`n = 4`):
+ 
+ | _time |_value|result|
+ |:-----:|:----:|:----:|
+ |  0001 |   1  |   -  |
+ |  0002 |   2  |   -  |
+ |  0003 |   3  |   -  |
+ |  0004 |   4  |   -  |
+ |  0005 |   5  |   -  |
+ |  0006 |   6  |   -  |
+ |  0007 |   7  |   -  |
+ |  0008 |   8  |   -  |
+ |  0009 |   9  |   -  |
+ |  0010 |  10  |   10 |
+ |  0011 |  11  |   11 |
+ |  0012 |  12  |   12 |
+ |  0013 |  13  |   13 |
+ |  0014 |  14  |   14 |
+ |  0015 |  15  |   15 |
+ |  0016 |  14  | 14.43|
+ |  0017 |  13  | 13.35|
+ |  0018 |  12  | 12.56|
+ |  0019 |  11  |   11 |
+ |  0020 |  10  | 9.907|
+ |  0021 |   9  | 8.866|
+ |  0022 |   8  | 7.859|
+ |  0023 |   7  | 6.871|
+ |  0024 |   6  | 5.891|
+ |  0025 |   5  | 4.913|
+ |  0026 |   4  | 3.933|
+ |  0027 |   3  | 2.950|
+ |  0028 |   2  | 1.963|
+ |  0029 |   1  | 0.973|
+ 
+Example of script:
+```
+// A 5 point triple exponential moving average would be called as such:
+from(bucket: "telegraf/autogen"):
+    |> range(start: -7d)
+    |> tripleEMA(n: 5)
+```
+ 
 #### Distinct
 
 Distinct produces the unique values for a given column. Null is considered its own distinct value if it is present.
@@ -3114,6 +3484,8 @@ StateCount has the following parameters:
 | fn     | (r: record) -> bool | Fn is a function that returns true when the record is in the desired state.                  |
 | column | string              | Column is the name of the column to use to output the state count. Defaults to `stateCount`. |
 
+_NOTE_: make sure that `fn`'s parameter names match the ones specified above (see [why](#Transformations)).
+
 Example:
 
 ```
@@ -3152,6 +3524,8 @@ StateDuration has the following parameters:
 | timeColumn | string              | TimeColumn is the name of the column used to extract timestamps. Defaults to `_time`.           |
 | unit       | duration            | Unit is the dimension of the output value. Defaults to `1s`.                                    |
 
+_NOTE_: make sure that `fn`'s parameter names match the ones specified above (see [why](#Transformations)).
+
 Example:
 
 ```
@@ -3184,6 +3558,7 @@ Both are mutually exclusive.
 Similarly `org` and `orgID` are mutually exclusive and only required when writing to a remote host.
 Both `host` and `token` are optional parameters, however if `host` is specified, `token` is required.
 
+_NOTE_: make sure that `fieldFn`'s parameter names match the ones specified above (see [why](#Transformations)).
 
 For example, given the following table:
 
@@ -3286,6 +3661,8 @@ It has the following parameters:
 | ---- | ----                  | -----------                                                                     |
 | fn   | (key: object) -> bool | Fn is a predicate function. The result is the first table for which fn is true. |
 
+_NOTE_: make sure that `fn`'s parameter names match the ones specified above (see [why](#Transformations)).
+
 Example:
 
 ```
@@ -3345,6 +3722,18 @@ r0 = from(bucket:"telegraf/autogen")
 x = r0._field + "--" + r0._measurement
 ```
 
+##### truncateTimeColumn 
+
+Truncates all entries in a given time column to a specified unit.
+
+Example: 
+```
+from(bucket:"telegraph/autogen")
+    |> truncateTimeColumn(unit: 1s)
+```
+
+Currently, `truncateTimeColumn` only works with the default time column `_time`.
+
 #### Type conversion operations
 
 ##### toBool
@@ -3353,7 +3742,7 @@ Convert a value to a bool.
 
 Example: `from(bucket: "telegraf") |> filter(fn:(r) => r._measurement == "mem" and r._field == "used") |> toBool()`
 
-The function `toBool` is defined as `toBool = (tables=<-) => tables |> map(fn:(r) => bool(v:r._value))`.
+The function `toBool` is defined as `toBool = (tables=<-) => tables |> map(fn:(r) => ({r with _value: bool(v:r._value)}))`.
 If you need to convert other columns use the `map` function directly with the `bool` function.
 
 ##### toInt
@@ -3362,7 +3751,7 @@ Convert a value to a int.
 
 Example: `from(bucket: "telegraf") |> filter(fn:(r) => r._measurement == "mem" and r._field == "used") |> toInt()`
 
-The function `toInt` is defined as `toInt = (tables=<-) => tables |> map(fn:(r) => int(v:r._value))`.
+The function `toInt` is defined as `toInt = (tables=<-) => tables |> map(fn:(r) => ({r with _value: int(v:r._value)}))`.
 If you need to convert other columns use the `map` function directly with the `int` function.
 
 ##### toFloat
@@ -3371,7 +3760,7 @@ Convert a value to a float.
 
 Example: `from(bucket: "telegraf") |> filter(fn:(r) => r._measurement == "mem" and r._field == "used") |> toFloat()`
 
-The function `toFloat` is defined as `toFloat = (tables=<-) => tables |> map(fn:(r) => float(v:r._value))`.
+The function `toFloat` is defined as `toFloat = (tables=<-) => tables |> map(fn:(r) => ({r with _value: float(v:r._value)}))`.
 If you need to convert other columns use the `map` function directly with the `float` function.
 
 ##### toDuration
@@ -3380,8 +3769,10 @@ Convert a value to a duration.
 
 Example: `from(bucket: "telegraf") |> filter(fn:(r) => r._measurement == "mem" and r._field == "used") |> toDuration()`
 
-The function `toDuration` is defined as `toDuration = (tables=<-) => tables |> map(fn:(r) => duration(v:r._value))`.
+The function `toDuration` is defined as `toDuration = (tables=<-) => tables |> map(fn:(r) => ({r with _value: duration(v:r._value)}))`.
 If you need to convert other columns use the `map` function directly with the `duration` function.
+
+TODO: implement duration as a column type in tables (https://github.com/influxdata/flux/issues/470)
 
 ##### toString
 
@@ -3389,7 +3780,7 @@ Convert a value to a string.
 
 Example: `from(bucket: "telegraf") |> filter(fn:(r) => r._measurement == "mem" and r._field == "used") |> toString()`
 
-The function `toString` is defined as `toString = (tables=<-) => tables |> map(fn:(r) => string(v:r._value))`.
+The function `toString` is defined as `toString = (tables=<-) => tables |> map(fn:(r) => ({r with _value: string(v:r._value)}))`.
 If you need to convert other columns use the `map` function directly with the `string` function.
 
 ##### toTime
@@ -3398,7 +3789,7 @@ Convert a value to a time.
 
 Example: `from(bucket: "telegraf") |> filter(fn:(r) => r._measurement == "mem" and r._field == "used") |> toTime()`
 
-The function `toTime` is defined as `toTime = (tables=<-) => tables |> map(fn:(r) => time(v:r._value))`.
+The function `toTime` is defined as `toTime = (tables=<-) => tables |> map(fn:(r) => ({r with _value: time(v:r._value)}))`.
 If you need to convert other columns use the `map` function directly with the `time` function.
 
 ##### toUInt
@@ -3407,7 +3798,7 @@ Convert a value to a uint.
 
 Example: `from(bucket: "telegraf") |> filter(fn:(r) => r._measurement == "mem" and r._field == "used") |> toUInt()`
 
-The function `toUInt` is defined as `toUInt = (tables=<-) => tables |> map(fn:(r) => uint(v:r._value))`.
+The function `toUInt` is defined as `toUInt = (tables=<-) => tables |> map(fn:(r) => ({r with _value: uint(v:r._value)}))`.
 If you need to convert other columns use the `map` function directly with the `uint` function.
 
 
@@ -3501,15 +3892,22 @@ Example: `joinStr(arr: []string{"a", "b", "c"}, v: ",")` returns string `a,b,c`.
 
 ##### lastIndex
 
-Returns the index of the last instance of substr in s, or -1 if substr is not present in v.
+Returns the index of the last instance of substr in v, or -1 if substr is not present in v.
 
-Example: `lastIndex(v: "go gopher", t: "go")` returns int `3`.
+Example: `lastIndex(v: "go gopher", substr: "go")` returns int `3`.
 
 ##### lastIndexAny
 
 Returns the index of the last instance of any value from chars in v, or -1 if no value from chars is present in v.
 
-Example: `lastIndexAny(v: "go gopher", t: "go")` returns int `4`.
+Example: `lastIndexAny(v: "go gopher", substr: "go")` returns int `4`.
+
+##### strlen
+
+Returns the length of the given string, defined to be the number of utf code points.
+
+Example: `strlen(v: "apple")` returns the int `5`.
+Example: `strlen(v: "汉字")` returns the int `2`.
 
 ##### repeat
 
@@ -3521,7 +3919,7 @@ Example: `repeat("v: na", i: 2)` returns string `nana`.
 
 Returns a copy of the string v with the first i non-overlapping instances of t replaced by u.
 
-Example: `replaceAll(v: "oink oink oink", t: "oink", u: "moo", i: 2)` returns string `moo moo oink`.
+Example: `replace(v: "oink oink oink", t: "oink", u: "moo", i: 2)` returns string `moo moo oink`.
 
 ##### replaceAll
 
@@ -3552,6 +3950,12 @@ Example: `splitAfterN(v: "a,b,c", t: ",", i: 2)` returns []string `["a," "b,c"]`
 Slices v into all substrings separated by t and returns a slice of the substrings between those separators. i determines the number of substrings to return.
 
 Example: `splitN(v: "a,b,c", t: ",", i: 2)` returns []string `["a" "b,c"]`.
+
+##### substring 
+
+Returns substring as specified by the given indices start and end, based on utf code points.
+
+Example: `substring(v: "influx", start: 0, end: 3)` returns string `inf`.
 
 ##### title
 
