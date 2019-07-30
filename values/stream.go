@@ -90,7 +90,7 @@ func (s stream) Seek(offset int64, whence int) (int64, error) {
 
 func NewStream(rs io.ReadSeeker) Stream {
 	return &stream{
-		t: semantic.Object,
+		t: semantic.Stream,
 		r: rs,
 	}
 }
