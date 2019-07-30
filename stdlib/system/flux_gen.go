@@ -21,11 +21,11 @@ var pkgAST = &ast.Package{
 			Errors: nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
-					Column: 13,
-					Line:   3,
+					Column: 17,
+					Line:   4,
 				},
 				File:   "system.flux",
-				Source: "package system\n\nbuiltin time",
+				Source: "package system\n\nbuiltin time\nbuiltin openFile",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -65,6 +65,40 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "time",
+			},
+		}, &ast.BuiltinStatement{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   4,
+					},
+					File:   "system.flux",
+					Source: "builtin openFile",
+					Start: ast.Position{
+						Column: 1,
+						Line:   4,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   4,
+						},
+						File:   "system.flux",
+						Source: "openFile",
+						Start: ast.Position{
+							Column: 9,
+							Line:   4,
+						},
+					},
+				},
+				Name: "openFile",
 			},
 		}},
 		Imports: nil,

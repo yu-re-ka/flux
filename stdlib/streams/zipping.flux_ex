@@ -1,0 +1,7 @@
+import "streams"
+import "system"
+import "strings"
+
+
+inFile = system.openFile(filepath: "/home/ewendai/Desktop/flux/stdlib/streams/tmp2.txt", mode: "ro") |> streams.unzip()
+inFile |> streams.lines()

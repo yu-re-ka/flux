@@ -21,11 +21,11 @@ var pkgAST = &ast.Package{
 			Errors: nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
-					Column: 13,
-					Line:   3,
+					Column: 19,
+					Line:   4,
 				},
 				File:   "csv.flux",
-				Source: "package csv\n\nbuiltin from",
+				Source: "package csv\n\nbuiltin from\nbuiltin fromStream",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -65,6 +65,40 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "from",
+			},
+		}, &ast.BuiltinStatement{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 19,
+						Line:   4,
+					},
+					File:   "csv.flux",
+					Source: "builtin fromStream",
+					Start: ast.Position{
+						Column: 1,
+						Line:   4,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 19,
+							Line:   4,
+						},
+						File:   "csv.flux",
+						Source: "fromStream",
+						Start: ast.Position{
+							Column: 9,
+							Line:   4,
+						},
+					},
+				},
+				Name: "fromStream",
 			},
 		}},
 		Imports: nil,

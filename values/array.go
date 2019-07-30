@@ -125,9 +125,13 @@ func (a *array) Array() Array {
 func (a *array) Object() Object {
 	panic(UnexpectedKind(semantic.Object, semantic.Object))
 }
+func (a *array) Stream() Stream {
+	panic(UnexpectedKind(semantic.Object, semantic.Stream))
+}
 func (a *array) Function() Function {
 	panic(UnexpectedKind(semantic.Object, semantic.Function))
 }
+
 func (a *array) Equal(rhs Value) bool {
 	if a.Type() != rhs.Type() {
 		return false

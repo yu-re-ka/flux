@@ -529,8 +529,9 @@ func init() {
 					"arr": semantic.NewArrayPolyType(semantic.String),
 					"v":   semantic.String,
 				},
-				Required: semantic.LabelSet{"arr", "v"},
-				Return:   semantic.String,
+				Required:     semantic.LabelSet{"arr", "v"},
+				Return:       semantic.String,
+				PipeArgument: "arr",
 			}),
 			func(args values.Object) (values.Value, error) {
 				var argVals = make([]values.Value, 2)
@@ -568,5 +569,4 @@ func init() {
 	}
 
 	flux.RegisterPackageValue("strings", "joinStr", SpecialFns["joinStr"])
-
 }

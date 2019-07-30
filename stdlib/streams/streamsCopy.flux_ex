@@ -1,0 +1,20 @@
+package testdata_test
+
+import "streams"
+import "system"
+import "strings"
+
+rStream = system.openFile(filepath: "./stdlib/streams/tmp.txt", mode: "ro") // open the file to a stream
+
+arr = rStream |> streams.lines() // get the lines from the stream and return as an array of strings
+
+valString = arr |> strings.joinStr(v: "\n") // a combined string of all the contents from the original given file
+
+s = valString |> streams.stringStream() // write the string to a new stream
+
+writeIt = s |> streams.write(to: system.openFile(filepath: "./stdlib/streams/tmp2.txt", mode: "wo"))
+// boolean: true means successfully written
+
+finalContents = system.openFile(filepath: "./stdlib/streams/tmp2.txt", mode: "rs") |> streams.lines()
+// print the contents of the file that was written to
+

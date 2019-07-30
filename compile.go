@@ -441,6 +441,9 @@ func (t *TableObject) Array() values.Array {
 func (t *TableObject) Object() values.Object {
 	return t
 }
+func (t *TableObject) Stream() values.Stream {
+	panic(values.UnexpectedKind(semantic.Object, semantic.Stream))
+}
 func (t *TableObject) Equal(rhs values.Value) bool {
 	if t.Type() != rhs.Type() {
 		return false
@@ -608,6 +611,9 @@ func (f *function) Object() values.Object {
 }
 func (f *function) Function() values.Function {
 	return f
+}
+func (f *function) Stream() values.Stream {
+	panic(values.UnexpectedKind(semantic.Object, semantic.Function))
 }
 func (f *function) Equal(rhs values.Value) bool {
 	if f.Type() != rhs.Type() {
