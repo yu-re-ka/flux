@@ -103,7 +103,7 @@ The following keywords are reserved and may not be used as identifiers:
 The following character sequences represent operators:
 
     +   ==   !=   (   )   =>
-    -   <    !~   [   ]
+    -   <    !~   [   ]   ^
     *   >    =~   {   }
     /   <=   =    ,   :
     %   >=   <-   .   |>
@@ -116,7 +116,7 @@ Literals have arbitrary precision and will be coerced to a specific type when us
 The following coercion rules apply to numeric literals:
 
 * an integer literal can be coerced to an "int", "uint", or "float" type,
-* an float literal can be coerced to a "float" type,
+* a float literal can be coerced to a "float" type,
 * an error will occur if the coerced type cannot represent the literal value.
 
 
@@ -154,8 +154,6 @@ Examples:
     072.40  // == 72.40
     2.71828
     .26
-
-[IMPL#254](https://github.com/influxdata/platform/issues/254) Parse float literals
 
 #### Duration literals
 
@@ -284,10 +282,6 @@ Additionally any byte value may be specified via a hex encoding using `\x` as th
     StringExpression = "{" Expression "}" .
 
 TODO(nathanielc): With string interpolation string_lit is not longer a lexical token as part of a literal, but an entire expression in and of itself.
-
-
-[IMPL#252](https://github.com/influxdata/platform/issues/252) Parse string literals
-
 
 Examples:
 
@@ -467,6 +461,8 @@ Examples:
     2018-07-01T00:00:00Z + 1mo // 2018-08-01T00:00:00Z
     2018-07-01T00:00:00Z + 2y  // 2020-07-01T00:00:00Z
     2018-07-01T00:00:00Z + 5h  // 2018-07-01T05:00:00Z
+
+[IMPL#761](https://github.com/influxdata/flux/issues/761) Time literal arithmetic
 
 ##### String types
 
