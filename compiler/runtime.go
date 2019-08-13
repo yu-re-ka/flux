@@ -3,8 +3,10 @@ package compiler
 import (
 	"fmt"
 	"regexp"
+	"context"
 
 	"github.com/influxdata/flux/ast"
+	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 	"github.com/pkg/errors"
@@ -514,7 +516,7 @@ func (e *callEvaluator) Eval(scope Scope) (values.Value, error) {
 	if err != nil {
 		return nil, err
 	}
-	return f.Function().Call(args.Object())
+	return f.Function().Call(ctx context.Context, deps dependencies.Interface, args.Object())
 }
 
 type functionEvaluator struct {
@@ -553,7 +555,7 @@ func (f *functionValue) HasSideEffect() bool {
 	return false
 }
 
-func (f *functionValue) Call(args values.Object) (values.Value, error) {
+func (f *functionValue) Call(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
 	scope := f.scope.Copy()
 	for _, p := range f.params {
 		a, ok := args.Get(p.Key)

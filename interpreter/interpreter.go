@@ -524,7 +524,7 @@ func (itrp *Interpreter) doCall(call *semantic.CallExpression, scope Scope) (val
 	}
 
 	// Call the function
-	value, err := f.Call(argObj)
+	value, err := f.Call(ctx context.Context, deps dependencies.Interface, argObj)
 	if err != nil {
 		return nil, err
 	}

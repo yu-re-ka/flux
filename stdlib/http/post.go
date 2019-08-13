@@ -1,9 +1,11 @@
 package http
 
 import (
+	"context"
 	"log"
 
 	flux "github.com/influxdata/flux"
+	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -20,7 +22,7 @@ func init() {
 			Required: []string{"url"},
 			Return:   semantic.Int,
 		}),
-		func(args values.Object) (values.Value, error) {
+		func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
 			//TODO: Implement
 			log.Println("http.post args", args)
 			return values.NewInt(200), nil
