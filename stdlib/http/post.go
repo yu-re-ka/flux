@@ -10,6 +10,7 @@ import (
 	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/stdlib/influxdata/influxdb/secrets"
 	"github.com/influxdata/flux/values"
 )
 
@@ -47,6 +48,19 @@ func init() {
 			if ok && !header.IsNull() {
 				var rangeErr error
 				header.Object().Range(func(k string, v values.Value) {
+					if rangeErr != nil {
+						return
+					}
+
+					// If this is a header function, evaluate it in a
+					// secret-aware context and set that as the value instead.
+					if isHeaderFunc(v) {
+						v, rangeErr = secrets.Call(ctx, v.Function(), deps, nil)
+						if rangeErr != nil {
+							return
+						}
+					}
+
 					if v.Type() == semantic.String {
 						req.Header.Set(k, v.Str())
 					} else {
@@ -74,4 +88,13 @@ func init() {
 		},
 		true, // post has side-effects
 	))
+}
+
+// isHeaderFunc validates if this is a valid header function.
+func isHeaderFunc(v values.Value) bool {
+	if v.Type().Nature() != semantic.Function {
+		return false
+	}
+	sig := v.Type().FunctionSignature()
+	return len(sig.Parameters) == 0 && sig.Return == semantic.String
 }

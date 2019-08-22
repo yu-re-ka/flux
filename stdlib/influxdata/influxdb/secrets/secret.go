@@ -1,42 +1,45 @@
 package secrets
 
 import (
+	"context"
+
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/dependencies"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
-// secretKey is the object key that contains the secret key.
-const secretKey = "secretKey"
+type key int
+
+const (
+	secretKey key = iota
+)
 
 // New construct a secret object identifier from the key.
 func New(key string) values.Value {
-	return values.NewObjectWithValues(map[string]values.Value{
-		secretKey: values.NewString(key),
+	sig := semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
+		Return: semantic.String,
 	})
+	return values.NewFunction(key, sig, func(ctx context.Context, deps dependencies.Interface, args values.Object) (values.Value, error) {
+		allowed := ctx.Value(secretKey)
+		if allowed == nil {
+			return nil, errors.Newf(codes.PermissionDenied, "secret key %q must be used in a secret-aware context", key)
+		} else if !allowed.(bool) {
+			return nil, errors.Newf(codes.Invalid, "secret key %q cannot be used in a function with side-effects", key)
+		}
+
+		// todo(jsternberg): evaluate the secret using the secret service.
+		return nil, errors.New(codes.Unimplemented, "implement me")
+	}, false)
 }
 
-// GetKeyFromValue retrieves the secret key from a secret object.
-func GetKeyFromValue(v values.Value) (string, bool) {
-	if v.Type().Nature() != semantic.Object {
-		return "", false
-	}
-
-	// The key must have exactly one value so we don't
-	// accidentally discard data.
-	if v.Object().Len() != 1 {
-		return "", false
-	}
-
-	// Retrieve the secret key value if that is the
-	// one value inside of the object.
-	val, ok := v.Object().Get(secretKey)
-	if !ok {
-		return "", false
-	}
-
-	// The value must be a string.
-	if val.Type() != semantic.String {
-		return "", false
-	}
-	return val.Str(), true
+// Call will evaluate a function in a secret-aware context.
+//
+// If the function call has a side-effect, it will mark the function as unable
+// to access the secret key and will return an appropriate error if
+// a secret is used within the function.
+func Call(ctx context.Context, fn values.Function, deps dependencies.Interface, args values.Object) (values.Value, error) {
+	ctx = context.WithValue(ctx, secretKey, fn.HasSideEffect())
+	return fn.Call(ctx, deps, args)
 }
