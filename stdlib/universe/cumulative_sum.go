@@ -140,6 +140,7 @@ func (t *cumulativeSumTransformation) Process(id execute.DatasetID, tbl flux.Tab
 			}
 		}
 	}
+
 	return tbl.Do(func(cr flux.ColReader) error {
 		l := cr.Len()
 		for j, c := range cols {
