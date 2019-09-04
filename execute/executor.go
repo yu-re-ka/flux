@@ -10,6 +10,7 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
@@ -28,11 +29,12 @@ type Executor interface {
 }
 
 type executor struct {
-	deps   Dependencies
+	deps  dependencies.Interface
 	logger *zap.Logger
 }
 
-func NewExecutor(deps Dependencies, logger *zap.Logger) Executor {
+func NewExecutor(deps dependencies.Interface) Executor {
+	logger, _ := deps.Logger()
 	if logger == nil {
 		logger = zap.NewNop()
 	}
@@ -52,8 +54,8 @@ func (ctx streamContext) Bounds() *Bounds {
 }
 
 type executionState struct {
-	p    *plan.Spec
-	deps Dependencies
+	p     *plan.Spec
+	deps  dependencies.Interface
 
 	alloc *memory.Allocator
 
@@ -343,6 +345,6 @@ func (ec executionContext) Parents() []DatasetID {
 	return ec.parents
 }
 
-func (ec executionContext) Dependencies() Dependencies {
+func (ec executionContext) Dependencies() dependencies.Interface {
 	return ec.es.deps
 }

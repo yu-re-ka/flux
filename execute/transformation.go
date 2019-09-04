@@ -3,6 +3,7 @@ package execute
 import (
 	"context"
 	"fmt"
+	"github.com/influxdata/flux/dependencies"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/memory"
@@ -31,12 +32,8 @@ type Administration interface {
 	Allocator() *memory.Allocator
 	Parents() []DatasetID
 
-	Dependencies() Dependencies
+	Dependencies() dependencies.Interface
 }
-
-// Dependencies represents the provided dependencies to the execution environment.
-// The dependencies is opaque.
-type Dependencies map[string]interface{}
 
 type CreateTransformation func(id DatasetID, mode AccumulationMode, spec plan.ProcedureSpec, a Administration) (Transformation, Dataset, error)
 type CreateNewPlannerTransformation func(id DatasetID, mode AccumulationMode, spec plan.ProcedureSpec, a Administration) (Transformation, Dataset, error)

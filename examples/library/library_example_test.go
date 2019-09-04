@@ -4,15 +4,14 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"strings"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
 	_ "github.com/influxdata/flux/builtin"
 	"github.com/influxdata/flux/csv"
-	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/lang"
-	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/parser"
 )
 
@@ -35,13 +34,7 @@ g.from(start: 1993-02-16T00:00:00Z, stop: 1993-02-16T00:03:00Z, count: 5, fn: (n
 	if err != nil {
 		panic(err)
 	}
-
-	alloc := &memory.Allocator{}
-
-	if p, ok := program.(lang.DependenciesAwareProgram); ok {
-		p.SetExecutorDependencies(executetest.NewTestExecuteDependencies())
-	}
-	q, err := program.Start(ctx, alloc)
+	q, err := program.Start(ctx, dependenciestest.Default())
 	if err != nil {
 		panic(err)
 	}

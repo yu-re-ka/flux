@@ -107,7 +107,7 @@ func createFilterTransformation(id execute.DatasetID, mode execute.AccumulationM
 	}
 	cache := execute.NewTableBuilderCache(a.Allocator())
 	d := execute.NewDataset(id, mode, cache)
-	t, err := NewFilterTransformation(a.Context(), a.Dependencies()[dependencies.InterpreterDepsKey].(dependencies.Interface), s, d, cache)
+	t, err := NewFilterTransformation(a.Context(), a.Dependencies(), s, d, cache)
 	if err != nil {
 		return nil, nil, err
 	}

@@ -456,7 +456,7 @@ func createSchemaMutationTransformation(id execute.DatasetID, mode execute.Accum
 	cache := execute.NewTableBuilderCache(a.Allocator())
 	d := execute.NewDataset(id, mode, cache)
 
-	t, err := NewSchemaMutationTransformation(a.Context(), a.Dependencies()[dependencies.InterpreterDepsKey].(dependencies.Interface), spec, d, cache)
+	t, err := NewSchemaMutationTransformation(a.Context(), a.Dependencies(), spec, d, cache)
 	if err != nil {
 		return nil, nil, err
 	}

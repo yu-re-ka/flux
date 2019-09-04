@@ -4,7 +4,10 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"go.uber.org/zap"
+
 	"github.com/influxdata/flux/dependencies"
+	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/mock"
 )
 
@@ -31,7 +34,7 @@ func defaultTestFunction(req *http.Request) *http.Response {
 	}
 }
 
-func Default() dependencies.Dependencies {
+func Default() *dependencies.Dependencies {
 	var deps dependencies.Dependencies
 	deps.Deps.HTTPClient = &http.Client{
 		Transport: RoundTripFunc(defaultTestFunction),
@@ -40,5 +43,7 @@ func Default() dependencies.Dependencies {
 		"password": "mysecretpassword",
 		"token":    "mysecrettoken",
 	}
-	return deps
+	deps.Deps.Allocator = new(memory.Allocator)
+	deps.Deps.Logger = zap.NewNop()
+	return &deps
 }

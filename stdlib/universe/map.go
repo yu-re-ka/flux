@@ -115,7 +115,7 @@ func createMapTransformation(id execute.DatasetID, mode execute.AccumulationMode
 	}
 	cache := execute.NewTableBuilderCache(a.Allocator())
 	d := execute.NewDataset(id, mode, cache)
-	t, err := NewMapTransformation(a.Context(), a.Dependencies()[dependencies.InterpreterDepsKey].(dependencies.Interface), s, d, cache)
+	t, err := NewMapTransformation(a.Context(), a.Dependencies(), s, d, cache)
 
 	if err != nil {
 		return nil, nil, err

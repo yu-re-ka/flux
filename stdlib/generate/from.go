@@ -133,7 +133,7 @@ func createFromGeneratorSource(prSpec plan.ProcedureSpec, dsid execute.DatasetID
 	s.Start = spec.Start
 	s.Stop = spec.Stop
 	s.Count = spec.Count
-	s.deps = a.Dependencies()[dependencies.InterpreterDepsKey].(dependencies.Interface)
+	s.deps = a.Dependencies()
 
 	fn, _, err := compiler.CompileFnParam(spec.Fn.Fn, compiler.ToScope(spec.Fn.Scope), semantic.Int, semantic.Int)
 	if err != nil {

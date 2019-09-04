@@ -2,6 +2,7 @@ package execute_test
 
 import (
 	"context"
+	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"math"
 	"testing"
 	"time"
@@ -742,7 +743,9 @@ func TestExecutor_Execute(t *testing.T) {
 			// Construct physical query plan
 			plan := plantest.CreatePlanSpec(tc.spec)
 
-			exe := execute.NewExecutor(executetest.NewTestExecuteDependencies(), zaptest.NewLogger(t))
+			deps := dependenciestest.Default()
+			deps.SetLogger(zaptest.NewLogger(t))
+			exe := execute.NewExecutor(deps)
 
 			alloc := tc.allocator
 			if alloc == nil {

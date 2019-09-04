@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/execute"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -88,9 +89,10 @@ func (a *MockAllocator) Parents() []execute.DatasetID {
 	return nil
 }
 
-func (a *MockAllocator) Dependencies() execute.Dependencies {
+func (a *MockAllocator) Dependencies() dependencies.Interface {
 	return nil
 }
+
 
 func TestFromRowReader(t *testing.T) {
 	t.Run("Mock RowReader", func(t *testing.T) {

@@ -178,16 +178,13 @@ func executeScript(pkg *ast.Package) (string, string, error) {
 	}
 
 	program, err := c.Compile(context.Background())
-	if p, ok := program.(lang.DependenciesAwareProgram); ok {
-		p.SetExecutorDependencies(execute.Dependencies{dependencies.InterpreterDepsKey: dependencies.NewEmpty()})
-	}
 	if err != nil {
 		fmt.Println(ast.Format(testPkg))
 		return "", "", errors.Wrap(err, codes.Inherit, "error during compilation, check your script and retry")
 	}
-
-	alloc := &memory.Allocator{}
-	q, err := program.Start(context.Background(), alloc)
+	deps := dependencies.NewEmpty()
+	deps.SetAllocator(new(memory.Allocator))
+	q, err := program.Start(context.Background(), deps)
 	if err != nil {
 		return "", "", errors.Wrap(err, codes.Inherit, "error while executing program")
 	}

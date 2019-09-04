@@ -10,16 +10,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/influxdata/flux/dependencies"
-	"github.com/influxdata/flux/execute"
-
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
 	_ "github.com/influxdata/flux/builtin"
 	_ "github.com/influxdata/flux/csv"
+	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/lang"
-	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/values"
 )
 
@@ -202,8 +199,7 @@ csv.from(csv:data) |> endpoint()`
 			if err != nil {
 				t.Fatal(err)
 			}
-			prog.SetExecutorDependencies(execute.Dependencies{dependencies.InterpreterDepsKey: dependencies.NewDefaults()})
-			query, err := prog.Start(context.Background(), &memory.Allocator{})
+			query, err := prog.Start(context.Background(), dependencies.NewDefaults())
 
 			if err != nil {
 				t.Fatal(err)

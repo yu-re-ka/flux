@@ -7,9 +7,6 @@ import (
 	_ "github.com/influxdata/flux/builtin"
 	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/dependencies/secret"
-	fexecute "github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/lang"
-	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/repl"
 	"github.com/spf13/cobra"
 )
@@ -36,15 +33,10 @@ type querier struct{}
 
 func (querier) Query(ctx context.Context, deps dependencies.Interface, c flux.Compiler) (flux.ResultIterator, error) {
 	program, err := c.Compile(ctx)
-	if p, ok := program.(lang.DependenciesAwareProgram); ok {
-		p.SetExecutorDependencies(fexecute.Dependencies{dependencies.InterpreterDepsKey: deps})
-	}
 	if err != nil {
 		return nil, err
 	}
-
-	alloc := &memory.Allocator{}
-	qry, err := program.Start(ctx, alloc)
+	qry, err := program.Start(ctx, deps)
 	if err != nil {
 		return nil, err
 	}

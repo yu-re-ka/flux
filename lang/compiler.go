@@ -2,7 +2,6 @@ package lang
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
@@ -13,9 +12,7 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/internal/spec"
-	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
-	"go.uber.org/zap"
 )
 
 const (
@@ -218,30 +215,19 @@ func (*TableObjectCompiler) CompilerType() flux.CompilerType {
 	panic("TableObjectCompiler is not associated with a CompilerType")
 }
 
-type DependenciesAwareProgram interface {
-	SetExecutorDependencies(execute.Dependencies)
-	SetLogger(logger *zap.Logger)
-}
-
 // Program implements the flux.Program interface.
 // It will execute a compiled plan using an executor.
 type Program struct {
-	Dependencies execute.Dependencies
-	Logger       *zap.Logger
-	PlanSpec     *plan.Spec
+	PlanSpec *plan.Spec
 
 	opts *compileOptions
 }
 
-func (p *Program) SetExecutorDependencies(deps execute.Dependencies) {
-	p.Dependencies = deps
-}
-
-func (p *Program) SetLogger(logger *zap.Logger) {
-	p.Logger = logger
-}
-
-func (p *Program) Start(ctx context.Context, alloc *memory.Allocator) (flux.Query, error) {
+func (p *Program) Start(ctx context.Context, deps dependencies.Interface) (flux.Query, error) {
+	alloc, err := deps.Allocator()
+	if err != nil {
+		return nil, errors.Wrap(err, codes.Inherit, "error in starting program")
+	}
 	ctx, cancel := context.WithCancel(ctx)
 	results := make(chan flux.Result)
 	q := &query{
@@ -253,7 +239,7 @@ func (p *Program) Start(ctx context.Context, alloc *memory.Allocator) (flux.Quer
 		},
 	}
 
-	e := execute.NewExecutor(p.Dependencies, p.Logger)
+	e := execute.NewExecutor(deps)
 	resultMap, md, err := e.Execute(ctx, p.PlanSpec, q.alloc)
 	if err != nil {
 		return nil, err
@@ -300,7 +286,7 @@ type AstProgram struct {
 	Now time.Time
 }
 
-func (p *AstProgram) Start(ctx context.Context, alloc *memory.Allocator) (flux.Query, error) {
+func (p *AstProgram) Start(ctx context.Context, deps dependencies.Interface) (flux.Query, error) {
 	if p.opts == nil {
 		p.opts = defaultOptions()
 	}
@@ -316,13 +302,15 @@ func (p *AstProgram) Start(ctx context.Context, alloc *memory.Allocator) (flux.Q
 		astPkg.Files = append([]*ast.File{p.opts.extern}, astPkg.Files...)
 	}
 
+	/*
 	deps, ok := p.Dependencies[dependencies.InterpreterDepsKey]
 	if !ok {
 		// TODO(Adam): this should be more of a noop dependency package
 		return nil, fmt.Errorf("no interpreter dependencies found")
 	}
 	depsI := deps.(dependencies.Interface)
-	s, err := spec.FromAST(ctx, depsI, astPkg, p.Now)
+	*/
+	s, err := spec.FromAST(ctx, deps, astPkg, p.Now)
 	if err != nil {
 		return nil, errors.Wrap(err, codes.Inherit, "error in evaluating AST while starting program")
 	}
@@ -335,5 +323,5 @@ func (p *AstProgram) Start(ctx context.Context, alloc *memory.Allocator) (flux.Q
 	}
 	p.PlanSpec = ps
 
-	return p.Program.Start(ctx, alloc)
+	return p.Program.Start(ctx, deps)
 }

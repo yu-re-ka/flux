@@ -156,7 +156,7 @@ func createStateTrackingTransformation(id execute.DatasetID, mode execute.Accumu
 	}
 	cache := execute.NewTableBuilderCache(a.Allocator())
 	d := execute.NewDataset(id, mode, cache)
-	t, err := NewStateTrackingTransformation(a.Context(), a.Dependencies()[dependencies.InterpreterDepsKey].(dependencies.Interface), s, d, cache)
+	t, err := NewStateTrackingTransformation(a.Context(), a.Dependencies(), s, d, cache)
 	if err != nil {
 		return nil, nil, err
 	}

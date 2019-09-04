@@ -3,19 +3,16 @@ package universe
 import (
 	"context"
 	"fmt"
-	"github.com/influxdata/flux/dependencies"
-	"github.com/influxdata/flux/execute/executetest"
-
 	"time"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/compiler"
+	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/lang"
-	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 	"github.com/influxdata/flux/values/objects"
@@ -89,16 +86,11 @@ func tableFindCall(ctx context.Context, deps dependencies.Interface, args values
 		Now:    time.Now(),
 	}
 
-	p, err := c.Compile(context.Background())
+	p, err := c.Compile(ctx)
 	if err != nil {
 		return nil, errors.Wrap(err, codes.Inherit, "error in table object compilation")
 	}
-
-	if prog, ok := p.(lang.DependenciesAwareProgram); ok {
-		prog.SetExecutorDependencies(executetest.NewTestExecuteDependencies())
-	}
-
-	q, err := p.Start(context.Background(), &memory.Allocator{})
+	q, err := p.Start(ctx, deps)
 	if err != nil {
 		return nil, errors.Wrap(err, codes.Inherit, "error in table object start")
 	}

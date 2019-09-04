@@ -3,18 +3,24 @@ package dependencies
 import (
 	"net/http"
 
+	"go.uber.org/zap"
+
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/dependencies/secret"
 	"github.com/influxdata/flux/dependencies/url"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/memory"
 )
-
-const InterpreterDepsKey = "interpreter"
 
 type Interface interface {
 	HTTPClient() (*http.Client, error)
 	SecretService() (secret.Service, error)
 	URLValidator() (url.Validator, error)
+
+	SetAllocator(*memory.Allocator)
+	Allocator() (*memory.Allocator, error)
+	SetLogger(*zap.Logger)
+	Logger() (*zap.Logger, error)
 }
 
 // Dependencies implements the Interface.
@@ -27,37 +33,64 @@ type Deps struct {
 	HTTPClient    *http.Client
 	SecretService secret.Service
 	URLValidator  url.Validator
+
+	Allocator *memory.Allocator
+	Logger    *zap.Logger
 }
 
-func (d Dependencies) HTTPClient() (*http.Client, error) {
+func (d *Dependencies) HTTPClient() (*http.Client, error) {
 	if d.Deps.HTTPClient != nil {
 		return d.Deps.HTTPClient, nil
 	}
 	return nil, errors.New(codes.Unimplemented, "http client uninitialized in dependencies")
 }
 
-func (d Dependencies) SecretService() (secret.Service, error) {
+func (d *Dependencies) SecretService() (secret.Service, error) {
 	if d.Deps.SecretService != nil {
 		return d.Deps.SecretService, nil
 	}
 	return nil, errors.New(codes.Unimplemented, "secret service uninitialized in dependencies")
 }
 
-func (d Dependencies) URLValidator() (url.Validator, error) {
+func (d *Dependencies) URLValidator() (url.Validator, error) {
 	if d.Deps.URLValidator != nil {
 		return d.Deps.URLValidator, nil
 	}
 	return nil, errors.New(codes.Unimplemented, "url validator uninitialized in dependencies")
 }
 
+func (d *Dependencies) SetAllocator(alloc *memory.Allocator) {
+	d.Deps.Allocator = alloc
+}
+
+func (d *Dependencies) Allocator() (*memory.Allocator, error) {
+	if d.Deps.Allocator != nil {
+		return d.Deps.Allocator, nil
+	}
+	return nil, errors.New(codes.Unimplemented, "allocator uninitialized in dependencies")
+}
+
+func (d *Dependencies) SetLogger(logger *zap.Logger) {
+	d.Deps.Logger = logger
+}
+
+func (d *Dependencies) Logger() (*zap.Logger, error) {
+	if d.Deps.Logger != nil {
+		return d.Deps.Logger, nil
+	}
+	return nil, errors.New(codes.Unimplemented, "logger uninitialized in dependencies")
+}
+
 // NewDefaults produces a set of dependencies.
 // Not all dependencies have valid defaults and will not be set.
-func NewDefaults() Dependencies {
-	return Dependencies{
+func NewDefaults() *Dependencies {
+	return &Dependencies{
 		Deps: Deps{
 			HTTPClient:    http.DefaultClient,
 			SecretService: nil,
 			URLValidator:  url.PassValidator{},
+			Allocator:     new(memory.Allocator),
+			Logger:        zap.NewNop(),
 		},
 	}
 }
@@ -65,5 +98,5 @@ func NewDefaults() Dependencies {
 // NewEmpty produces an empty set of dependencies.
 // Accessing any dependency will result in an error.
 func NewEmpty() Interface {
-	return Dependencies{}
+	return &Dependencies{}
 }
