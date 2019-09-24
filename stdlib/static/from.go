@@ -2,7 +2,6 @@ package static
 
 import (
 	"context"
-
 	"fmt"
 
 	"github.com/influxdata/flux"
@@ -13,18 +12,13 @@ import (
 	_ "github.com/lib/pq"
 )
 
-// unique name for mapping
-const FromStaticKind = "fromStatic"
-
-// storing user params that are declared elsewhere
-// op spec represents what the user has told us;
-type FromStaticOpSpec struct {
-}
-
 func init() {
 	fromStaticSignature := semantic.FunctionPolySignature{
-		Parameters: map[string]semantic.PolyType{}, // user params
-		Return:     flux.TableObjectType,
+		Parameters: map[string]semantic.PolyType{
+			"nrows": semantic.Int,
+		}, // user params
+		Required: semantic.LabelSet{"nrows"},
+		Return:   flux.TableObjectType,
 	}
 	// telling the flux runtime about the objects that we're creating
 	flux.RegisterPackageValue("static", "from", flux.FunctionValue(FromStaticKind, createFromStaticOpSpec, fromStaticSignature))
@@ -33,16 +27,26 @@ func init() {
 	execute.RegisterSource(FromStaticKind, createFromStaticSource)
 }
 
-func createFromStaticOpSpec(args flux.Arguments, administration *flux.Administration) (flux.OperationSpec, error) {
-	spec := new(FromStaticOpSpec) // reading flux.args and extracting params
+// unique name for mapping
+const FromStaticKind = "fromStatic"
 
-	return spec, nil
+// storing user params that are declared elsewhere
+// op spec represents what the user has told us;
+type FromStaticOpSpec struct {
+	nrows int64
 }
 
+func createFromStaticOpSpec(args flux.Arguments, administration *flux.Administration) (flux.OperationSpec, error) {
+	spec := new(FromStaticOpSpec) // reading flux.args and extracting params
+	var err error
+	if spec.nrows, err = args.GetRequiredInt("nrows"); err != nil {
+		return nil, err
+	}
+	return spec, nil
+}
 func newFromStaticOp() flux.OperationSpec {
 	return new(FromStaticOpSpec)
 }
-
 func (s *FromStaticOpSpec) Kind() flux.OperationKind {
 	return FromStaticKind
 }
@@ -50,22 +54,20 @@ func (s *FromStaticOpSpec) Kind() flux.OperationKind {
 // procedure spec is internal representation of the entire file; used by the planner
 type FromStaticProcedureSpec struct {
 	plan.DefaultCost
+	nrows int64
 }
 
 // uses op spec to initialize procedure spec
 func newFromStaticProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
-	_, ok := qs.(*FromStaticOpSpec)
+	spec, ok := qs.(*FromStaticOpSpec)
 	if !ok {
 		return nil, fmt.Errorf("invalid spec type %T", qs)
 	}
-
-	return &FromStaticProcedureSpec{}, nil
+	return &FromStaticProcedureSpec{nrows: spec.nrows}, nil
 }
-
 func (s *FromStaticProcedureSpec) Kind() plan.ProcedureKind {
 	return FromStaticKind
 }
-
 func (s *FromStaticProcedureSpec) Copy() plan.ProcedureSpec {
 	ns := new(FromStaticProcedureSpec)
 	return ns
@@ -77,52 +79,56 @@ func createFromStaticSource(prSpec plan.ProcedureSpec, dsid execute.DatasetID, a
 	if !ok {
 		return nil, fmt.Errorf("invalid spec type %T", prSpec)
 	}
-
-	StaticIterator := StaticIterator{id: dsid, spec: spec, administration: a}
-
-	return execute.CreateSourceFromDecoder(&StaticIterator, dsid, a)
+	StaticDecoder := StaticDecoder{administration: a, keyColumn: "T1", valueColumn: "V1", key: "tag1", nrows: spec.nrows}
+	return execute.CreateSourceFromDecoder(&StaticDecoder, dsid, a)
 }
 
-type StaticIterator struct {
-	id             execute.DatasetID
+type StaticDecoder struct {
 	administration execute.Administration
-	spec           *FromStaticProcedureSpec
-	reader         *execute.RowReader
+	keyColumn      string
+	valueColumn    string
+	key            string
+	nrows          int64
 }
 
-var _ execute.SourceDecoder = (*StaticIterator)(nil)
-
-func (c *StaticIterator) Connect(ctx context.Context) error {
+func (s *StaticDecoder) Connect(ctx context.Context) error {
+	return nil
+}
+func (s *StaticDecoder) Fetch(ctx context.Context) (bool, error) {
+	return false, nil
+}
+func (s *StaticDecoder) Decode(ctx context.Context) (flux.Table, error) {
+	return BuildStaticTable(s.keyColumn, s.valueColumn, s.key, s.nrows, s.administration)
+}
+func (s *StaticDecoder) Close() error {
 	return nil
 }
 
-func (c *StaticIterator) Fetch(ctx context.Context) (bool, error) {
-	return false, nil
-}
-
-func (c *StaticIterator) Decode(ctx context.Context) (flux.Table, error) {
+func BuildStaticTable(keyColumn, valueColumn, key string, nrows int64, a execute.Administration) (flux.Table, error) {
+	// group keys help ID a table
 	groupKey := execute.NewGroupKeyBuilder(nil)
-	groupKey.AddKeyValue("tag1", values.NewString("T1"))
+	groupKey.AddKeyValue(keyColumn, values.NewString(key))
 	gk, err := groupKey.Build()
 	if err != nil {
 		return nil, err
 	}
+	// Create a new table builder indexed by the group key.
+	builder := execute.NewColListTableBuilder(gk, a.Allocator())
+	if _, err = builder.AddCol(flux.ColMeta{Label: keyColumn, Type: flux.TString}); err != nil {
+		return nil, err
+	}
+	if _, err = builder.AddCol(flux.ColMeta{Label: valueColumn, Type: flux.TFloat}); err != nil {
+		return nil, err
+	}
 
-	builder := execute.NewColListTableBuilder(gk, c.administration.Allocator())
-	builder.AddCol(flux.ColMeta{
-		Label: "tag1",
-		Type:  flux.TString,
-	})
-	builder.AddCol(flux.ColMeta{
-		Label: "F1",
-		Type:  flux.TFloat,
-	})
-	builder.AppendString(0, "T1")
-
-	builder.AppendFloat(1, 1.0)
+	// Add a row of data by appending one value to each column.
+	for i := 0; i < int(nrows); i++ {
+		if err = builder.AppendString(0, key); err != nil {
+			return nil, err
+		}
+		if err = builder.AppendFloat(1, float64(i)); err != nil {
+			return nil, err
+		}
+	}
 	return builder.Table()
-}
-
-func (c *StaticIterator) Close() error {
-	return nil
 }
