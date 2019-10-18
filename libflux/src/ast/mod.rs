@@ -498,7 +498,7 @@ pub struct PipeExpr {
     #[serde(flatten)]
     pub base: BaseNode,
     pub argument: Expression,
-    pub call: CallExpr,
+    pub call: Expression,
 }
 
 // MemberExpr represents calling a property of a Call

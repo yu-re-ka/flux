@@ -389,16 +389,32 @@ fn bad_string_expression() {
                         }),
                         value: None
                     }],
-                    body: FunctionBody::Expr(Expression::StringExpr(Box::new(StringExpr {
+                    body: FunctionBody::Expr(Expression::Bad(Box::new(BadExpr {
                         base: BaseNode {
-                            location: loc.get(1, 13, 1, 18),
-                            errors: vec![
-                                "got unexpected token in string expression @1:18-1:18: EOF"
-                                    .to_string()
-                            ]
+                            location: loc.get(1, 18, 1, 18),
+                            errors: vec![]
                         },
-                        parts: vec![],
-                    })))
+                        text: "got unexpected token in string expression: EOF".to_string(),
+                        expression: Some(Expression::StringExpr(Box::new(StringExpr {
+                            base: BaseNode {
+                                location: loc.get(1, 13, 1, 18),
+                                errors: vec![]
+                            },
+                            parts: vec![StringExprPart::Interpolated(InterpolatedPart {
+                                base: BaseNode {
+                                    location: loc.get(1, 14, 1, 18),
+                                    errors: vec![]
+                                },
+                                expression: Expression::Identifier(Identifier {
+                                    base: BaseNode {
+                                        location: loc.get(1, 16, 1, 17),
+                                        errors: vec![]
+                                    },
+                                    name: "a".to_string(),
+                                }),
+                            })],
+                        }))),
+                    }))),
                 })),
             })],
         },
@@ -1003,7 +1019,7 @@ fn optional_query_metadata_preceding_query_text() {
                             }),
                             arguments: vec![]
                         })),
-                        call: CallExpr {
+                        call: Expression::Call(Box::new(CallExpr {
                             base: BaseNode {
                                 location: loc.get(7, 15, 7, 22),
                                 errors: vec![]
@@ -1016,7 +1032,7 @@ fn optional_query_metadata_preceding_query_text() {
                                 name: "count".to_string()
                             }),
                             arguments: vec![]
-                        }
+                        }))
                     })),
                 })
             ]
@@ -1405,16 +1421,15 @@ fn bad_regex_literal() {
                     location: loc.get(1, 1, 1, 4),
                     errors: vec![]
                 },
-                expression: Expression::Regexp(RegexpLit {
+                expression: Expression::Bad(Box::new(BadExpr {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 4),
-                        errors: vec![
-                            "regex parse error: * error: repetition operator missing expression"
-                                .to_string()
-                        ]
+                        errors: vec![]
                     },
-                    value: "".to_string()
-                })
+                    text: "regex parse error: * error: repetition operator missing expression"
+                        .to_string(),
+                    expression: None,
+                }))
             })]
         },
     )
@@ -1866,7 +1881,7 @@ fn pipe_expression() {
                         }),
                         arguments: vec![]
                     })),
-                    call: CallExpr {
+                    call: Expression::Call(Box::new(CallExpr {
                         base: BaseNode {
                             location: loc.get(1, 11, 1, 18),
                             errors: vec![]
@@ -1879,7 +1894,7 @@ fn pipe_expression() {
                             name: "count".to_string()
                         }),
                         arguments: vec![]
-                    }
+                    }))
                 }))
             })]
         },
@@ -1918,7 +1933,7 @@ fn pipe_expression_to_member_expression_function() {
                         },
                         name: "a".to_string()
                     }),
-                    call: CallExpr {
+                    call: Expression::Call(Box::new(CallExpr {
                         base: BaseNode {
                             location: loc.get(1, 6, 1, 14),
                             errors: vec![]
@@ -1970,7 +1985,7 @@ fn pipe_expression_to_member_expression_function() {
                                 }))
                             }]
                         }))]
-                    }
+                    }))
                 }))
             })]
         },
@@ -2009,7 +2024,7 @@ fn literal_pipe_expression() {
                         },
                         value: 5,
                     }),
-                    call: CallExpr {
+                    call: Expression::Call(Box::new(CallExpr {
                         base: BaseNode {
                             location: loc.get(1, 6, 1, 12),
                             errors: vec![]
@@ -2022,7 +2037,7 @@ fn literal_pipe_expression() {
                             },
                             name: "pow2".to_string()
                         })
-                    },
+                    })),
                 })),
             })]
         },
@@ -2074,7 +2089,7 @@ fn member_expression_pipe_expression() {
                             name: "bar".to_string()
                         })
                     })),
-                    call: CallExpr {
+                    call: Expression::Call(Box::new(CallExpr {
                         base: BaseNode {
                             location: loc.get(1, 12, 1, 17),
                             errors: vec![]
@@ -2087,7 +2102,7 @@ fn member_expression_pipe_expression() {
                             name: "baz".to_string()
                         }),
                         arguments: vec![]
-                    }
+                    }))
                 }))
             })]
         },
@@ -2143,7 +2158,7 @@ fn multiple_pipe_expressions() {
                                 }),
                                 arguments: vec![]
                             })),
-                            call: CallExpr {
+                            call: Expression::Call(Box::new(CallExpr {
                                 base: BaseNode {
                                     location: loc.get(1, 11, 1, 18),
                                     errors: vec![]
@@ -2156,9 +2171,9 @@ fn multiple_pipe_expressions() {
                                     name: "range".to_string()
                                 }),
                                 arguments: vec![]
-                            }
+                            }))
                         })),
-                        call: CallExpr {
+                        call: Expression::Call(Box::new(CallExpr {
                             base: BaseNode {
                                 location: loc.get(1, 22, 1, 30),
                                 errors: vec![]
@@ -2171,9 +2186,9 @@ fn multiple_pipe_expressions() {
                                 name: "filter".to_string()
                             }),
                             arguments: vec![]
-                        }
+                        }))
                     })),
-                    call: CallExpr {
+                    call: Expression::Call(Box::new(CallExpr {
                         base: BaseNode {
                             location: loc.get(1, 34, 1, 41),
                             errors: vec![]
@@ -2186,7 +2201,7 @@ fn multiple_pipe_expressions() {
                             name: "count".to_string()
                         }),
                         arguments: vec![]
-                    }
+                    }))
                 }))
             })]
         },
@@ -2232,20 +2247,13 @@ fn pipe_expression_into_non_call_expression() {
                         }),
                         arguments: vec![]
                     })),
-                    call: CallExpr {
+                    call: Expression::Identifier(Identifier {
                         base: BaseNode {
                             location: loc.get(1, 10, 1, 13),
-                            errors: vec!["pipe destination must be a function call".to_string()]
+                            errors: vec![]
                         },
-                        callee: Expression::Identifier(Identifier {
-                            base: BaseNode {
-                                location: loc.get(1, 10, 1, 13),
-                                errors: vec![]
-                            },
-                            name: "bar".to_string()
-                        }),
-                        arguments: vec![]
-                    }
+                        name: "bar".to_string()
+                    }),
                 })),
             })]
         },
@@ -2344,7 +2352,7 @@ fn two_variables_for_two_froms() {
                             },
                             name: "howdy".to_string()
                         }),
-                        call: CallExpr {
+                        call: Expression::Call(Box::new(CallExpr {
                             base: BaseNode {
                                 location: loc.get(3, 11, 3, 18),
                                 errors: vec![]
@@ -2357,7 +2365,7 @@ fn two_variables_for_two_froms() {
                                 name: "count".to_string()
                             }),
                             arguments: vec![]
-                        }
+                        }))
                     }))
                 }),
                 Statement::Expr(ExprStmt {
@@ -2377,7 +2385,7 @@ fn two_variables_for_two_froms() {
                             },
                             name: "doody".to_string()
                         }),
-                        call: CallExpr {
+                        call: Expression::Call(Box::new(CallExpr {
                             base: BaseNode {
                                 location: loc.get(4, 11, 4, 16),
                                 errors: vec![]
@@ -2390,7 +2398,7 @@ fn two_variables_for_two_froms() {
                                 name: "sum".to_string()
                             }),
                             arguments: vec![]
-                        }
+                        }))
                     }))
                 })
             ]
@@ -7575,7 +7583,7 @@ fn from_with_range() {
                             }]
                         }))]
                     })),
-                    call: CallExpr {
+                    call: Expression::Call(Box::new(CallExpr {
                         base: BaseNode {
                             location: loc.get(1, 34, 1, 59),
                             errors: vec![]
@@ -7649,7 +7657,7 @@ fn from_with_range() {
                                 }
                             ]
                         }))]
-                    }
+                    }))
                 }))
             })]
         },
@@ -7721,7 +7729,7 @@ fn from_with_limit() {
                             }]
                         }))]
                     })),
-                    call: CallExpr {
+                    call: Expression::Call(Box::new(CallExpr {
                         base: BaseNode {
                             location: loc.get(1, 34, 1, 61),
                             errors: vec![]
@@ -7782,7 +7790,7 @@ fn from_with_limit() {
                                 }
                             ]
                         }))]
-                    }
+                    }))
                 }))
             })]
         },
@@ -7863,7 +7871,7 @@ fn from_with_range_and_count() {
                                 }]
                             }))]
                         })),
-                        call: CallExpr {
+                        call: Expression::Call(Box::new(CallExpr {
                             base: BaseNode {
                                 location: loc.get(2, 10, 2, 36),
                                 errors: vec![]
@@ -7944,9 +7952,9 @@ fn from_with_range_and_count() {
                                     }
                                 ]
                             }))]
-                        }
+                        }))
                     })),
-                    call: CallExpr {
+                    call: Expression::Call(Box::new(CallExpr {
                         base: BaseNode {
                             location: loc.get(3, 10, 3, 17),
                             errors: vec![]
@@ -7959,7 +7967,7 @@ fn from_with_range_and_count() {
                             name: "count".to_string()
                         }),
                         arguments: vec![]
-                    }
+                    }))
                 }))
             })]
         }
@@ -8046,7 +8054,7 @@ fn from_with_range_limit_and_count() {
                                     }]
                                 }))]
                             })),
-                            call: CallExpr {
+                            call: Expression::Call(Box::new(CallExpr {
                                 base: BaseNode {
                                     location: loc.get(2, 10, 2, 36),
                                     errors: vec![]
@@ -8127,9 +8135,9 @@ fn from_with_range_limit_and_count() {
                                         }
                                     ]
                                 }))]
-                            }
+                            }))
                         })),
-                        call: CallExpr {
+                        call: Expression::Call(Box::new(CallExpr {
                             base: BaseNode {
                                 location: loc.get(3, 10, 3, 21),
                                 errors: vec![]
@@ -8168,9 +8176,9 @@ fn from_with_range_limit_and_count() {
                                     }))
                                 }]
                             }))]
-                        }
+                        }))
                     })),
-                    call: CallExpr {
+                    call: Expression::Call(Box::new(CallExpr {
                         base: BaseNode {
                             location: loc.get(4, 10, 4, 17),
                             errors: vec![]
@@ -8183,7 +8191,7 @@ fn from_with_range_limit_and_count() {
                             name: "count".to_string()
                         }),
                         arguments: vec![]
-                    }
+                    }))
                 }))
             })]
         }
@@ -8268,7 +8276,7 @@ join(tables:[a,b], on:["host"], fn: (a,b) => a["_field"] + b["_field"])"#,
                                 }]
                             }))]
                         })),
-                        call: CallExpr {
+                        call: Expression::Call(Box::new(CallExpr {
                             base: BaseNode {
                                 location: loc.get(2, 35, 2, 51),
                                 errors: vec![]
@@ -8317,7 +8325,7 @@ join(tables:[a,b], on:["host"], fn: (a,b) => a["_field"] + b["_field"])"#,
                                     })))
                                 }]
                             }))]
-                        }
+                        }))
                     }))
                 }),
                 Statement::Variable(VariableAssgn {
@@ -8377,7 +8385,7 @@ join(tables:[a,b], on:["host"], fn: (a,b) => a["_field"] + b["_field"])"#,
                                 }]
                             }))]
                         })),
-                        call: CallExpr {
+                        call: Expression::Call(Box::new(CallExpr {
                             base: BaseNode {
                                 location: loc.get(3, 35, 3, 51),
                                 errors: vec![]
@@ -8426,7 +8434,7 @@ join(tables:[a,b], on:["host"], fn: (a,b) => a["_field"] + b["_field"])"#,
                                     })))
                                 }]
                             }))]
-                        }
+                        }))
                     }))
                 }),
                 Statement::Expr(ExprStmt {
@@ -8710,7 +8718,7 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
                                     }]
                                 }))]
                             })),
-                            call: CallExpr {
+                            call: Expression::Call(Box::new(CallExpr {
                                 base: BaseNode {
                                     location: loc.get(3, 5, 3, 48),
                                     errors: vec![]
@@ -8807,9 +8815,9 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
                                         })))
                                     }]
                                 }))]
-                            }
+                            }))
                         })),
-                        call: CallExpr {
+                        call: Expression::Call(Box::new(CallExpr {
                             base: BaseNode {
                                 location: loc.get(4, 5, 4, 21),
                                 errors: vec![]
@@ -8858,7 +8866,7 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
                                     })))
                                 }]
                             }))]
-                        }
+                        }))
                     }))
                 }),
                 Statement::Variable(VariableAssgn {
@@ -8923,7 +8931,7 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
                                     }]
                                 }))]
                             })),
-                            call: CallExpr {
+                            call: Expression::Call(Box::new(CallExpr {
                                 base: BaseNode {
                                     location: loc.get(7, 5, 7, 48),
                                     errors: vec![]
@@ -9020,9 +9028,9 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
                                         })))
                                     }]
                                 }))]
-                            }
+                            }))
                         })),
-                        call: CallExpr {
+                        call: Expression::Call(Box::new(CallExpr {
                             base: BaseNode {
                                 location: loc.get(8, 5, 8, 21),
                                 errors: vec![]
@@ -9071,7 +9079,7 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
                                     })))
                                 }]
                             }))]
-                        }
+                        }))
                     }))
                 }),
                 Statement::Expr(ExprStmt {
@@ -9712,7 +9720,7 @@ fn function_call_with_unbalanced_braces() {
                             }),
                             arguments: vec![]
                         })),
-                        call: CallExpr {
+                        call: Expression::Call(Box::new(CallExpr {
                             base: BaseNode {
                                 location: loc.get(1, 11, 1, 18),
                                 errors: vec![]
@@ -9725,9 +9733,9 @@ fn function_call_with_unbalanced_braces() {
                                 name: "range".to_string()
                             }),
                             arguments: vec![]
-                        }
+                        }))
                     })),
-                    call: CallExpr {
+                    call: Expression::Call(Box::new(CallExpr {
                         base: BaseNode {
                             location: loc.get(1, 22, 1, 56),
                             errors: vec![]
@@ -9811,7 +9819,7 @@ fn function_call_with_unbalanced_braces() {
                                 })))
                             }]
                         }))]
-                    }
+                    }))
                 }))
             })]
         },
@@ -10828,13 +10836,14 @@ fn integer_literal_overflow() {
                 base: BaseNode {
                     location: loc.get(1, 1, 1, 31),
                     errors: vec![] },
-                expression: Expression::Integer(IntegerLit {
+                expression: Expression::Bad(Box::new(BadExpr {
                     base: BaseNode {
                         location: loc.get(1, 1, 1, 31),
-                        errors: vec!["invalid integer literal \"100000000000000000000000000000\": value out of range".to_string()]
+                        errors: vec![],
                     },
-                    value: 0,
-                })
+                    text: "invalid integer literal \"100000000000000000000000000000\": value out of range".to_string(),
+                    expression: None,
+                }))
             })]
         },
     )

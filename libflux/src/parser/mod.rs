@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::ffi::CString;
+use std::fmt;
 use std::str;
 
 use crate::ast;
@@ -36,6 +37,20 @@ pub fn parse_string(name: &str, s: &str) -> File {
 //    println!("Parse in Rust {}", str);
 //}
 
+fn format_tokens(tokens: &Vec<Token>) -> &str {
+    let mut s = String::new();
+    s.push('[');
+    let mut i = 0;
+    for t in tokens {
+        if i != 0 {
+            s.push_str(", ");
+        }
+        s.push_str(format_token(t.tok));
+        i += 1
+    }
+    s.push(']');
+    s.as_str()
+}
 fn format_token(t: TOK) -> &'static str {
     match t {
         TOK_ILLEGAL => "ILLEGAL",
@@ -176,42 +191,46 @@ impl Parser {
         }
     }
 
-    // expect will continuously scan the input until it reads the requested
-    // token. If a token has been buffered by peek, then the token will
-    // be read if it matches or will be discarded if it is the wrong token.
-    fn expect(&mut self, exp: TOK) -> Token {
+    // expect will continuously scan the input until it reads the requested token.
+    fn expect(&mut self, exp: TOK) -> (Token, Option<Vec<Token>>) {
+        let mut bad = Vec::new();
         loop {
             let t = self.scan();
             match t.tok {
-                tok if tok == exp => return t,
+                tok if tok == exp => {
+                    if bad.len() > 0 {
+                        return (t, Some(bad));
+                    }
+                    return (t, None);
+                }
                 TOK_EOF => {
-                    self.errs
-                        .push(format!("expected {}, got EOF", format_token(exp)));
-                    return t;
+                    bad.push(t);
+                    return (t, Some(bad));
                 }
-                _ => {
-                    let pos = self.pos(t.pos);
-                    self.errs.push(format!(
-                        "expected {}, got {} ({}) at {}:{}",
-                        format_token(exp),
-                        format_token(t.tok),
-                        t.lit,
-                        pos.line,
-                        pos.column,
-                    ));
-                }
+                _ => bad.push(t),
             }
+        }
+    }
+    // must expect behaves the same as expect but will panic if any bad tokens are found.
+    // Only call must_expect if peek is used before calling expect in all cases.
+    // must_expect should only panic if a developer made a mistake, it should not panic based on
+    // input.
+    fn must_expect(&mut self, exp: TOK) -> (Token) {
+        let (t, bad) = self.expect(exp);
+        match bad {
+            None => t,
+            Some(bad) => panic!("impossible unexpected tokens {}", format_tokens(&bad)),
         }
     }
 
     // open will open a new block. It will expect that the next token
     // is the start token and mark that we expect the end token in the
     // future.
-    fn open(&mut self, start: TOK, end: TOK) -> Token {
-        let t = self.expect(start);
+    fn open(&mut self, start: TOK, end: TOK) -> (Token, Option<Vec<Token>>) {
+        let (t, bad) = self.expect(start);
         let n = self.blocks.entry(end).or_insert(0);
         *n += 1;
-        return t;
+        return (t, bad);
     }
 
     // more will check if we should continue reading tokens for the
@@ -308,6 +327,22 @@ impl Parser {
     fn base_node_from_pos(&mut self, start: &ast::Position, end: &ast::Position) -> BaseNode {
         self.base_node(self.source_location(start, end))
     }
+    fn bad_expr_from_tokens(
+        &mut self,
+        exp: TOK,
+        bad: &Vec<Token>,
+        expr: Option<Expression>,
+    ) -> Expression {
+        Expression::Bad(Box::new(BadExpr {
+            base: self.base_node_from_tokens(bad[0], bad[bad.len() - 1]),
+            text: format!(
+                "unexpected tokens: {}, expected {}",
+                format_tokens(bad),
+                format_token(exp),
+            ),
+            expression: expr,
+        }))
+    }
 
     fn source_location(&self, start: &ast::Position, end: &ast::Position) -> SourceLocation {
         if !start.is_valid() || !end.is_valid() {
@@ -383,7 +418,7 @@ impl Parser {
     }
 
     fn parse_import_declaration(&mut self) -> ImportDeclaration {
-        let t = self.expect(TOK_IMPORT);
+        let t = self.must_expect(TOK_IMPORT);
         let alias = if self.peek().tok == TOK_IDENT {
             Some(self.parse_identifier())
         } else {
@@ -428,7 +463,7 @@ impl Parser {
         }
     }
     fn parse_option_assignment(&mut self) -> Statement {
-        let t = self.expect(TOK_OPTION);
+        let t = self.must_expect(TOK_OPTION);
         let ident = self.parse_identifier();
         let assignment = self.parse_option_assignment_suffix(ident);
         Statement::Option(OptionStmt {
@@ -465,7 +500,7 @@ impl Parser {
         }
     }
     fn parse_builtin_statement(&mut self) -> Statement {
-        let t = self.expect(TOK_BUILTIN);
+        let t = self.must_expect(TOK_BUILTIN);
         let id = self.parse_identifier();
         Statement::Builtin(BuiltinStmt {
             base: self.base_node_from_other_end(&t, &id.base),
@@ -473,7 +508,7 @@ impl Parser {
         })
     }
     fn parse_test_statement(&mut self) -> Statement {
-        let t = self.expect(TOK_TEST);
+        let t = self.must_expect(TOK_TEST);
         let id = self.parse_identifier();
         let assignment = self.parse_assign_statement();
         Statement::Test(TestStmt {
@@ -507,11 +542,15 @@ impl Parser {
         }
     }
     fn parse_assign_statement(&mut self) -> Expression {
-        self.expect(TOK_ASSIGN);
-        return self.parse_expression();
+        let (_, bad) = self.expect(TOK_ASSIGN);
+        let expr = self.parse_expression();
+        match bad {
+            Some(bad) => self.bad_expr_from_tokens(TOK_ASSIGN, &bad, Some(expr)),
+            None => expr,
+        }
     }
     fn parse_return_statement(&mut self) -> Statement {
-        let t = self.expect(TOK_RETURN);
+        let t = self.must_expect(TOK_RETURN);
         let expr = self.parse_expression();
         Statement::Return(ReturnStmt {
             base: self.base_node_from_other_end(&t, expr.base()),
@@ -623,13 +662,19 @@ impl Parser {
         if t.tok == TOK_IF {
             self.consume();
             let test = self.parse_expression();
-            self.expect(TOK_THEN);
-            let cons = self.parse_expression();
-            self.expect(TOK_ELSE);
-            let alt = self.parse_expression();
+            let (_, bad_cons) = self.expect(TOK_THEN);
+            let mut cons = self.parse_expression();
+            if let Some(bad) = bad_cons {
+                cons = self.bad_expr_from_tokens(TOK_THEN, &bad, Some(cons))
+            }
+            let (_, bad_alt) = self.expect(TOK_ELSE);
+            let mut alt = self.parse_expression();
+            if let Some(bad) = bad_alt {
+                alt = self.bad_expr_from_tokens(TOK_ELSE, &bad, Some(alt))
+            }
             return Expression::Conditional(Box::new(ConditionalExpr {
                 base: self.base_node_from_other_end(&t, alt.base()),
-                test,
+                test: test,
                 consequent: cons,
                 alternate: alt,
             }));
@@ -861,32 +906,11 @@ impl Parser {
             }
             // TODO(jsternberg): this is not correct.
             let rhs = self.parse_unary_expression();
-            match rhs {
-                Expression::Call(b) => {
-                    res = Expression::PipeExpr(Box::new(PipeExpr {
-                        base: self.base_node_from_others(res.base(), &b.base),
-                        argument: res,
-                        call: *b,
-                    }));
-                }
-                _ => {
-                    // TODO(affo): this is slightly different from Go parser (cannot create nil expressions).
-                    // wrap the expression in a blank call expression in which the callee is what we parsed.
-                    // TODO(affo): add errors got from ast.Check on rhs.
-                    self.errs
-                        .push(String::from("pipe destination must be a function call"));
-                    let call = CallExpr {
-                        base: self.base_node(rhs.base().location.clone()),
-                        callee: rhs,
-                        arguments: vec![],
-                    };
-                    res = Expression::PipeExpr(Box::new(PipeExpr {
-                        base: self.base_node_from_others(res.base(), &call.base),
-                        argument: res,
-                        call: call,
-                    }));
-                }
-            }
+            res = Expression::PipeExpr(Box::new(PipeExpr {
+                base: self.base_node_from_others(res.base(), rhs.base()),
+                argument: res,
+                call: rhs,
+            }));
         }
         res
     }
@@ -949,7 +973,7 @@ impl Parser {
         }
     }
     fn parse_dot_expression(&mut self, expr: Expression) -> Expression {
-        self.expect(TOK_DOT);
+        self.must_expect(TOK_DOT);
         let id = self.parse_identifier();
         Expression::Member(Box::new(MemberExpr {
             base: self.base_node_from_others(expr.base(), &id.base),
@@ -994,29 +1018,22 @@ impl Parser {
                 index: e,
             })),
             // Return a bad node.
-            None => {
-                self.errs
-                    .push(String::from("no expression included in brackets"));
-                Expression::Index(Box::new(IndexExpr {
-                    base: self.base_node_from_other_start(expr.base(), &end),
-                    array: expr,
-                    index: Expression::Integer(IntegerLit {
-                        base: self.base_node_from_tokens(&start, &end),
-                        value: -1,
-                    }),
-                }))
-            }
+            None => Expression::Bad(Box::new(BadExpr {
+                base: self.base_node_from_tokens(&start, &end),
+                text: String::from("no expression included in brackets"),
+                expression: None,
+            })),
         }
     }
     fn parse_primary_expression(&mut self) -> Expression {
         let t = self.peek_with_regex();
         match t.tok {
             TOK_IDENT => Expression::Identifier(self.parse_identifier()),
-            TOK_INT => Expression::Integer(self.parse_int_literal()),
+            TOK_INT => self.parse_int_literal(),
             TOK_FLOAT => Expression::Float(self.parse_float_literal()),
             TOK_STRING => Expression::StringLit(self.parse_string_literal()),
-            TOK_QUOTE => Expression::StringExpr(Box::new(self.parse_string_expression())),
-            TOK_REGEX => Expression::Regexp(self.parse_regexp_literal()),
+            TOK_QUOTE => self.parse_string_expression(),
+            TOK_REGEX => self.parse_regexp_literal(),
             TOK_TIME => Expression::DateTime(self.parse_time_literal()),
             TOK_DURATION => Expression::Duration(self.parse_duration_literal()),
             TOK_PIPE_RECEIVE => Expression::PipeLit(self.parse_pipe_literal()),
@@ -1041,8 +1058,8 @@ impl Parser {
             })),
         }
     }
-    fn parse_string_expression(&mut self) -> StringExpr {
-        let start = self.expect(TOK_QUOTE);
+    fn parse_string_expression(&mut self) -> Expression {
+        let start = self.must_expect(TOK_QUOTE);
         let mut parts = Vec::new();
         loop {
             let t = self.s.scan_string_expr();
@@ -1062,55 +1079,51 @@ impl Parser {
                     }));
                 }
                 TOK_QUOTE => {
-                    return StringExpr {
+                    return Expression::StringExpr(Box::new(StringExpr {
                         base: self.base_node_from_tokens(&start, &t),
                         parts: parts,
-                    }
+                    }))
                 }
                 _ => {
                     let loc = self
                         .source_location(&self.pos(t.pos), &self.pos(t.pos + t.lit.len() as u32));
-                    self.errs.push(format!(
-                        "got unexpected token in string expression {}@{}:{}-{}:{}: {}",
-                        self.fname,
-                        loc.start.line,
-                        loc.start.column,
-                        loc.end.line,
-                        loc.end.column,
+                    let text = format!(
+                        "got unexpected token in string expression: {}",
                         format_token(t.tok)
-                    ));
-                    return StringExpr {
-                        base: self.base_node_from_tokens(&start, &t),
-                        parts: Vec::new(),
-                    };
+                    );
+                    return Expression::Bad(Box::new(BadExpr {
+                        base: self.base_node(loc),
+                        text: text,
+                        expression: Some(Expression::StringExpr(Box::new(StringExpr {
+                            base: self.base_node_from_tokens(&start, &t),
+                            parts: parts,
+                        }))),
+                    }));
                 }
             }
         }
     }
     fn parse_identifier(&mut self) -> Identifier {
-        let t = self.expect(TOK_IDENT);
+        let (t, bad) = self.expect(TOK_IDENT);
+        // TODO figure out how to handle bad identifiers
+        // Should we return Expression?
         return Identifier {
             base: self.base_node_from_token(&t),
             name: t.lit,
         };
     }
-    fn parse_int_literal(&mut self) -> IntegerLit {
-        let t = self.expect(TOK_INT);
+    fn parse_int_literal(&mut self) -> Expression {
+        let t = self.must_expect(TOK_INT);
         match (&t.lit).parse::<i64>() {
-            Err(_e) => {
-                self.errs.push(format!(
-                    "invalid integer literal \"{}\": value out of range",
-                    t.lit
-                ));
-                IntegerLit {
-                    base: self.base_node_from_token(&t),
-                    value: 0,
-                }
-            }
-            Ok(v) => IntegerLit {
+            Err(_e) => Expression::Bad(Box::new(BadExpr {
+                base: self.base_node_from_token(&t),
+                text: format!("invalid integer literal \"{}\": value out of range", t.lit),
+                expression: None,
+            })),
+            Ok(v) => Expression::Integer(IntegerLit {
                 base: self.base_node_from_token(&t),
                 value: v,
-            },
+            }),
         }
     }
     fn parse_float_literal(&mut self) -> FloatLit {
@@ -1128,21 +1141,19 @@ impl Parser {
             value: value,
         }
     }
-    fn parse_regexp_literal(&mut self) -> RegexpLit {
+    fn parse_regexp_literal(&mut self) -> Expression {
         let t = self.expect(TOK_REGEX);
         let value = strconv::parse_regex(t.lit.as_str());
         match value {
-            Err(e) => {
-                self.errs.push(e);
-                RegexpLit {
-                    base: self.base_node_from_token(&t),
-                    value: "".to_string(),
-                }
-            }
-            Ok(v) => RegexpLit {
+            Err(e) => Expression::Bad(Box::new(BadExpr {
+                base: self.base_node_from_token(&t),
+                text: e,
+                expression: None,
+            })),
+            Ok(v) => Expression::Regexp(RegexpLit {
                 base: self.base_node_from_token(&t),
                 value: v,
-            },
+            }),
         }
     }
     fn parse_time_literal(&mut self) -> DateTimeLit {
@@ -1509,8 +1520,12 @@ impl Parser {
         }
     }
     fn parse_function_expression(&mut self, lparen: Token, params: Vec<Property>) -> Expression {
-        self.expect(TOK_ARROW);
-        self.parse_function_body_expression(lparen, params)
+        let (_, bad) = self.expect(TOK_ARROW);
+        let expr = self.parse_function_body_expression(lparen, params);
+        match bad {
+            Some(bad) => self.bad_expr_from_tokens(TOK_ARROW, &&bad, Some(expr)),
+            None => expr,
+        }
     }
     fn parse_function_body_expression(
         &mut self,

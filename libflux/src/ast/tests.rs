@@ -648,7 +648,7 @@ fn test_json_pipe_expression() {
             base: BaseNode::default(),
             name: "a".to_string(),
         }),
-        call: CallExpr {
+        call: Expression::Call(Box::new(CallExpr {
             base: BaseNode::default(),
             callee: Expression::Identifier(Identifier {
                 base: BaseNode::default(),
@@ -658,7 +658,7 @@ fn test_json_pipe_expression() {
                 base: BaseNode::default(),
                 value: "hello".to_string(),
             })],
-        },
+        })),
     };
     let serialized = serde_json::to_string(&n).unwrap();
     assert_eq!(

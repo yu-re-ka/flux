@@ -268,7 +268,7 @@ where
             }
             Node::PipeExpr(n) => {
                 walk(&w, Node::from_expr(&n.argument));
-                walk(&w, Node::CallExpr(&n.call));
+                walk(&w, Node::from_expr(&n.call));
             }
             Node::CallExpr(n) => {
                 walk(&w, Node::from_expr(&n.callee));
