@@ -44,7 +44,7 @@ jobs:
       - run:
           name: Prune GOCACHE
           command: |
-            count=$(find /tmp/go-cache -type f -atime +30d -print -delete | wc -l)
+            count=$(find /tmp/go-cache -type f -mtime +30 -print -delete | wc -l)
             echo "Removed $count files."
       - save_cache:
           name: Saving GOCACHE
