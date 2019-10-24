@@ -41,6 +41,10 @@ jobs:
           name: Uploading coverage report
           command: |
             bash <(curl -s https://codecov.io/bash)
+      - run:
+          name: Prune GOCACHE
+          command: |
+            find /tmp/go-cache -type f -print -delete
       - save_cache:
           name: Saving GOCACHE
           key: flux-gocache-{{ .Branch }}-{{ .Revision }}
