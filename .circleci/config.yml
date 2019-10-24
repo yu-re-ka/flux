@@ -42,9 +42,9 @@ jobs:
           command: |
             bash <(curl -s https://codecov.io/bash)
       - run:
-          name: Prune GOCACHE
+          name: Pruning GOCACHE
           command: |
-            count=$(find /tmp/go-cache -type f -mtime +30 -print -delete | wc -l)
+            count=$(find /tmp/go-cache -type f -mtime +14 -print -delete | wc -l)
             echo "Removed $count files."
       - save_cache:
           name: Saving GOCACHE
