@@ -44,7 +44,8 @@ jobs:
       - run:
           name: Prune GOCACHE
           command: |
-            find /tmp/go-cache -type f -print -delete
+            count=$(find /tmp/go-cache -type f -atime +30d -print -delete | wc -l)
+            echo "Removed $count files."
       - save_cache:
           name: Saving GOCACHE
           key: flux-gocache-{{ .Branch }}-{{ .Revision }}
