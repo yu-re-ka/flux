@@ -1,5 +1,6 @@
 use crate::ast::{walk, PropertyKey, SourceLocation};
 use std::fmt;
+use std::rc::Rc;
 
 // check() inspects an AST node and returns a list of found AST errors plus
 // any errors existed before ast.check() is performed.
@@ -14,7 +15,8 @@ pub fn check(node: walk::Node) -> Vec<Error> {
                     message: err.clone(),
                 });
             }
-            match n {
+
+            match *n {
                 walk::Node::BadStmt(n) => errors.push(Error {
                     location: n.base.location.clone(),
                     message: format!("invalid statement: {}", n.text),
@@ -53,7 +55,7 @@ pub fn check(node: walk::Node) -> Vec<Error> {
                 _ => {}
             }
         }),
-        node,
+        Rc::new(node),
     );
     errors
 }

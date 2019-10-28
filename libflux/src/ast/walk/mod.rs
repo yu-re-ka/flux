@@ -231,109 +231,109 @@ impl<'a> Node<'a> {
 // Done is called on that Node to signal that we are done with that Node.
 //
 // If Visit returns None, walk will not recurse on the children.
-pub trait Visitor: Sized {
+pub trait Visitor<'b>: Sized {
     // Visit is called for a node.
     // The returned visitor will be used to walk children of the node.
     // If visit returns None, walk will not recurse on the children.
-    fn visit(&self, node: &Node) -> Option<Self>;
+    fn visit<'a>(&self, node: Rc<Node<'b>>) -> Option<Self>;
     // Done is called for a node once it has been visited along with all of its children.
-    fn done(&self, _: &Node) {} // default is to do nothing
+    fn done(&self, _: Rc<Node>) {} // default is to do nothing
 }
 
 // Walk recursively visits children of a node.
 // Nodes are visited in depth-first order.
-pub fn walk<T>(v: &T, node: Node)
+pub fn walk<'a, T>(v: &T, node: Rc<Node<'a>>)
 where
-    T: Visitor,
+    T: Visitor<'a>,
 {
-    if let Some(w) = v.visit(&node) {
-        match node {
+    if let Some(w) = v.visit(node.clone()) {
+        match *node {
             Node::Package(n) => {
                 for file in n.files.iter() {
-                    walk(&w, Node::File(&file));
+                    walk(&w, Rc::new(Node::File(&file)));
                 }
             }
             Node::File(n) => {
                 if let Some(pkg) = &n.package {
-                    walk(&w, Node::PackageClause(pkg));
+                    walk(&w, Rc::new(Node::PackageClause(pkg)));
                 }
                 for imp in n.imports.iter() {
-                    walk(&w, Node::ImportDeclaration(imp));
+                    walk(&w, Rc::new(Node::ImportDeclaration(imp)));
                 }
                 for stmt in n.body.iter() {
-                    walk(&w, Node::from_stmt(stmt));
+                    walk(&w, Rc::new(Node::from_stmt(stmt)));
                 }
             }
             Node::PackageClause(n) => {
-                walk(&w, Node::Identifier(&n.name));
+                walk(&w, Rc::new(Node::Identifier(&n.name)));
             }
             Node::ImportDeclaration(n) => {
                 if let Some(alias) = &n.alias {
-                    walk(&w, Node::Identifier(alias));
+                    walk(&w, Rc::new(Node::Identifier(alias)));
                 }
-                walk(&w, Node::StringLit(&n.path));
+                walk(&w, Rc::new(Node::StringLit(&n.path)));
             }
             Node::Identifier(_) => {}
             Node::ArrayExpr(n) => {
                 for element in n.elements.iter() {
-                    walk(&w, Node::from_expr(&element));
+                    walk(&w, Rc::new(Node::from_expr(&element)));
                 }
             }
             Node::FunctionExpr(n) => {
                 for param in n.params.iter() {
-                    walk(&w, Node::Property(&param));
+                    walk(&w, Rc::new(Node::Property(&param)));
                 }
-                walk(&w, Node::from_function_body(&n.body))
+                walk(&w, Rc::new(Node::from_function_body(&n.body)));
             }
             Node::LogicalExpr(n) => {
-                walk(&w, Node::from_expr(&n.left));
-                walk(&w, Node::from_expr(&n.right));
+                walk(&w, Rc::new(Node::from_expr(&n.left)));
+                walk(&w, Rc::new(Node::from_expr(&n.right)));
             }
             Node::ObjectExpr(n) => {
                 if let Some(i) = &n.with {
-                    walk(&w, Node::Identifier(i));
+                    walk(&w, Rc::new(Node::Identifier(i)));
                 }
                 for prop in n.properties.iter() {
-                    walk(&w, Node::Property(&prop))
+                    walk(&w, Rc::new(Node::Property(&prop)));
                 }
             }
             Node::MemberExpr(n) => {
-                walk(&w, Node::from_expr(&n.object));
-                walk(&w, Node::from_property_key(&n.property));
+                walk(&w, Rc::new(Node::from_expr(&n.object)));
+                walk(&w, Rc::new(Node::from_property_key(&n.property)));
             }
             Node::IndexExpr(n) => {
-                walk(&w, Node::from_expr(&n.array));
-                walk(&w, Node::from_expr(&n.index));
+                walk(&w, Rc::new(Node::from_expr(&n.array)));
+                walk(&w, Rc::new(Node::from_expr(&n.index)));
             }
             Node::BinaryExpr(n) => {
-                walk(&w, Node::from_expr(&n.left));
-                walk(&w, Node::from_expr(&n.right));
+                walk(&w, Rc::new(Node::from_expr(&n.left)));
+                walk(&w, Rc::new(Node::from_expr(&n.right)));
             }
             Node::UnaryExpr(n) => {
-                walk(&w, Node::from_expr(&n.argument));
+                walk(&w, Rc::new(Node::from_expr(&n.argument)));
             }
             Node::PipeExpr(n) => {
-                walk(&w, Node::from_expr(&n.argument));
-                walk(&w, Node::CallExpr(&n.call));
+                walk(&w, Rc::new(Node::from_expr(&n.argument)));
+                walk(&w, Rc::new(Node::CallExpr(&n.call)));
             }
             Node::CallExpr(n) => {
-                walk(&w, Node::from_expr(&n.callee));
+                walk(&w, Rc::new(Node::from_expr(&n.callee)));
                 for arg in n.arguments.iter() {
-                    walk(&w, Node::from_expr(&arg));
+                    walk(&w, Rc::new(Node::from_expr(&arg)));
                 }
             }
             Node::ConditionalExpr(n) => {
-                walk(&w, Node::from_expr(&n.test));
-                walk(&w, Node::from_expr(&n.consequent));
-                walk(&w, Node::from_expr(&n.alternate));
+                walk(&w, Rc::new(Node::from_expr(&n.test)));
+                walk(&w, Rc::new(Node::from_expr(&n.consequent)));
+                walk(&w, Rc::new(Node::from_expr(&n.alternate)));
             }
             Node::StringExpr(n) => {
                 for part in n.parts.iter() {
-                    walk(&w, Node::from_string_expr_part(&part));
+                    walk(&w, Rc::new(Node::from_string_expr_part(&part)));
                 }
             }
             Node::ParenExpr(n) => {
-                walk(&w, Node::from_expr(&n.expression));
+                walk(&w, Rc::new(Node::from_expr(&n.expression)));
             }
             Node::IntegerLit(_) => {}
             Node::FloatLit(_) => {}
@@ -346,57 +346,58 @@ where
             Node::PipeLit(_) => {}
             Node::BadExpr(n) => {
                 if let Some(e) = &n.expression {
-                    walk(&w, Node::from_expr(e));
+                    walk(&w, Rc::new(Node::from_expr(e)));
                 }
             }
             Node::ExprStmt(n) => {
-                walk(&w, Node::from_expr(&n.expression));
+                walk(&w, Rc::new(Node::from_expr(&n.expression)));
             }
             Node::OptionStmt(n) => {
-                walk(&w, Node::from_assignment(&n.assignment));
+                walk(&w, Rc::new(Node::from_assignment(&n.assignment)));
             }
             Node::ReturnStmt(n) => {
-                walk(&w, Node::from_expr(&n.argument));
+                walk(&w, Rc::new(Node::from_expr(&n.argument)));
             }
             Node::BadStmt(_) => {}
             Node::TestStmt(n) => {
-                walk(&w, Node::VariableAssgn(&n.assignment));
+                walk(&w, Rc::new(Node::VariableAssgn(&n.assignment)));
             }
             Node::BuiltinStmt(n) => {
-                walk(&w, Node::Identifier(&n.id));
+                walk(&w, Rc::new(Node::Identifier(&n.id)));
             }
             Node::Block(n) => {
                 for s in n.body.iter() {
-                    walk(&w, Node::from_stmt(&s));
+                    walk(&w, Rc::new(Node::from_stmt(&s)));
                 }
             }
             Node::Property(n) => {
-                walk(&w, Node::from_property_key(&n.key));
+                walk(&w, Rc::new(Node::from_property_key(&n.key)));
                 if let Some(v) = &n.value {
-                    walk(&w, Node::from_expr(v));
+                    walk(&w, Rc::new(Node::from_expr(v)));
                 }
             }
             Node::TextPart(_) => {}
             Node::InterpolatedPart(n) => {
-                walk(&w, Node::from_expr(&n.expression));
+                walk(&w, Rc::new(Node::from_expr(&n.expression)));
             }
             Node::VariableAssgn(n) => {
-                walk(&w, Node::Identifier(&n.id));
-                walk(&w, Node::from_expr(&n.init));
+                walk(&w, Rc::new(Node::Identifier(&n.id)));
+                walk(&w, Rc::new(Node::from_expr(&n.init)));
             }
             Node::MemberAssgn(n) => {
-                walk(&w, Node::MemberExpr(&n.member));
-                walk(&w, Node::from_expr(&n.init));
+                walk(&w, Rc::new(Node::MemberExpr(&n.member)));
+                walk(&w, Rc::new(Node::from_expr(&n.init)));
             }
         }
     }
-    v.done(&node)
+
+    v.done(node.clone())
 }
 
-type FuncVisitor<'a> = Rc<RefCell<&'a mut dyn FnMut(&Node)>>;
+type FuncVisitor<'a> = Rc<RefCell<&'a mut dyn FnMut(Rc<Node>)>>;
 
-impl<'a> Visitor for FuncVisitor<'a> {
-    fn visit(&self, node: &Node) -> Option<Self> {
+impl<'a> Visitor<'a> for FuncVisitor<'a> {
+    fn visit(&self, node: Rc<Node<'a>>) -> Option<Self> {
         let mut func: RefMut<_> = self.borrow_mut();
         (&mut *func)(node);
         Some(Rc::clone(self))
@@ -404,6 +405,6 @@ impl<'a> Visitor for FuncVisitor<'a> {
 }
 
 // Create Visitor will produce a visitor that calls the function for all nodes.
-pub fn create_visitor(func: &mut dyn FnMut(&Node)) -> FuncVisitor {
+pub fn create_visitor(func: &mut dyn FnMut(Rc<Node>)) -> FuncVisitor {
     Rc::new(RefCell::new(func))
 }

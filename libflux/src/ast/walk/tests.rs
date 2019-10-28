@@ -2,13 +2,14 @@
 // Every test is preceded by the correspondent test case in golang.
 use super::*;
 use crate::parser::parse_string;
+use std::rc::Rc;
 
 fn test_walk(source: &str, want: Vec<&str>) {
     let file = parse_string("test_walk", source);
     let mut nodes = Vec::new();
     walk(
         &create_visitor(&mut |n| nodes.push(format!("{}", n))),
-        Node::File(&file),
+        Rc::new(Node::File(&file)),
     );
     assert_eq!(want, nodes);
 }
