@@ -20,7 +20,7 @@ kind        = IDENTIFIER
 monotype    = type_var | primitive | array | row | function
 
 type_var    = 't' ([0-9])*
-primitive   = INT | FLOAT | STRING | BOOL | DURATION | TIME | REGEXP 
+primitive   = INT | UINT | FLOAT | STRING | BOOL | DURATION | TIME | REGEXP 
 array       = '[' monotype ']'
 row         = '{' properties? '}'
 function    = '(' arguments? ')' '->' monotype
