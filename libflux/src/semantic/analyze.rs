@@ -1,4 +1,6 @@
 use crate::ast;
+use crate::semantic::analyze_source;
+use crate::semantic::env::Environment;
 use crate::semantic::fresh::Fresher;
 use crate::semantic::nodes::*;
 use crate::semantic::types::MonoType;
@@ -6,6 +8,40 @@ use std::result;
 
 pub type SemanticError = String;
 pub type Result<T> = result::Result<T, SemanticError>;
+
+pub struct Analyzer {
+    env: Environment,
+    fresh: Fresher,
+}
+
+impl Analyzer {
+    pub fn new() -> Self {
+        Analyzer {
+            env: Environment::empty(),
+            fresh: Fresher::new(),
+        }
+    }
+
+    pub fn analyze(&mut self, source: String) -> std::result::Result<String, String> {
+        let mut pkg = match analyze_source(source.as_str()) {
+            Ok(pkg) => pkg,
+            Err(err) => return Err(err.to_string()),
+        };
+        match infer_pkg_types(&mut pkg, self.env.clone(), &mut self.fresh) {
+            Ok((env, _)) => {
+                self.env = env;
+                Ok(self
+                    .env
+                    .values
+                    .iter()
+                    .fold(String::new(), |acc, (name, poly)| {
+                        acc + &format!("\t{}: {}\n", name, poly)
+                    }))
+            }
+            Err(e) => Err(e.to_string()),
+        }
+    }
+}
 
 // analyze analyzes an AST package node and returns its semantic analysis.
 // The function explicitly moves the ast::Package because it adds information to it.

@@ -7,6 +7,10 @@ edition = "2018"
 [lib]
 crate-type = ["rlib", "staticlib", "cdylib"]
 
+[[bin]]
+name = "infer-repl"
+path = "src/bin.rs"
+
 [features]
 strict = []
 
@@ -22,6 +26,7 @@ maplit = "1.0.2"
 flatbuffers = "0.6.0"
 derivative = "1.0.3"
 walkdir = "2.2.9"
+rustyline = "5.0.4"
 
 [dev-dependencies]
 colored = "1.8"

@@ -7,6 +7,7 @@ extern crate serde_aux;
 
 pub mod ast;
 pub mod parser;
+pub mod repl;
 pub mod scanner;
 pub mod semantic;
 

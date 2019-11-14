@@ -1,5 +1,5 @@
 mod analyze;
-pub use analyze::analyze;
+pub use analyze::{analyze, Analyzer};
 
 mod env;
 mod fresh;
