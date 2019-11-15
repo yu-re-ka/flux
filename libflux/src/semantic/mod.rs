@@ -1,8 +1,8 @@
 mod analyze;
-pub use analyze::{analyze, Analyzer};
+pub use analyze::{analyze_with, Analyzer};
 
 mod env;
-mod fresh;
+pub mod fresh;
 mod infer;
 
 // TODO(jsternberg): Once more work is done on the infer methods,
@@ -24,7 +24,7 @@ use crate::ast;
 use crate::parser::parse_string;
 use crate::semantic::analyze::Result;
 
-pub fn analyze_source(source: &str) -> Result<nodes::Package> {
+pub fn analyze_source(source: &str, f: &mut fresh::Fresher) -> Result<nodes::Package> {
     let file = parse_string("", source);
     let errs = ast::check::check(ast::walk::Node::File(&file));
     if errs.len() > 0 {
@@ -36,5 +36,5 @@ pub fn analyze_source(source: &str) -> Result<nodes::Package> {
         package: "main".to_string(),
         files: vec![file],
     };
-    analyze(ast_pkg)
+    analyze_with(ast_pkg, f)
 }

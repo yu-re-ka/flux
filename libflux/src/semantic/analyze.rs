@@ -4,6 +4,7 @@ use crate::semantic::env::Environment;
 use crate::semantic::fresh::Fresher;
 use crate::semantic::nodes::*;
 use crate::semantic::types::MonoType;
+use std::collections::HashMap;
 use std::result;
 
 pub type SemanticError = String;
@@ -23,11 +24,16 @@ impl Analyzer {
     }
 
     pub fn analyze(&mut self, source: String) -> std::result::Result<String, String> {
-        let mut pkg = match analyze_source(source.as_str()) {
+        let mut pkg = match analyze_source(source.as_str(), &mut self.fresh) {
             Ok(pkg) => pkg,
             Err(err) => return Err(err.to_string()),
         };
-        match infer_pkg_types(&mut pkg, self.env.clone(), &mut self.fresh) {
+        match infer_pkg_types(
+            &mut pkg,
+            self.env.clone(),
+            &mut self.fresh,
+            &Importer::from(HashMap::new()),
+        ) {
             Ok((env, _)) => {
                 self.env = env;
                 Ok(self

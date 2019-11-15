@@ -496,10 +496,11 @@ mod tests {
     use super::*;
     use crate::ast;
     use crate::semantic::analyze_source;
+    use crate::semantic::fresh::Fresher;
     use crate::semantic::nodes;
 
     fn compile(source: &str) -> nodes::Package {
-        analyze_source(source).unwrap()
+        analyze_source(source, &mut Fresher::new()).unwrap()
     }
 
     mod node_ids {
