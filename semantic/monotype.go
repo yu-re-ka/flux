@@ -451,9 +451,9 @@ func NewArrayType(elemType MonoType) MonoType {
 
 	return MonoType{}
 }
-func NewFunctionType() PolyType {
+func NewFunctionType() MonoType {
 	// TODO (algow): needs both a list of vars constraints and the monotype
-	return PolyType{}
+	return MonoType{}
 }
 func NewObjectType() MonoType {
 	// TODO (algow): needs both a list of vars constraints and the monotype
