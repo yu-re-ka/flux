@@ -12,7 +12,6 @@ import (
 	"errors"
 	"unsafe"
 )
-
 // Analyze parses the given Flux source, performs type inference
 // (taking into account types from prelude and stldlib) and returns
 // a byte slice containing the FlatBuffer serialization of the semantic
@@ -37,7 +36,7 @@ func Analyze(src string) ([]byte, error) {
 // TODO(faith): fix comment; create the buffer, pass it in and goes takes care of freeing data
 func EnvStdlib() []byte {
 	var buf C.struct_flux_buffer_t
-	flux_get_env_stdlib(&buf)
+	C.flux_get_env_stdlib(&buf)
 
 	return C.GoBytes(buf.data, C.int(buf.len))
 }
