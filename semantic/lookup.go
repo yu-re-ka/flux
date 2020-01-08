@@ -16,18 +16,20 @@ func LookupBuiltInType(pkg, name string) MonoType {
 
 	env := fbsemantic.GetRootAsTypeEnvironment(byteArr, 0)
 
-	table := new(flatbuffers.Table)
+	var table flatbuffers.Table
 	// perform a lookup on flatbuffers TypeEnvironment
 	prop, err := lookup(env, pkg, name)
 	if err != nil {
-		return NewMonoType(table, fbsemantic.MonoTypeNONE)
+		monotype, _ := NewMonoType(table, fbsemantic.MonoTypeNONE)
+		return monotype
 	}
 
 	// create a new MonoType wrapper for flatbuffers MonoType
-
-	monotype, err := NewMonoType(table, prop.V(table))
+	// prop.V(&table)
+	monotype, err := NewMonoType(table, prop.VType())
 	if err != nil {
-		return fbsemantic.MonoTypeNONE
+		monotype, _ := NewMonoType(table, fbsemantic.MonoTypeNONE)
+		return monotype
 	}
 
 	// return fb polytype within semantic wrapper
@@ -46,9 +48,8 @@ func lookup(env *fbsemantic.TypeEnvironment, pkg, name string) (*fbsemantic.Prop
 	}
 
 	polytype := typeAssign.Ty(nil)
-	// grab PolyType expr
-	if polytype.ExprType() != fbsemantic.Row {
-		// expr is monotype of type row
+	// grab PolyType expr; expr is monotype of type row
+	if polytype.ExprType() != fbsemantic.MonoTypeRow {
 		return nil, errors.Newf(codes.Internal, "")
 	}
 
@@ -57,7 +58,7 @@ func lookup(env *fbsemantic.TypeEnvironment, pkg, name string) (*fbsemantic.Prop
 	if !polytype.Expr(table) {
 		return nil, errors.Newf(codes.Internal, "")
 	}
-	row := new(fbsemantic.MonoTypeRow)
+	row := new(fbsemantic.Row)
 	row.Init(table.Bytes, table.Pos)
 
 	// check for package identifier in row props
@@ -93,10 +94,12 @@ func foundProp(row *fbsemantic.Row, obj *fbsemantic.Prop, name string) error {
 		if !row.Props(obj, i) {
 			return errors.Newf(codes.Internal, "", i)
 		} else {
-			if string(obj.Id()) == name {
+			if string(obj.K()) == name {
 				return nil
 			}
 		}
 	}
 	return errors.Newf(codes.Internal, "")
 }
+
+// func foundVal()
