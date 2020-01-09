@@ -76,7 +76,7 @@ func foundPackage(env *fbsemantic.TypeEnvironment, obj *fbsemantic.TypeAssignmen
 	l := env.AssignmentsLength()
 	for i := 0; i < l; i++ {
 		if !env.Assignments(obj, i) {
-			return errors.Newf(codes.Internal, "", i)
+			return errors.Newf(codes.Internal, "assignment not found at position %v", i)
 		} else {
 			if string(obj.Id()) == pkg {
 				return nil
@@ -92,7 +92,7 @@ func foundProp(row *fbsemantic.Row, obj *fbsemantic.Prop, name string) error {
 	l := row.PropsLength()
 	for i := 0; i < l; i++ {
 		if !row.Props(obj, i) {
-			return errors.Newf(codes.Internal, "", i)
+			return errors.Newf(codes.Internal, "prop not found at position %v", i)
 		} else {
 			if string(obj.K()) == name {
 				return nil
