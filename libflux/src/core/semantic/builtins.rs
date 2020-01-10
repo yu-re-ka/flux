@@ -34,6 +34,12 @@ pub fn builtins() -> Builtins<'static> {
                 // This is a "provide exactly one argument" function
                 // https://github.com/influxdata/flux/issues/2249
                 "from" => "forall [t0] where t0: Row (?csv: string, ?file: string) -> [t0]",
+                "to" => r#"
+                    forall [t0, t1] where t0: Row, t1: Row (
+                        <-tables: [t0],
+                        file: string
+                    ) -> [t1]
+                "#,
             },
             "date" => semantic_map! {
                  "second" => "forall [] (t: time) -> int",
