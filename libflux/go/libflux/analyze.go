@@ -2,9 +2,8 @@
 
 package libflux
 
-// #cgo CFLAGS: -I.
-// #cgo LDFLAGS: -L. -llibstd
-// #include "flux.h"
+// #cgo pkg-config: flux
+// #include "influxdata/flux.h"
 // #include <stdlib.h>
 import "C"
 
