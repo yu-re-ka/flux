@@ -39,7 +39,7 @@ GENERATED_TARGETS = \
 	internal/scanner/scanner.gen.go \
 	stdlib/packages.go \
 	semantic/flatbuffers_gen.go \
-	semantic/internal/fbsemantic/semantic_generated.go \
+	internal/fbsemantic/semantic_generated.go \
 	libflux/src/flux/ast/flatbuffers/ast_generated.rs \
 	libflux/src/flux/semantic/flatbuffers/semantic_generated.rs \
 	libflux/scanner.c \
@@ -52,7 +52,7 @@ ast/internal/fbast/ast_generated.go: ast/ast.fbs
 libflux/src/flux/ast/flatbuffers/ast_generated.rs: ast/ast.fbs
 	flatc --rust -o libflux/src/flux/ast/flatbuffers ast/ast.fbs && rustfmt $@
 
-semantic/internal/fbsemantic/semantic_generated.go semantic/flatbuffers_gen.go: semantic/semantic.fbs semantic/graph.go internal/cmd/fbgen/cmd/semantic.go
+internal/fbsemantic/semantic_generated.go semantic/flatbuffers_gen.go: semantic/semantic.fbs semantic/graph.go internal/cmd/fbgen/cmd/semantic.go
 	$(GO_GENERATE) ./semantic
 libflux/src/flux/semantic/flatbuffers/semantic_generated.rs: semantic/semantic.fbs
 	flatc --rust -o libflux/src/flux/semantic/flatbuffers semantic/semantic.fbs && rustfmt $@

@@ -7,7 +7,7 @@ import (
 	flatbuffers "github.com/google/flatbuffers/go"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/semantic/internal/fbsemantic"
+	"github.com/influxdata/flux/internal/fbsemantic"
 )
 
 // PolyType represents a polytype.  This struct is a thin wrapper around

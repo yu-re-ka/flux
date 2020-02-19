@@ -20,7 +20,7 @@ type LinearRegressionOpSpec struct {
 }
 
 func init() {
-	linearRegressionSignature := semantic.MustLookupBuiltinType("internal/promql", LinearRegressionKind)
+	linearRegressionSignature := flux.MustLookupBuiltinType("internal/promql", LinearRegressionKind)
 
 	flux.RegisterPackageValue("internal/promql", LinearRegressionKind, flux.MustValue(flux.FunctionValue(LinearRegressionKind, createLinearRegressionOpSpec, linearRegressionSignature)))
 	flux.RegisterOpSpec(LinearRegressionKind, newLinearRegressionOp)

@@ -116,7 +116,7 @@ func TestRowMapFn_Eval(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			pkg, err := semantic.AnalyzeSource(tc.f)
+			pkg, err := flux.AnalyzeSource(tc.f)
 			if err != nil {
 				t.Fatalf("unexpected error: %s", err)
 			}
@@ -177,7 +177,7 @@ func TestRowMapFn_Eval(t *testing.T) {
 
 func TestRowPredicateFn_EvalRow(t *testing.T) {
 	gt2F := func() (*execute.RowPredicateFn, error) {
-		pkg, err := semantic.AnalyzeSource(`(r) => r._value > 2.0`)
+		pkg, err := flux.AnalyzeSource(`(r) => r._value > 2.0`)
 		if err != nil {
 			t.Fatalf("unexpected error: %s", err)
 		}

@@ -8,7 +8,7 @@ import (
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/semantic/internal/fbsemantic"
+	"github.com/influxdata/flux/internal/fbsemantic"
 )
 
 func DeserializeFromFlatBuffer(buf []byte) (*Package, error) {

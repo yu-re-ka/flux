@@ -8,7 +8,6 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
@@ -27,7 +26,7 @@ type WindowOpSpec struct {
 var infinityVar = values.NewDuration(values.ConvertDuration(math.MaxInt64))
 
 func init() {
-	windowSignature := semantic.MustLookupBuiltinType("universe", "window")
+	windowSignature := flux.MustLookupBuiltinType("universe", "window")
 
 	flux.RegisterPackageValue("universe", WindowKind, flux.MustValue(flux.FunctionValue(WindowKind, createWindowOpSpec, windowSignature)))
 	flux.RegisterOpSpec(WindowKind, newWindowOp)

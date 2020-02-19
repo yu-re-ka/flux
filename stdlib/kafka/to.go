@@ -40,7 +40,7 @@ type ToKafkaOpSpec struct {
 }
 
 func init() {
-	toKafkaSignature := semantic.MustLookupBuiltinType("kafka", "to")
+	toKafkaSignature := flux.MustLookupBuiltinType("kafka", "to")
 	flux.RegisterPackageValue("kafka", "to", flux.MustValue(flux.FunctionValueWithSideEffect(ToKafkaKind, createToKafkaOpSpec, toKafkaSignature)))
 	flux.RegisterOpSpec(ToKafkaKind, func() flux.OperationSpec { return &ToKafkaOpSpec{} })
 	plan.RegisterProcedureSpecWithSideEffect(ToKafkaKind, newToKafkaProcedure, ToKafkaKind)

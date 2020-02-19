@@ -6,7 +6,6 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/semantic"
 )
 
 const HourSelectionKind = "hourSelection"
@@ -18,7 +17,7 @@ type HourSelectionOpSpec struct {
 }
 
 func init() {
-	hourSelectionSignature := semantic.MustLookupBuiltinType("universe", "hourSelection")
+	hourSelectionSignature := flux.MustLookupBuiltinType("universe", "hourSelection")
 
 	flux.RegisterPackageValue("universe", HourSelectionKind, flux.MustValue(flux.FunctionValue(HourSelectionKind, createHourSelectionOpSpec, hourSelectionSignature)))
 	flux.RegisterOpSpec(HourSelectionKind, newHourSelectionOp)

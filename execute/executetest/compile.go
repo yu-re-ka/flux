@@ -29,7 +29,7 @@ func FunctionExpression(t testing.TB, source string) *semantic.FunctionExpressio
 		stdlib = flux.StdLib()
 	}
 
-	pkg, err := semantic.AnalyzeSource(source)
+	pkg, err := flux.AnalyzeSource(source)
 	if err != nil {
 		t.Fatalf("unexpected error: %s", err)
 	}

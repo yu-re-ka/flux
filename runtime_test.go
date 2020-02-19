@@ -1,4 +1,4 @@
-package semantic_test
+package flux_test
 
 import (
 	"testing"
@@ -17,7 +17,7 @@ func TestLookupSimpleTypes(t *testing.T) {
 		{path: "math", id: "maxint", name: "lookup math.maxint", want: "int"},
 	} {
 		t.Run(testCase.name, func(t *testing.T) {
-			got, _ := semantic.LookupBuiltinType(testCase.path, testCase.id)
+			got, _ := LookupBuiltinType(testCase.path, testCase.id)
 			if want, got := testCase.want, got.String(); want != got {
 				t.Fatalf("unexpected result -want/+got\n\t- %s\n\t+ %s", want, got)
 			}

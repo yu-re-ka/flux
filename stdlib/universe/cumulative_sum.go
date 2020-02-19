@@ -17,7 +17,7 @@ type CumulativeSumOpSpec struct {
 }
 
 func init() {
-	cumulativeSumSignature := semantic.MustLookupBuiltinType("universe", "cumulativeSum")
+	cumulativeSumSignature := flux.MustLookupBuiltinType("universe", "cumulativeSum")
 
 	flux.RegisterPackageValue("universe", CumulativeSumKind, flux.MustValue(flux.FunctionValue(CumulativeSumKind, createCumulativeSumOpSpec, cumulativeSumSignature)))
 	flux.RegisterOpSpec(CumulativeSumKind, newCumulativeSumOp)

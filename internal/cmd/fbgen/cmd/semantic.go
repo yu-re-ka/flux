@@ -48,7 +48,7 @@ func init() {
 
 const (
 	semPath    = "github.com/influxdata/flux/semantic"
-	fbsemPath  = "github.com/influxdata/flux/semantic/internal/fbsemantic"
+	fbsemPath  = "github.com/influxdata/flux/internal/fbsemantic"
 	errorsPath = "github.com/influxdata/flux/internal/errors"
 	codesPath  = "github.com/influxdata/flux/codes"
 )

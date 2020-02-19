@@ -8,7 +8,6 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/internal/moving_average"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
@@ -19,7 +18,7 @@ type MovingAverageOpSpec struct {
 }
 
 func init() {
-	movingAverageSignature := semantic.MustLookupBuiltinType("universe", "movingAverage")
+	movingAverageSignature := flux.MustLookupBuiltinType("universe", "movingAverage")
 
 	flux.RegisterPackageValue("universe", MovingAverageKind, flux.MustValue(flux.FunctionValue(MovingAverageKind, createMovingAverageOpSpec, movingAverageSignature)))
 	flux.RegisterOpSpec(MovingAverageKind, newMovingAverageOp)

@@ -12,7 +12,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/parser"
-	"github.com/influxdata/flux/semantic/internal/fbsemantic"
+	"github.com/influxdata/flux/internal/fbsemantic"
 )
 
 var cmpOpts = []cmp.Option{

@@ -5,7 +5,6 @@ import (
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/semantic"
 )
 
 const YieldKind = "yield"
@@ -15,7 +14,7 @@ type YieldOpSpec struct {
 }
 
 func init() {
-	yieldSignature := semantic.MustLookupBuiltinType("universe", "yield")
+	yieldSignature := flux.MustLookupBuiltinType("universe", "yield")
 
 	flux.RegisterPackageValue("universe", YieldKind, flux.MustValue(flux.FunctionValueWithSideEffect(YieldKind, createYieldOpSpec, yieldSignature)))
 	flux.RegisterOpSpec(YieldKind, newYieldOp)

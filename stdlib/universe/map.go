@@ -23,7 +23,7 @@ type MapOpSpec struct {
 }
 
 func init() {
-	mapSignature := semantic.MustLookupBuiltinType("universe", "map")
+	mapSignature := flux.MustLookupBuiltinType("universe", "map")
 
 	flux.RegisterPackageValue("universe", MapKind, flux.MustValue(flux.FunctionValue(MapKind, createMapOpSpec, mapSignature)))
 	flux.RegisterOpSpec(MapKind, newMapOp)

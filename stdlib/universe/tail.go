@@ -6,7 +6,6 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/semantic"
 )
 
 const TailKind = "tail"
@@ -18,7 +17,7 @@ type TailOpSpec struct {
 }
 
 func init() {
-	tailSignature := semantic.MustLookupBuiltinType("universe", "tail")
+	tailSignature := flux.MustLookupBuiltinType("universe", "tail")
 
 	flux.RegisterPackageValue("universe", TailKind, flux.MustValue(flux.FunctionValue(TailKind, createTailOpSpec, tailSignature)))
 	flux.RegisterOpSpec(TailKind, newTailOp)

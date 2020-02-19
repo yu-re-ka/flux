@@ -9,7 +9,6 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/semantic"
 )
 
 const HistogramQuantileKind = "histogramQuantile"
@@ -25,7 +24,7 @@ type HistogramQuantileOpSpec struct {
 }
 
 func init() {
-	histogramQuantileSignature := semantic.MustLookupBuiltinType("universe", "histogramQuantile")
+	histogramQuantileSignature := flux.MustLookupBuiltinType("universe", "histogramQuantile")
 
 	flux.RegisterPackageValue("universe", HistogramQuantileKind, flux.MustValue(flux.FunctionValue(HistogramQuantileKind, createHistogramQuantileOpSpec, histogramQuantileSignature)))
 	flux.RegisterOpSpec(HistogramQuantileKind, newHistogramQuantileOp)

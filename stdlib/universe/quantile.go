@@ -11,7 +11,6 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 	"github.com/influxdata/tdigest"
 )
@@ -36,7 +35,7 @@ type QuantileOpSpec struct {
 }
 
 func init() {
-	quantileSignature := semantic.MustLookupBuiltinType("universe", "quantile")
+	quantileSignature := flux.MustLookupBuiltinType("universe", "quantile")
 
 	flux.RegisterPackageValue("universe", QuantileKind, flux.MustValue(flux.FunctionValue(QuantileKind, createQuantileOpSpec, quantileSignature)))
 

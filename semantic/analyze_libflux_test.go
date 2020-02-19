@@ -25,7 +25,7 @@ func TestAnalyzeSource(t *testing.T) {
 	for _, tc := range tcs {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			_, err := semantic.AnalyzeSource(tc.flx)
+			_, err := flux.AnalyzeSource(tc.flx)
 			if err != nil {
 				if tc.err == nil {
 					t.Fatalf("expected no error, got %v", err)

@@ -28,14 +28,14 @@ func init() {
 }
 
 var (
-	convBoolType     = semantic.MustLookupBuiltinType("universe", "bool")
-	convIntType      = semantic.MustLookupBuiltinType("universe", "int")
-	convUintType     = semantic.MustLookupBuiltinType("universe", "uint")
-	convFloatType    = semantic.MustLookupBuiltinType("universe", "float")
-	convStringType   = semantic.MustLookupBuiltinType("universe", "string")
-	convTimeType     = semantic.MustLookupBuiltinType("universe", "time")
-	convDurationType = semantic.MustLookupBuiltinType("universe", "duration")
-	convBytesType    = semantic.MustLookupBuiltinType("universe", "bytes")
+	convBoolType     = flux.MustLookupBuiltinType("universe", "bool")
+	convIntType      = flux.MustLookupBuiltinType("universe", "int")
+	convUintType     = flux.MustLookupBuiltinType("universe", "uint")
+	convFloatType    = flux.MustLookupBuiltinType("universe", "float")
+	convStringType   = flux.MustLookupBuiltinType("universe", "string")
+	convTimeType     = flux.MustLookupBuiltinType("universe", "time")
+	convDurationType = flux.MustLookupBuiltinType("universe", "duration")
+	convBytesType    = flux.MustLookupBuiltinType("universe", "bytes")
 )
 
 const (

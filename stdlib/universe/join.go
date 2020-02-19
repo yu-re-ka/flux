@@ -21,7 +21,7 @@ const JoinKind = "join"
 const MergeJoinKind = "merge-join"
 
 func init() {
-	joinSignature := semantic.MustLookupBuiltinType("universe", "join")
+	joinSignature := flux.MustLookupBuiltinType("universe", "join")
 	flux.RegisterPackageValue("universe", JoinKind, flux.MustValue(flux.FunctionValue(JoinKind, createJoinOpSpec, joinSignature)))
 	flux.RegisterOpSpec(JoinKind, newJoinOp)
 	//TODO(nathanielc): Allow for other types of join implementations

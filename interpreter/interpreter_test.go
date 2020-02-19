@@ -468,7 +468,7 @@ func TestEval(t *testing.T) {
 				t.Skip(msg)
 			}
 			src := builtinSrc + tc.query
-			graph, err := semantic.AnalyzeSource(src)
+			graph, err := flux.AnalyzeSource(src)
 			if err != nil {
 				t.Fatalf("type inference error: %v", err)
 			}

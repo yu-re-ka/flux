@@ -7,7 +7,6 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/semantic"
 )
 
 const MaxKind = "max"
@@ -17,7 +16,7 @@ type MaxOpSpec struct {
 }
 
 func init() {
-	maxSignature := semantic.MustLookupBuiltinType("universe", "max")
+	maxSignature := flux.MustLookupBuiltinType("universe", "max")
 
 	flux.RegisterPackageValue("universe", MaxKind, flux.MustValue(flux.FunctionValue(MaxKind, createMaxOpSpec, maxSignature)))
 	flux.RegisterOpSpec(MaxKind, newMaxOp)

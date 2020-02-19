@@ -5,7 +5,6 @@ import (
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/semantic"
 )
 
 const BucketsKind = "buckets"
@@ -14,7 +13,7 @@ type BucketsOpSpec struct {
 }
 
 func init() {
-	bucketsSignature := semantic.MustLookupBuiltinType("influxdata/influxdb", "buckets")
+	bucketsSignature := flux.MustLookupBuiltinType("influxdata/influxdb", "buckets")
 
 	flux.RegisterPackageValue("influxdata/influxdb", BucketsKind, flux.MustValue(flux.FunctionValue(BucketsKind, createBucketsOpSpec, bucketsSignature)))
 	flux.RegisterOpSpec(BucketsKind, newBucketsOp)

@@ -393,7 +393,7 @@ func TestCompileAndEval(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			pkg, err := semantic.AnalyzeSource(tc.fn)
+			pkg, err := flux.AnalyzeSource(tc.fn)
 			if err != nil {
 				t.Fatalf("unexpected error: %s", err)
 			}
