@@ -6,6 +6,7 @@ import (
 	"github.com/apache/arrow/go/arrow/array"
 	"github.com/apache/arrow/go/arrow/math"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/plan"
 )
@@ -110,7 +111,7 @@ func (a *LinregAgg) NewStringAgg() execute.DoStringAgg {
 
 type LinregIntAgg struct {
 	linreg int64
-	ok     bool
+	ok  bool
 }
 
 func (a *LinregIntAgg) DoInt(vs *array.Int64) {
@@ -140,7 +141,7 @@ func (a *LinregIntAgg) IsNull() bool {
 
 type LinregUIntAgg struct {
 	linreg uint64
-	ok     bool
+	ok  bool
 }
 
 func (a *LinregUIntAgg) DoUInt(vs *array.Uint64) {
@@ -169,123 +170,134 @@ func (a *LinregUIntAgg) IsNull() bool {
 }
 
 type LinregFloatAgg struct {
-	linreg float64
-	ok     bool
+	linreg []*array.Float64
+	ok  bool
+	q   *QuantileAgg
 }
 
 func (a *LinregFloatAgg) DoFloat(vs *array.Float64) {
-	// func (r *LinReg) length() {
-	// 	r.n = float64(len(r.y))
-	// 	// fmt.Println("n", r.n)
-	// }
-	var sx, sy, sxx, sxy, syy, n float64
-	var x, y []float64
-
-	n = float64(len(vs.Float64Values()))
-	fmt.Print("n", n)
-
-	y = vs.Float64Values()
-
-	total := 0
-	for i := 0; i < len(y); i++ {
-		total += i
-	}
-	sx = float64(total)
-	a.linreg = sx
-
-
-	func (r *LinReg) ySum() float64 {
-		total := 0.0
-		for _, value := range r.y {
-			total += value
-		}
-		r.sy = total
-		return r.sy
-	}
-
-	// func (r *LinReg) xSquared() float64 {
-	// 	total := 0.0
-	// 	for i := 0; i < len(r.y); i++ {
-	// 		total += float64(i) * float64(i)
-	// 	}
-	// 	r.sxx = total
-	// 	// fmt.Println("sxx=", r.sxx)
-	// 	return r.sxx
-	// }
-
-	// func (r *LinReg) ySquared() float64 {
-	// 	tot	l := 0.0
-	// 	for _, value := range r.y {
-	// 		total += value * value
-	// 	}
-	// 	r.syy = total
-	// 	// fmt.Println("syy=", r.syy)
-	// 	return r.syy
-	// }
-
-	// func (r *LinReg) xySum() float64 {
-	// 	total := 0.0
-	// 	for i, value := range r.y {
-	// 		total += value * float64(i)
-	// 	}
-	// 	r.sxy = total
-	// 	// fmt.Println("sxy=", r.sxy)
-	// 	return r.sxy
-	// }
-
-	// func (r *LinReg) slope() float64 {
-	// 	r.length()
-	// 	ss_xy := r.n*r.sxy - r.sx*r.sy
-	// 	ss_xx := r.n*r.sxx - r.sx*r.sx
-	// 	return ss_xy / ss_xx
-	// }
-
-	// func (r *LinReg) intercept() float64 {
-	// 	fmt.Println("sx", r.sx)
-	// 	fmt.Println("sy", r.sy)
-	// 	r.length()
-	// 	fmt.Println("n", r.n)
-	// 	fmt.Println("slope", r.slope())
-	// 	return (r.sy - r.slope()*r.sx) / r.n
-	// }
-	// sort.Slice(vs.Float64Values(), func(i, j int) bool {
-	// 	return vs.Float64Values()[i] < vs.Float64Values()[j]
-	// })
-	// fmt.Printf("sorted %v", vs.Float64Values())
-	// lDataset := len(vs.Float64Values()) // find length of Dataset
-	// mNumber := lDataset / 2             // find the median
-	// fmt.Printf("length %v\nmiddle %v\n", lDataset, mNumber)
-	// var median float64
-
-	// if lDataset%2 == 0 {
-	// 	median = (vs.Float64Values()[mNumber-1] + vs.Float64Values()[mNumber]) / 2
-	// } else {
-	// 	median = vs.Float64Values()[mNumber]
-	// }
-	// fmt.Printf("median %v\n\n", median)
-
-	// var diff []float64
-	// for _, j := range vs.Float64Values() {
-	// 	diff = append(diff, j-median)
-	// }
-	// sort.Slice(diff, func(i, j int) bool {
-	// 	return diff[i] < diff[j]
-	// })
-	// lDataset = len(diff) // find length of Dataset
-	// mNumber = lDataset / 2
-	// if lDataset%2 == 0 {
-	// 	a.linreg = (diff[mNumber-1] + diff[mNumber]) / 2
-	// } else {
-	// 	a.linreg = diff[mNumber]
-	// }
-	a.ok = true
+	vs.Retain()
+	a.linreg = append(a.linreg, vs)
 }
+
+// test if we can order the dataset CHECK
+// test if we can find the median CHECK
+// test if we can find the differences between median and each value
+// test if we can find the sort that difference
+// test if we can find the median value of that
+
+//vs.Retain tells arrow. says I still need this memory.
+//DoFloat gets called values get passed in, calling retain says don't release and keep a reference to it. It doesn't reuse it.
+//Implementation detail: Arrow can allocate memory and free memory (in the future sync.pool to not have to call make everytime because make is expensive)
+
 func (a *LinregFloatAgg) Type() flux.ColType {
 	return flux.TFloat
 }
 func (a *LinregFloatAgg) ValueFloat() float64 {
-	return a.linreg
+	//Compute median
+	median := a.q.ValueFloat()
+	//Initialize quanitlie agg
+	q := &QuantileAgg{}
+	//Iterate over each of the columns
+	for _, vs := range a.linreg {
+		b := arrow.NewFloatBuilder(nil)
+		b.Resize(vs.Len())
+		for i, l := 0, vs.Len(); i < l; i++ {
+			if vs.IsNull(i) {
+				b.AppendNull()
+				continue
+			}
+			v := vs.Value(i)
+			diff := v - median
+			b.Append(diff)
+		}
+		vs.Release()
+		//Construct the Array
+		diffs := b.NewFloat64Array()
+		q.DoFloat(diffs)
+		diffs.Release()
+	}
+	a.linreg = nil
+	return q.ValueFloat()
 }
+
+func (r *LinReg) length() {
+	r.n = float64(len(r.y))
+	// fmt.Println("n", r.n)
+}
+
+func (r *LinReg) raw() []float64 {
+	return r.y
+}
+
+func (r *LinReg) xSum() float64 {
+	total := 0
+	for i := 0; i < len(r.y); i++ {
+		total += i
+	}
+	r.sx = float64(total)
+	return r.sx
+}
+
+func (r *LinReg) ySum() float64 {
+	total := 0.0
+	for _, value := range r.y {
+		total += value
+	}
+	r.sy = total
+	return r.sy
+}
+
+func (r *LinReg) xSquared() float64 {
+	total := 0.0
+	for i := 0; i < len(r.y); i++ {
+		total += float64(i) * float64(i)
+	}
+	r.sxx = total
+	// fmt.Println("sxx=", r.sxx)
+	return r.sxx
+}
+
+func (r *LinReg) ySquared() float64 {
+	tot	l := 0.0
+	for _, value := range r.y {
+		total += value * value
+	}
+	r.syy = total
+	// fmt.Println("syy=", r.syy)
+	return r.syy
+}
+
+func (r *LinReg) xySum() float64 {
+	total := 0.0
+	for _, value := range r.y {
+		total += value * float64(i)
+	}
+	r.sxy = total
+	// fmt.Println("sxy=", r.sxy)
+	return r.sxy
+}
+
+func (r *LinReg) slope() float64 {
+	r.length()
+	ss_xy := r.n*r.sxy - r.sx*r.sy
+	ss_xx := r.n*r.sxx - r.sx*r.sx
+	return ss_xy / ss_xx
+}
+
+func (r *LinReg) intercept() float64 {
+	r.length()
+	return (r.sy - r.slope()*r.sx) / r.n
+}
+
+
+//For each col, compute diff, send them to quantile agg
+//Return quanitile agg
+
+//do calculations here. This is for retaining the data
+//use dofloat (interface that gets called) to store and keep the arrays using retain on vs
+//value float you actually perform the calculation
+
 func (a *LinregFloatAgg) IsNull() bool {
 	return !a.ok
 }
