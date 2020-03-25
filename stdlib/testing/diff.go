@@ -2,7 +2,6 @@ package testing
 
 import (
 	"bytes"
-	"math"
 	"sort"
 	"sync"
 
@@ -99,6 +98,9 @@ type DiffTransformation struct {
 
 	wantID, gotID execute.DatasetID
 	parentState   map[execute.DatasetID]*diffParentState
+
+	watermark      execute.Time
+	processingTime execute.Time
 
 	d     execute.Dataset
 	cache execute.TableBuilderCache
@@ -603,35 +605,13 @@ func (t *DiffTransformation) appendRow(builder execute.TableBuilder, i, diffIdx 
 }
 
 func (t *DiffTransformation) UpdateWatermark(id execute.DatasetID, mark execute.Time) error {
-	t.mu.Lock()
-	defer t.mu.Unlock()
-
-	t.parentState[id].mark = mark
-
-	min := execute.Time(math.MaxInt64)
-	for _, state := range t.parentState {
-		if state.mark < min {
-			min = state.mark
-		}
-	}
-
-	return t.d.UpdateWatermark(min)
+	t.watermark = mark
+	return nil
 }
 
 func (t *DiffTransformation) UpdateProcessingTime(id execute.DatasetID, mark execute.Time) error {
-	t.mu.Lock()
-	defer t.mu.Unlock()
-
-	t.parentState[id].processing = mark
-
-	min := execute.Time(math.MaxInt64)
-	for _, state := range t.parentState {
-		if state.processing < min {
-			min = state.processing
-		}
-	}
-
-	return t.d.UpdateProcessingTime(min)
+	t.processingTime = mark
+	return nil
 }
 
 func (t *DiffTransformation) Finish(id execute.DatasetID, err error) {
@@ -666,6 +646,8 @@ func (t *DiffTransformation) Finish(id execute.DatasetID, err error) {
 			}
 			err = t.diff(key, want, got)
 		})
+		t.d.UpdateWatermark(t.watermark)
+		t.d.UpdateProcessingTime(t.processingTime)
 		t.d.Finish(err)
 	}
 }
