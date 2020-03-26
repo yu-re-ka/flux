@@ -180,6 +180,10 @@ pub fn builtins() -> Builtins<'static> {
             "internal/gen" => semantic_map! {
                 "tables" => "forall [t0] (n: int, tags: [{name: string | cardinality: int}]) -> [{_time: time | _value: float | t0}]",
             },
+            "internal/hack" => semantic_map! {
+                "flatten" => "forall [t0] where t0: Row (<-tables: [t0]) -> [t0]",
+                "order" => "forall [t0] where t0: Row (<-tables: [t0]) -> [t0]",
+            },
             "internal/promql" => semantic_map! {
                 "changes" => "forall [t0, t1] (<-tables: [{_value: float | t0}]) -> [{_value: float | t1}]",
                 "promqlDayOfMonth" => "forall [] (timestamp: float) -> float",

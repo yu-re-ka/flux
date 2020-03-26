@@ -21,6 +21,7 @@ import (
 	_ "github.com/influxdata/flux/stdlib/influxdata/influxdb/secrets"
 	_ "github.com/influxdata/flux/stdlib/influxdata/influxdb/v1"
 	_ "github.com/influxdata/flux/stdlib/internal/gen"
+	_ "github.com/influxdata/flux/stdlib/internal/hack"
 	_ "github.com/influxdata/flux/stdlib/internal/influxql"
 	_ "github.com/influxdata/flux/stdlib/internal/promql"
 	_ "github.com/influxdata/flux/stdlib/internal/testutil"

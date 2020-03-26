@@ -1,0 +1,42 @@
+package arrowutil
+
+import (
+	"fmt"
+
+	"github.com/apache/arrow/go/arrow/array"
+)
+
+func Copy(b array.Builder, arr array.Interface) {
+	switch arr := arr.(type) {
+	{{range .}}
+	case *{{.Type}}:
+		Copy{{.Name}}s(b.(*{{.Type}}Builder), arr)
+	{{end}}
+	default:
+		panic(fmt.Errorf("unsupported array data type: %s", arr.DataType()))
+	}
+}
+
+{{range .}}
+func Copy{{.Name}}s(b *{{.Type}}Builder, arr *{{.Type}}) {
+	b.Reserve(arr.Len())
+	{{if eq .Name "String"}}
+	{
+		var datasz int
+		for i, sz := 0, arr.Len(); i < sz; i++ {
+			if arr.IsValid(i) {
+				datasz += arr.ValueLen(i)
+			}
+		}
+		b.ReserveData(datasz)
+	}
+	{{end}}
+	for i, sz := 0, arr.Len(); i < sz; i++ {
+		if arr.IsValid(i) {
+			b.{{.Append}}(arr.{{.Value}}(i))
+		} else {
+			b.AppendNull()
+		}
+	}
+}
+{{end}}
