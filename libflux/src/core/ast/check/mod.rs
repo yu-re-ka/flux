@@ -7,44 +7,36 @@ pub fn check(node: walk::Node) -> Vec<Error> {
     let mut errors = vec![];
     walk::walk(
         &walk::create_visitor(&mut |n| {
-            // collect any errors we found prior to ast.check().
-            for err in n.base().errors.iter() {
-                errors.push(Error {
-                    location: n.base().location.clone(),
-                    message: err.clone(),
-                });
-            }
-
             match *n {
                 walk::Node::BadStmt(n) => errors.push(Error {
                     location: n.base.location.clone(),
-                    message: format!("invalid statement: {}", n.text),
+                    //TODO format the list of errors appropriately
+                    message: format!("invalid statement: {:?}", n.errors),
                 }),
                 walk::Node::BadExpr(n) => errors.push(Error {
                     location: n.base.location.clone(),
-                    message: format!("invalid expression: {}", n.text),
+                    //TODO format the list of errors appropriately
+                    message: format!("invalid expression: {:?}", n.errors),
                 }),
                 walk::Node::ObjectExpr(n) => {
                     let mut has_implicit = false;
                     let mut has_explicit = false;
                     for p in n.properties.iter() {
-                        if p.base.errors.is_empty() {
-                            match p.value {
-                                None => {
-                                    has_implicit = true;
-                                    if let PropertyKey::StringLit(s) = &p.key {
-                                        errors.push(Error {
-                                            location: n.base.location.clone(),
-                                            message: format!(
-                                                "string literal key {} must have a value",
-                                                s.value
-                                            ),
-                                        })
-                                    }
+                        match p.value {
+                            None => {
+                                has_implicit = true;
+                                if let PropertyKey::StringLit(s) = &p.key {
+                                    errors.push(Error {
+                                        location: n.base.location.clone(),
+                                        message: format!(
+                                            "string literal key {} must have a value",
+                                            s.value
+                                        ),
+                                    })
                                 }
-                                Some(_) => {
-                                    has_explicit = true;
-                                }
+                            }
+                            Some(_) => {
+                                has_explicit = true;
                             }
                         }
                     }

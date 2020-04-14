@@ -1,6 +1,7 @@
 #![allow(missing_docs)]
 use std::collections::HashMap;
 use std::ffi::CString;
+use std::mem;
 use std::str;
 
 use crate::ast;
@@ -26,16 +27,6 @@ pub fn parse_string(name: &str, s: &str) -> File {
     let mut p = Parser::new(s);
     p.parse_file(String::from(name))
 }
-
-// TODO uncomment when we get back to the Go build side.
-//#[no_mangle]
-//pub fn go_parse(s: *const c_char) {
-//    let buf = unsafe {
-//        CStr::from_ptr(s).to_bytes()
-//    };
-//    let str = String::from_utf8(buf.to_vec()).unwrap();
-//    println!("Parse in Rust {}", str);
-//}
 
 fn format_token(t: TOK) -> &'static str {
     match t {
@@ -122,6 +113,12 @@ impl Parser {
             fname: "".to_string(),
             source: src.to_string(),
         }
+    }
+
+    // move_errs returns ownership of the current collection of errs, resetting the collection to an
+    // empty vector.
+    fn move_errs(&mut self) -> Vec<String> {
+        mem::replace(&mut self.errs, Vec::new())
     }
 
     // scan will read the next token from the Scanner. If peek has been used,
@@ -273,9 +270,7 @@ impl Parser {
     }
 
     fn base_node(&mut self, location: SourceLocation) -> BaseNode {
-        let errors = self.errs.clone();
-        self.errs = vec![];
-        BaseNode { location, errors }
+        BaseNode { location }
     }
 
     fn base_node_from_token(&mut self, tok: &Token) -> BaseNode {
@@ -343,7 +338,6 @@ impl Parser {
         File {
             base: BaseNode {
                 location: self.source_location(&ast::Position::from(&t.start_pos), &end),
-                errors: vec![],
             },
             name: self.fname.clone(),
             metadata: String::from(Self::METADATA),
@@ -386,7 +380,7 @@ impl Parser {
         };
         let path = self.parse_string_literal();
         ImportDeclaration {
-            base: self.base_node_from_other_end(&t, &path.base),
+            base: self.base_node_from_other_end(&t, path.base()),
             alias,
             path,
         }
@@ -417,7 +411,8 @@ impl Parser {
                 self.consume();
                 Statement::Bad(BadStmt {
                     base: self.base_node_from_token(&t),
-                    text: t.lit,
+                    // TODO make this into an error message not just the literal text
+                    errors: vec![t.lit],
                 })
             }
         }
@@ -433,7 +428,8 @@ impl Parser {
             })),
             Err(_) => Statement::Bad(BadStmt {
                 base: self.base_node_from_token(&t),
-                text: t.lit,
+                // TODO make this into an error message not just the literal text
+                errors: vec![t.lit],
             }),
         }
     }
@@ -1006,7 +1002,7 @@ impl Parser {
             TOK_IDENT => Expression::Identifier(self.parse_identifier()),
             TOK_INT => Expression::Integer(self.parse_int_literal()),
             TOK_FLOAT => Expression::Float(self.parse_float_literal()),
-            TOK_STRING => Expression::StringLit(self.parse_string_literal()),
+            TOK_STRING => self.parse_string_literal(),
             TOK_QUOTE => Expression::StringExpr(Box::new(self.parse_string_expression())),
             TOK_REGEX => Expression::Regexp(self.parse_regexp_literal()),
             TOK_TIME => Expression::DateTime(self.parse_time_literal()),
@@ -1025,12 +1021,11 @@ impl Parser {
                         &ast::Position::from(&t.start_pos),
                         &ast::Position::from(&t.end_pos),
                     ),
-                    errors: vec![],
                 },
-                text: format!(
+                errors: vec![format!(
                     "invalid token for primary expression: {}",
                     format_token(t.tok)
-                ),
+                )],
                 expression: None,
             })),
         }
@@ -1116,19 +1111,23 @@ impl Parser {
             value: (&t.lit).parse::<f64>().unwrap(),
         }
     }
-    fn parse_string_literal(&mut self) -> StringLit {
+    fn parse_string_literal(&mut self) -> Expression {
         let t = self.expect(TOK_STRING);
         match strconv::parse_string(t.lit.as_str()) {
-            Ok(value) => StringLit {
+            Ok(value) => Expression::StringLit(StringLit {
                 base: self.base_node_from_token(&t),
-                value,
-            },
+                value: value,
+            }),
             Err(err) => {
                 self.errs.push(err);
-                StringLit {
+                Expression::Bad(Box::new(BadExpr {
                     base: self.base_node_from_token(&t),
-                    value: "".to_string(),
-                }
+                    errors: self.move_errs(),
+                    expression: Some(Expression::StringLit(StringLit {
+                        base: self.base_node_from_token(&t),
+                        value: "".to_string(),
+                    })),
+                }))
             }
         }
     }
@@ -1207,6 +1206,7 @@ impl Parser {
                 match expr {
                     None => {
                         expr = Some(Expression::Bad(Box::new(BadExpr {
+                            //TODO revisit this?
                             // Do not use `self.base_node_*` in order not to steal errors.
                             // The BadExpr is an error per se. We want to leave errors to parents.
                             base: BaseNode {
@@ -1214,9 +1214,9 @@ impl Parser {
                                     &ast::Position::from(&t.start_pos),
                                     &ast::Position::from(&t.end_pos),
                                 ),
-                                errors: vec![],
                             },
-                            text: t.lit,
+                            //TODO make this an error message
+                            errors: vec![t.lit],
                             expression: None,
                         })));
                     }

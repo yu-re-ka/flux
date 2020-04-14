@@ -1461,7 +1461,6 @@ fn test_object_expression_with_source_locations_and_errors() {
                 },
                 source: Some("{a: \"hello\"}".to_string()),
             },
-            errors: vec![],
         },
         with: None,
         properties: vec![Property {
@@ -1475,7 +1474,8 @@ fn test_object_expression_with_source_locations_and_errors() {
                     },
                     source: Some("a: \"hello\"".to_string()),
                 },
-                errors: vec!["an error".to_string()],
+                //TODO
+                //errors: vec!["an error".to_string()],
             },
             key: PropertyKey::Identifier(Identifier {
                 base: BaseNode {
@@ -1485,7 +1485,6 @@ fn test_object_expression_with_source_locations_and_errors() {
                         end: Position { line: 1, column: 3 },
                         source: Some("a".to_string()),
                     },
-                    errors: vec![],
                 },
                 name: "a".to_string(),
             }),
@@ -1500,7 +1499,8 @@ fn test_object_expression_with_source_locations_and_errors() {
                         },
                         source: Some("\"hello\"".to_string()),
                     },
-                    errors: vec!["an error".to_string(), "another error".to_string()],
+                    //TODO
+                    //errors: vec!["an error".to_string(), "another error".to_string()],
                 },
                 value: "hello".to_string(),
             })),

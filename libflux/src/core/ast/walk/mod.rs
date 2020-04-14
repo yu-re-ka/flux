@@ -290,7 +290,7 @@ where
                 if let Some(alias) = &n.alias {
                     walk(&w, Node::Identifier(alias));
                 }
-                walk(&w, Node::StringLit(&n.path));
+                walk(&w, Node::from_expr(&n.path));
             }
             Node::Identifier(_) => {}
             Node::ArrayExpr(n) => {

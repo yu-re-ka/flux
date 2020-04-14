@@ -861,9 +861,6 @@ pub mod fbast {
             args: &'args BaseNodeArgs<'args>,
         ) -> flatbuffers::WIPOffset<BaseNode<'bldr>> {
             let mut builder = BaseNodeBuilder::new(_fbb);
-            if let Some(x) = args.errors {
-                builder.add_errors(x);
-            }
             if let Some(x) = args.loc {
                 builder.add_loc(x);
             }
@@ -871,36 +868,21 @@ pub mod fbast {
         }
 
         pub const VT_LOC: flatbuffers::VOffsetT = 4;
-        pub const VT_ERRORS: flatbuffers::VOffsetT = 6;
 
         #[inline]
         pub fn loc(&self) -> Option<SourceLocation<'a>> {
             self._tab
                 .get::<flatbuffers::ForwardsUOffset<SourceLocation<'a>>>(BaseNode::VT_LOC, None)
         }
-        #[inline]
-        pub fn errors(
-            &self,
-        ) -> Option<flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<&'a str>>> {
-            self._tab.get::<flatbuffers::ForwardsUOffset<
-                flatbuffers::Vector<flatbuffers::ForwardsUOffset<&'a str>>,
-            >>(BaseNode::VT_ERRORS, None)
-        }
     }
 
     pub struct BaseNodeArgs<'a> {
         pub loc: Option<flatbuffers::WIPOffset<SourceLocation<'a>>>,
-        pub errors: Option<
-            flatbuffers::WIPOffset<flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<&'a str>>>,
-        >,
     }
     impl<'a> Default for BaseNodeArgs<'a> {
         #[inline]
         fn default() -> Self {
-            BaseNodeArgs {
-                loc: None,
-                errors: None,
-            }
+            BaseNodeArgs { loc: None }
         }
     }
     pub struct BaseNodeBuilder<'a: 'b, 'b> {
@@ -912,16 +894,6 @@ pub mod fbast {
         pub fn add_loc(&mut self, loc: flatbuffers::WIPOffset<SourceLocation<'b>>) {
             self.fbb_
                 .push_slot_always::<flatbuffers::WIPOffset<SourceLocation>>(BaseNode::VT_LOC, loc);
-        }
-        #[inline]
-        pub fn add_errors(
-            &mut self,
-            errors: flatbuffers::WIPOffset<
-                flatbuffers::Vector<'b, flatbuffers::ForwardsUOffset<&'b str>>,
-            >,
-        ) {
-            self.fbb_
-                .push_slot_always::<flatbuffers::WIPOffset<_>>(BaseNode::VT_ERRORS, errors);
         }
         #[inline]
         pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> BaseNodeBuilder<'a, 'b> {
@@ -1724,8 +1696,8 @@ pub mod fbast {
             args: &'args BadStatementArgs<'args>,
         ) -> flatbuffers::WIPOffset<BadStatement<'bldr>> {
             let mut builder = BadStatementBuilder::new(_fbb);
-            if let Some(x) = args.text {
-                builder.add_text(x);
+            if let Some(x) = args.errors {
+                builder.add_errors(x);
             }
             if let Some(x) = args.base_node {
                 builder.add_base_node(x);
@@ -1734,7 +1706,7 @@ pub mod fbast {
         }
 
         pub const VT_BASE_NODE: flatbuffers::VOffsetT = 4;
-        pub const VT_TEXT: flatbuffers::VOffsetT = 6;
+        pub const VT_ERRORS: flatbuffers::VOffsetT = 6;
 
         #[inline]
         pub fn base_node(&self) -> Option<BaseNode<'a>> {
@@ -1742,22 +1714,27 @@ pub mod fbast {
                 .get::<flatbuffers::ForwardsUOffset<BaseNode<'a>>>(BadStatement::VT_BASE_NODE, None)
         }
         #[inline]
-        pub fn text(&self) -> Option<&'a str> {
-            self._tab
-                .get::<flatbuffers::ForwardsUOffset<&str>>(BadStatement::VT_TEXT, None)
+        pub fn errors(
+            &self,
+        ) -> Option<flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<&'a str>>> {
+            self._tab.get::<flatbuffers::ForwardsUOffset<
+                flatbuffers::Vector<flatbuffers::ForwardsUOffset<&'a str>>,
+            >>(BadStatement::VT_ERRORS, None)
         }
     }
 
     pub struct BadStatementArgs<'a> {
         pub base_node: Option<flatbuffers::WIPOffset<BaseNode<'a>>>,
-        pub text: Option<flatbuffers::WIPOffset<&'a str>>,
+        pub errors: Option<
+            flatbuffers::WIPOffset<flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<&'a str>>>,
+        >,
     }
     impl<'a> Default for BadStatementArgs<'a> {
         #[inline]
         fn default() -> Self {
             BadStatementArgs {
                 base_node: None,
-                text: None,
+                errors: None,
             }
         }
     }
@@ -1775,9 +1752,14 @@ pub mod fbast {
                 );
         }
         #[inline]
-        pub fn add_text(&mut self, text: flatbuffers::WIPOffset<&'b str>) {
+        pub fn add_errors(
+            &mut self,
+            errors: flatbuffers::WIPOffset<
+                flatbuffers::Vector<'b, flatbuffers::ForwardsUOffset<&'b str>>,
+            >,
+        ) {
             self.fbb_
-                .push_slot_always::<flatbuffers::WIPOffset<_>>(BadStatement::VT_TEXT, text);
+                .push_slot_always::<flatbuffers::WIPOffset<_>>(BadStatement::VT_ERRORS, errors);
         }
         #[inline]
         pub fn new(
@@ -11653,8 +11635,8 @@ pub mod fbast {
             if let Some(x) = args.expression {
                 builder.add_expression(x);
             }
-            if let Some(x) = args.text {
-                builder.add_text(x);
+            if let Some(x) = args.errors {
+                builder.add_errors(x);
             }
             if let Some(x) = args.base_node {
                 builder.add_base_node(x);
@@ -11664,7 +11646,7 @@ pub mod fbast {
         }
 
         pub const VT_BASE_NODE: flatbuffers::VOffsetT = 4;
-        pub const VT_TEXT: flatbuffers::VOffsetT = 6;
+        pub const VT_ERRORS: flatbuffers::VOffsetT = 6;
         pub const VT_EXPRESSION_TYPE: flatbuffers::VOffsetT = 8;
         pub const VT_EXPRESSION: flatbuffers::VOffsetT = 10;
 
@@ -11676,9 +11658,12 @@ pub mod fbast {
             )
         }
         #[inline]
-        pub fn text(&self) -> Option<&'a str> {
-            self._tab
-                .get::<flatbuffers::ForwardsUOffset<&str>>(BadExpression::VT_TEXT, None)
+        pub fn errors(
+            &self,
+        ) -> Option<flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<&'a str>>> {
+            self._tab.get::<flatbuffers::ForwardsUOffset<
+                flatbuffers::Vector<flatbuffers::ForwardsUOffset<&'a str>>,
+            >>(BadExpression::VT_ERRORS, None)
         }
         #[inline]
         pub fn expression_type(&self) -> Expression {
@@ -11955,7 +11940,9 @@ pub mod fbast {
 
     pub struct BadExpressionArgs<'a> {
         pub base_node: Option<flatbuffers::WIPOffset<BaseNode<'a>>>,
-        pub text: Option<flatbuffers::WIPOffset<&'a str>>,
+        pub errors: Option<
+            flatbuffers::WIPOffset<flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<&'a str>>>,
+        >,
         pub expression_type: Expression,
         pub expression: Option<flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>>,
     }
@@ -11964,7 +11951,7 @@ pub mod fbast {
         fn default() -> Self {
             BadExpressionArgs {
                 base_node: None,
-                text: None,
+                errors: None,
                 expression_type: Expression::NONE,
                 expression: None,
             }
@@ -11984,9 +11971,14 @@ pub mod fbast {
                 );
         }
         #[inline]
-        pub fn add_text(&mut self, text: flatbuffers::WIPOffset<&'b str>) {
+        pub fn add_errors(
+            &mut self,
+            errors: flatbuffers::WIPOffset<
+                flatbuffers::Vector<'b, flatbuffers::ForwardsUOffset<&'b str>>,
+            >,
+        ) {
             self.fbb_
-                .push_slot_always::<flatbuffers::WIPOffset<_>>(BadExpression::VT_TEXT, text);
+                .push_slot_always::<flatbuffers::WIPOffset<_>>(BadExpression::VT_ERRORS, errors);
         }
         #[inline]
         pub fn add_expression_type(&mut self, expression_type: Expression) {

@@ -544,7 +544,7 @@ impl Formatter {
                 self.write_rune(' ')
             }
         }
-        self.format_node(&Node::StringLit(&n.path))
+        self.format_node(&Node::from_expr(&n.path))
     }
 
     fn format_expression_statement(&mut self, n: &ast::ExprStmt) {

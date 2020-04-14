@@ -527,18 +527,19 @@ impl<'a> ast::walk::Visitor<'a> for SerializingVisitor<'a> {
                     None => (None, fbast::Expression::NONE),
                     Some(_) => v.pop_expr(),
                 };
-                let text = v.create_string(&be.text);
-                let be = fbast::BadExpression::create(
-                    &mut v.builder,
-                    &fbast::BadExpressionArgs {
-                        base_node,
-                        expression_type,
-                        expression,
-                        text,
-                    },
-                );
-                v.expr_stack
-                    .push((be.as_union_value(), fbast::Expression::BadExpression));
+                //TODO
+                //let text = v.create_string(&be.text);
+                //let be = fbast::BadExpression::create(
+                //    &mut v.builder,
+                //    &fbast::BadExpressionArgs {
+                //        base_node,
+                //        expression_type,
+                //        expression,
+                //        text,
+                //    },
+                //);
+                //v.expr_stack
+                //    .push((be.as_union_value(), fbast::Expression::BadExpression));
             }
             walk::Node::VariableAssgn(_) => {
                 let (init_, init_type) = v.pop_expr();
@@ -618,13 +619,14 @@ impl<'a> ast::walk::Visitor<'a> for SerializingVisitor<'a> {
                     .push((rs.as_union_value(), fbast::Statement::ReturnStatement));
             }
             walk::Node::BadStmt(bs) => {
-                let text = Some(v.builder.create_string(bs.text.as_str()));
-                let bs = fbast::BadStatement::create(
-                    &mut v.builder,
-                    &fbast::BadStatementArgs { base_node, text },
-                );
-                v.stmts
-                    .push((bs.as_union_value(), fbast::Statement::BadStatement))
+                //TODO
+                //let text = Some(v.builder.create_string(bs.text.as_str()));
+                //let bs = fbast::BadStatement::create(
+                //    &mut v.builder,
+                //    &fbast::BadStatementArgs { base_node, text },
+                //);
+                //v.stmts
+                //    .push((bs.as_union_value(), fbast::Statement::BadStatement))
             }
             walk::Node::TestStmt(_) => {
                 let (assignment, assignment_type) = v.pop_assignment_stmt();
@@ -859,10 +861,9 @@ impl<'a> SerializingVisitorState<'a> {
         base_node: &ast::BaseNode,
     ) -> Option<WIPOffset<fbast::BaseNode<'a>>> {
         let loc = self.create_loc(&base_node.location);
-        let errors = self.create_base_node_errs(&base_node.errors);
         Some(fbast::BaseNode::create(
             &mut self.builder,
-            &fbast::BaseNodeArgs { loc, errors },
+            &fbast::BaseNodeArgs { loc},
         ))
     }
 
@@ -887,23 +888,6 @@ impl<'a> SerializingVisitorState<'a> {
                 source,
             },
         ))
-    }
-
-    fn create_base_node_errs(
-        &mut self,
-        ast_errs: &[String],
-    ) -> Option<
-        flatbuffers::WIPOffset<flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<&'a str>>>,
-    > {
-        Some(
-            self.builder.create_vector_of_strings(
-                ast_errs
-                    .iter()
-                    .map(|s| s.as_str())
-                    .collect::<Vec<&str>>()
-                    .as_slice(),
-            ),
-        )
     }
 }
 

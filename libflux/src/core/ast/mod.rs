@@ -315,15 +315,13 @@ where
 pub struct BaseNode {
     #[serde(default)]
     pub location: SourceLocation,
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    #[serde(serialize_with = "serialize_errors")]
-    #[serde(default)]
-    pub errors: Vec<String>,
 }
 
 impl BaseNode {
+    //TODO change this to is_valid?
+    // add is_empty to location?
     pub fn is_empty(&self) -> bool {
-        self.errors.is_empty() && !self.location.is_valid()
+        !self.location.is_valid()
     }
 }
 
@@ -405,7 +403,7 @@ pub struct ImportDeclaration {
     pub base: BaseNode,
     #[serde(rename = "as")]
     pub alias: Option<Identifier>,
-    pub path: StringLit,
+    pub path: Expression,
 }
 
 // Block is a set of statements
@@ -428,7 +426,10 @@ pub struct BadStmt {
     #[serde(default)]
     #[serde(flatten)]
     pub base: BaseNode,
-    pub text: String,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    #[serde(serialize_with = "serialize_errors")]
+    #[serde(default)]
+    pub errors: Vec<String>,
 }
 
 // ExprStmt may consist of an expression that does not return a value and is executed solely for its side-effects.
@@ -893,7 +894,10 @@ pub struct BadExpr {
     #[serde(default)]
     #[serde(flatten)]
     pub base: BaseNode,
-    pub text: String,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    #[serde(serialize_with = "serialize_errors")]
+    #[serde(default)]
+    pub errors: Vec<String>,
     pub expression: Option<Expression>,
 }
 

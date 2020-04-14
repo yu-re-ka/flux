@@ -370,34 +370,11 @@ func (rcv *BaseNode) Loc(obj *SourceLocation) *SourceLocation {
 	return nil
 }
 
-func (rcv *BaseNode) Errors(j int) []byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
-	if o != 0 {
-		a := rcv._tab.Vector(o)
-		return rcv._tab.ByteVector(a + flatbuffers.UOffsetT(j*4))
-	}
-	return nil
-}
-
-func (rcv *BaseNode) ErrorsLength() int {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
-	if o != 0 {
-		return rcv._tab.VectorLen(o)
-	}
-	return 0
-}
-
 func BaseNodeStart(builder *flatbuffers.Builder) {
-	builder.StartObject(2)
+	builder.StartObject(1)
 }
 func BaseNodeAddLoc(builder *flatbuffers.Builder, loc flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(loc), 0)
-}
-func BaseNodeAddErrors(builder *flatbuffers.Builder, errors flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(errors), 0)
-}
-func BaseNodeStartErrorsVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
-	return builder.StartVector(4, numElems, 4)
 }
 func BaseNodeEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
@@ -848,12 +825,21 @@ func (rcv *BadStatement) BaseNode(obj *BaseNode) *BaseNode {
 	return nil
 }
 
-func (rcv *BadStatement) Text() []byte {
+func (rcv *BadStatement) Errors(j int) []byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
 	if o != 0 {
-		return rcv._tab.ByteVector(o + rcv._tab.Pos)
+		a := rcv._tab.Vector(o)
+		return rcv._tab.ByteVector(a + flatbuffers.UOffsetT(j*4))
 	}
 	return nil
+}
+
+func (rcv *BadStatement) ErrorsLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
 }
 
 func BadStatementStart(builder *flatbuffers.Builder) {
@@ -862,8 +848,11 @@ func BadStatementStart(builder *flatbuffers.Builder) {
 func BadStatementAddBaseNode(builder *flatbuffers.Builder, baseNode flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(baseNode), 0)
 }
-func BadStatementAddText(builder *flatbuffers.Builder, text flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(text), 0)
+func BadStatementAddErrors(builder *flatbuffers.Builder, errors flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(errors), 0)
+}
+func BadStatementStartErrorsVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(4, numElems, 4)
 }
 func BadStatementEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
@@ -3553,12 +3542,21 @@ func (rcv *BadExpression) BaseNode(obj *BaseNode) *BaseNode {
 	return nil
 }
 
-func (rcv *BadExpression) Text() []byte {
+func (rcv *BadExpression) Errors(j int) []byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
 	if o != 0 {
-		return rcv._tab.ByteVector(o + rcv._tab.Pos)
+		a := rcv._tab.Vector(o)
+		return rcv._tab.ByteVector(a + flatbuffers.UOffsetT(j*4))
 	}
 	return nil
+}
+
+func (rcv *BadExpression) ErrorsLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
 }
 
 func (rcv *BadExpression) ExpressionType() byte {
@@ -3588,8 +3586,11 @@ func BadExpressionStart(builder *flatbuffers.Builder) {
 func BadExpressionAddBaseNode(builder *flatbuffers.Builder, baseNode flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(baseNode), 0)
 }
-func BadExpressionAddText(builder *flatbuffers.Builder, text flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(text), 0)
+func BadExpressionAddErrors(builder *flatbuffers.Builder, errors flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(errors), 0)
+}
+func BadExpressionStartErrorsVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(4, numElems, 4)
 }
 func BadExpressionAddExpressionType(builder *flatbuffers.Builder, expressionType byte) {
 	builder.PrependByteSlot(2, expressionType, 0)
