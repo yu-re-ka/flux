@@ -5,25 +5,23 @@ import (
 	"os"
 
 	"github.com/influxdata/flux"
+	CSV "github.com/influxdata/flux/csv"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/semantic"
-	CSV "github.com/influxdata/flux/csv"
+	"github.com/influxdata/flux/runtime"
 )
 
 const (
-	ToCSVKind           = "toCSV"
+	ToCSVKind = "toCSV"
 )
 
 func init() {
-	toCSVSignature := flux.FunctionSignature(
-		map[string]semantic.PolyType{
-			"file":     semantic.String,
-		},
-		[]string{"file"},
-	)
+	toCSVSignature := runtime.MustLookupBuiltinType("csv", "to")
 
-	flux.RegisterPackageValue("csv", "to", flux.FunctionValueWithSideEffect(ToCSVKind, createToCSVOpSpec, toCSVSignature))
+	runtime.RegisterPackageValue("csv", "to",
+		flux.MustValue(flux.FunctionValueWithSideEffect(
+			ToCSVKind, createToCSVOpSpec, toCSVSignature)))
+
 	flux.RegisterOpSpec(ToCSVKind, func() flux.OperationSpec { return &ToCSVOpSpec{} })
 	plan.RegisterProcedureSpecWithSideEffect(ToCSVKind, newToCSVProcedure, ToCSVKind)
 	execute.RegisterTransformation(ToCSVKind, createToCSVTransformation)
@@ -94,40 +92,15 @@ func createToCSVTransformation(id execute.DatasetID, mode execute.AccumulationMo
 		return nil, nil, fmt.Errorf("invalid spec type %T", spec)
 	}
 
-	file, err := os.OpenFile(s.Spec.File, os.O_CREATE | os.O_WRONLY, 0644)
+	file, err := os.OpenFile(s.Spec.File, os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	cache := execute.NewTableBuilderCache(a.Allocator())
 	d := execute.NewDataset(id, mode, cache)
-	t := NewToCSVTransformation( d, cache, s, file )
+	t := NewToCSVTransformation(d, cache, s, file)
 	return t, d, nil
-}
-
-type Result struct {
-	Tbls []flux.Table
-}
-
-func (o Result) Name() string {
-	return "_result";
-}
-
-func (o Result) Tables() flux.TableIterator {
-	return TableIterator{ Tables: o.Tbls }
-}
-
-type TableIterator struct {
-	Tables []flux.Table
-}
-
-func (ti TableIterator) Do(f func(flux.Table) error) error {
-	for _, t := range ti.Tables {
-		if err := f(t); err != nil {
-			return err
-		}
-	}
-	return nil
 }
 
 type ToCSVTransformation struct {
@@ -135,17 +108,21 @@ type ToCSVTransformation struct {
 	cache   execute.TableBuilderCache
 	spec    *ToCSVProcedureSpec
 	file    *os.File
-	tables  []flux.Table
+	encoder *CSV.ResultEncoder
 }
 
-func NewToCSVTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *ToCSVProcedureSpec, file *os.File ) *ToCSVTransformation {
-	return &ToCSVTransformation{
-		d:      d,
-		cache:  cache,
-		spec:   spec,
-		file:   file,
-		tables: make( []flux.Table, 0 ),
+func NewToCSVTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *ToCSVProcedureSpec, file *os.File) *ToCSVTransformation {
+	t := &ToCSVTransformation{
+		d:       d,
+		cache:   cache,
+		spec:    spec,
+		file:    file,
+		encoder: CSV.NewResultEncoder(CSV.DefaultEncoderConfig()),
 	}
+
+	t.encoder.EncodeStart(t.file, "_result")
+
+	return t
 }
 
 func (t *ToCSVTransformation) UpdateWatermark(id execute.DatasetID, pt execute.Time) error {
@@ -161,16 +138,12 @@ func (t *ToCSVTransformation) UpdateProcessingTime(id execute.DatasetID, pt exec
 }
 
 func (t *ToCSVTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
-	t.tables = append( t.tables, tbl )
+	t.encoder.EncodeTable(tbl)
 	return nil
 }
 
 func (t *ToCSVTransformation) Finish(id execute.DatasetID, err error) {
-	result := Result{ Tbls: t.tables }
-
-	encoder := CSV.NewResultEncoder(CSV.DefaultEncoderConfig())
-	encoder.Encode(t.file, result)
-
+	t.encoder.EncodeFinish()
 	t.file.Close()
 	t.d.Finish(err)
 }

@@ -712,6 +712,18 @@ type colMeta struct {
 type ResultEncoder struct {
 	c       ResultEncoderConfig
 	written bool
+
+	tableID    int
+	tableIDStr string
+
+	metaCols     []colMeta
+	writeCounter *iocounter.Writer
+	writer       *csv.Writer
+
+	lastCols  []colMeta
+	lastEmpty bool
+
+	resultName string
 }
 
 // ResultEncoderConfig are options that can be specified on the ResultEncoder.
@@ -812,103 +824,116 @@ func wrapEncodingError(err error) error {
 	return &csvEncoderError{err: err}
 }
 
-func (e *ResultEncoder) Encode(w io.Writer, result flux.Result) (int64, error) {
-	tableID := 0
-	tableIDStr := "0"
-	metaCols := []colMeta{
+func (e *ResultEncoder) EncodeStart(w io.Writer, resultName string) error {
+	e.tableID = 0
+	e.tableIDStr = "0"
+	e.metaCols = []colMeta{
 		{ColMeta: flux.ColMeta{Label: "", Type: flux.TInvalid}},
 		{ColMeta: flux.ColMeta{Label: resultLabel, Type: flux.TString}},
 		{ColMeta: flux.ColMeta{Label: tableLabel, Type: flux.TInt}},
 	}
-	writeCounter := &iocounter.Writer{Writer: w}
-	writer := e.csvWriter(writeCounter)
+	e.writeCounter = &iocounter.Writer{Writer: w}
+	e.writer = e.csvWriter(e.writeCounter)
+	e.lastCols = make([]colMeta, 0)
+	e.lastEmpty = false
+	e.resultName = resultName
 
-	var lastCols []colMeta
-	var lastEmpty bool
+	return nil
+}
 
-	resultName := result.Name()
+func (e *ResultEncoder) EncodeTable(tbl flux.Table) error {
+	e.written = true
+	// Update cols with table cols
+	cols := e.metaCols
+	for _, c := range tbl.Cols() {
+		cm := colMeta{ColMeta: c}
+		if c.Type == flux.TTime {
+			cm.fmt = time.RFC3339Nano
+		}
+		cols = append(cols, cm)
+	}
+	// pre-allocate row slice
+	row := make([]string, len(cols))
+
+	schemaChanged := !equalCols(cols, e.lastCols)
+
+	if e.lastEmpty || schemaChanged || tbl.Empty() {
+		if len(e.lastCols) > 0 {
+			// Write out empty line if not first table
+			e.writer.Write(nil)
+		}
+
+		if err := writeSchema(e.writer, &e.c, row, cols, tbl.Empty(), tbl.Key(), e.resultName, e.tableIDStr); err != nil {
+			return wrapEncodingError(err)
+		}
+	}
+
+	if execute.ContainsStr(e.c.Annotations, defaultAnnotation) {
+		for j := range cols {
+			switch j {
+			case annotationIdx:
+				row[j] = ""
+			case resultIdx:
+				row[j] = ""
+			case tableIdx:
+				row[j] = e.tableIDStr
+			default:
+				row[j] = ""
+			}
+		}
+	} else {
+		for j := range cols {
+			switch j {
+			case annotationIdx:
+				row[j] = ""
+			case resultIdx:
+				row[j] = e.resultName
+			case tableIdx:
+				row[j] = e.tableIDStr
+			default:
+				row[j] = ""
+			}
+		}
+	}
+
+	if err := tbl.Do(func(cr flux.ColReader) error {
+		record := row[recordStartIdx:]
+		l := cr.Len()
+		for i := 0; i < l; i++ {
+			for j, c := range cols[recordStartIdx:] {
+				v, err := encodeValueFrom(i, j, c, cr)
+				if err != nil {
+					return wrapEncodingError(err)
+				}
+				record[j] = v
+			}
+			e.writer.Write(row)
+		}
+		e.writer.Flush()
+		return wrapEncodingError(e.writer.Error())
+	}); err != nil {
+		return err
+	}
+
+	e.tableID++
+	e.tableIDStr = strconv.Itoa(e.tableID)
+	e.lastCols = cols
+	e.lastEmpty = tbl.Empty()
+	e.writer.Flush()
+	return wrapEncodingError(e.writer.Error())
+}
+
+func (e *ResultEncoder) EncodeFinish() (int64, error) {
+	return e.writeCounter.Count(), nil
+}
+
+func (e *ResultEncoder) Encode(w io.Writer, result flux.Result) (int64, error) {
+	e.EncodeStart(w, result.Name())
+
 	err := result.Tables().Do(func(tbl flux.Table) error {
-		e.written = true
-		// Update cols with table cols
-		cols := metaCols
-		for _, c := range tbl.Cols() {
-			cm := colMeta{ColMeta: c}
-			if c.Type == flux.TTime {
-				cm.fmt = time.RFC3339Nano
-			}
-			cols = append(cols, cm)
-		}
-		// pre-allocate row slice
-		row := make([]string, len(cols))
-
-		schemaChanged := !equalCols(cols, lastCols)
-
-		if lastEmpty || schemaChanged || tbl.Empty() {
-			if len(lastCols) > 0 {
-				// Write out empty line if not first table
-				writer.Write(nil)
-			}
-
-			if err := writeSchema(writer, &e.c, row, cols, tbl.Empty(), tbl.Key(), resultName, tableIDStr); err != nil {
-				return wrapEncodingError(err)
-			}
-		}
-
-		if execute.ContainsStr(e.c.Annotations, defaultAnnotation) {
-			for j := range cols {
-				switch j {
-				case annotationIdx:
-					row[j] = ""
-				case resultIdx:
-					row[j] = ""
-				case tableIdx:
-					row[j] = tableIDStr
-				default:
-					row[j] = ""
-				}
-			}
-		} else {
-			for j := range cols {
-				switch j {
-				case annotationIdx:
-					row[j] = ""
-				case resultIdx:
-					row[j] = resultName
-				case tableIdx:
-					row[j] = tableIDStr
-				default:
-					row[j] = ""
-				}
-			}
-		}
-
-		if err := tbl.Do(func(cr flux.ColReader) error {
-			record := row[recordStartIdx:]
-			l := cr.Len()
-			for i := 0; i < l; i++ {
-				for j, c := range cols[recordStartIdx:] {
-					v, err := encodeValueFrom(i, j, c, cr)
-					if err != nil {
-						return wrapEncodingError(err)
-					}
-					record[j] = v
-				}
-				writer.Write(row)
-			}
-			writer.Flush()
-			return wrapEncodingError(writer.Error())
-		}); err != nil {
-			return err
-		}
-
-		tableID++
-		tableIDStr = strconv.Itoa(tableID)
-		lastCols = cols
-		lastEmpty = tbl.Empty()
-		writer.Flush()
-		return wrapEncodingError(writer.Error())
+		return e.EncodeTable(tbl)
 	})
-	return writeCounter.Count(), err
+	return e.writeCounter.Count(), err
 }
 
 func (e *ResultEncoder) EncodeError(w io.Writer, err error) error {
