@@ -18,7 +18,7 @@ use crate::semantic::{
     import::Importer,
     infer::{Constraint, Constraints},
     sub::{Substitutable, Substitution},
-    types::{Array, Function, Kind, MonoType, MonoTypeMap, PolyType, PolyTypeMap, Tvar, TvarKinds},
+    types::{Array, Kind, MonoType, PolyType, PolyTypeMap, Tvar, TvarKinds},
 };
 
 use chrono::prelude::DateTime;
@@ -739,52 +739,51 @@ pub struct FunctionExpr {
 impl FunctionExpr {
     fn infer(&mut self, mut env: Environment, f: &mut Fresher) -> Result {
         let mut cons = Constraints::empty();
-        let mut pipe = None;
-        let mut req = MonoTypeMap::new();
-        let mut opt = MonoTypeMap::new();
-        // This params will build the nested env when inferring the function body.
+        let mut x = MonoType::Par(Box::new(types::Parameter::None));
         let mut params = PolyTypeMap::new();
-        for param in &mut self.params {
-            match param.default {
-                Some(ref mut e) => {
-                    let (nenv, ncons) = e.infer(env, f)?;
-                    cons = cons + ncons;
-                    let id = param.key.name.clone();
-                    // We are here: `f = (a=1) => {...}`.
-                    // So, this PolyType is actually a MonoType, whose type
-                    // is the one of the default value ("1" in "a=1").
-                    let typ = PolyType {
-                        vars: Vec::new(),
-                        cons: TvarKinds::new(),
-                        expr: e.type_of(),
-                    };
-                    params.insert(id.clone(), typ);
-                    opt.insert(id, e.type_of());
-                    env = nenv;
-                }
-                None => {
-                    // We are here: `f = (a) => {...}`.
-                    // So, we do not know the type of "a". Let's use a fresh TVar.
-                    let id = param.key.name.clone();
-                    let ftvar = f.fresh();
-                    let typ = PolyType {
-                        vars: Vec::new(),
-                        cons: TvarKinds::new(),
-                        expr: MonoType::Var(ftvar),
-                    };
-                    params.insert(id.clone(), typ.clone());
-                    // Piped arguments cannot have a default value.
-                    // So check if this is a piped argument.
-                    if param.is_pipe {
-                        pipe = Some(types::Property {
-                            k: id,
-                            v: MonoType::Var(ftvar),
-                        });
-                    } else {
-                        req.insert(id, MonoType::Var(ftvar));
-                    }
-                }
-            };
+        for p in &mut self.params {
+            if let Some(ref mut e) = &mut p.default {
+                let (nenv, ncons) = e.infer(env, f)?;
+                cons = cons + ncons;
+                x = MonoType::Par(Box::new(types::Parameter::Opt {
+                    lab: p.key.name.clone(),
+                    typ: e.type_of(),
+                    ext: x,
+                }));
+                let typ = PolyType {
+                    vars: Vec::new(),
+                    cons: TvarKinds::new(),
+                    expr: e.type_of(),
+                };
+                params.insert(p.key.name.clone(), typ);
+                env = nenv;
+            } else if p.is_pipe {
+                let tv = f.fresh();
+                x = MonoType::Par(Box::new(types::Parameter::Pipe {
+                    lab: p.key.name.clone(),
+                    typ: MonoType::Var(tv),
+                    ext: x,
+                }));
+                let typ = PolyType {
+                    vars: Vec::new(),
+                    cons: TvarKinds::new(),
+                    expr: MonoType::Var(tv),
+                };
+                params.insert(p.key.name.clone(), typ.clone());
+            } else {
+                let tv = f.fresh();
+                x = MonoType::Par(Box::new(types::Parameter::Req {
+                    lab: p.key.name.clone(),
+                    typ: MonoType::Var(tv),
+                    ext: x,
+                }));
+                let typ = PolyType {
+                    vars: Vec::new(),
+                    cons: TvarKinds::new(),
+                    expr: MonoType::Var(tv),
+                };
+                params.insert(p.key.name.clone(), typ.clone());
+            }
         }
         // Add the parameters to some nested environment.
         let mut nenv = Environment::new(env);
@@ -795,12 +794,9 @@ impl FunctionExpr {
         let (nenv, bcons) = self.body.infer(nenv, f)?;
         // Now pop the nested environment, we don't need it anymore.
         let env = nenv.pop();
-        let retn = self.body.type_of();
-        let func = MonoType::Fun(Box::new(Function {
-            req,
-            opt,
-            pipe,
-            retn,
+        let func = MonoType::Fnc(Box::new(types::Fun {
+            x: x,
+            e: self.body.type_of(),
         }));
         cons = cons + bcons;
         cons.add(Constraint::Equal(func, self.typ.clone(), self.loc.clone()));
@@ -1163,8 +1159,7 @@ impl CallExpr {
         // update the environment and the constraints, and use the inferred types to
         // build the fields of the type for this call expression.
         let (mut env, mut cons) = self.callee.infer(env, f)?;
-        let mut req = MonoTypeMap::new();
-        let mut pipe = None;
+        let mut x = MonoType::Par(Box::new(types::Parameter::None));
         for Property {
             key: ref mut id,
             value: ref mut expr,
@@ -1174,34 +1169,27 @@ impl CallExpr {
             let (nenv, ncons) = expr.infer(env, f)?;
             cons = cons + ncons;
             env = nenv;
-            // Every argument is required in a function call.
-            req.insert(id.name.clone(), expr.type_of());
+            x = MonoType::Par(Box::new(types::Parameter::Req {
+                lab: id.name.clone(),
+                typ: expr.type_of(),
+                ext: x,
+            }));
         }
         if let Some(ref mut p) = &mut self.pipe {
             let (nenv, ncons) = p.infer(env, f)?;
             cons = cons + ncons;
             env = nenv;
-            pipe = Some(types::Property {
-                k: "<-".to_string(),
-                v: p.type_of(),
-            });
+            x = MonoType::Par(Box::new(types::Parameter::Pipe {
+                lab: String::from("<-"),
+                typ: p.type_of(),
+                ext: x,
+            }));
         }
         // Constrain the callee to be a Function.
         cons.add(Constraint::Equal(
-            MonoType::Fun(Box::new(Function {
-                opt: MonoTypeMap::new(),
-                req,
-                pipe,
-                // The return type of a function call is the type of the call itself.
-                // Remind that, when two functions are unified, their return types are unified too.
-                // As an example take:
-                //   f = (a) => a + 1
-                //   f(a: 0)
-                // The return type of `f` is `int`.
-                // The return type of `f(a: 0)` is `t0` (a fresh type variable).
-                // Upon unification a substitution "t0 => int" is created, so that the compiler
-                // can infer that, for instance, `f(a: 0) + 1` is legal.
-                retn: self.typ.clone(),
+            MonoType::Fnc(Box::new(types::Fun {
+                x: x,
+                e: self.typ.clone(),
             })),
             self.callee.type_of(),
             self.loc.clone(),
@@ -1312,13 +1300,11 @@ impl MemberExpr {
     // where 'r is a fresh type variable.
     //
     fn infer(&mut self, env: Environment, f: &mut Fresher) -> Result {
-        let head = types::Property {
-            k: self.property.to_owned(),
-            v: self.typ.to_owned(),
-        };
-        let tail = MonoType::Var(f.fresh());
-
-        let r = MonoType::from(types::Row::Extension { head, tail });
+        let r = MonoType::Obj(Box::new(types::Record::Extension {
+            lab: self.property.clone(),
+            typ: self.typ.clone(),
+            ext: MonoType::Var(f.fresh()),
+        }));
         let t = self.object.type_of();
 
         let (env, cons) = self.object.infer(env, f)?;
@@ -1394,7 +1380,7 @@ impl ObjectExpr {
                 (expr.typ.to_owned(), cons)
             }
             None => (
-                MonoType::Row(Box::new(types::Row::Empty)),
+                MonoType::Obj(Box::new(types::Record::Empty)),
                 Constraints::empty(),
             ),
         };
@@ -1403,12 +1389,10 @@ impl ObjectExpr {
             let (e, rest) = prop.value.infer(env, f)?;
             env = e;
             cons = cons + rest;
-            r = MonoType::Row(Box::new(types::Row::Extension {
-                head: types::Property {
-                    k: prop.key.name.to_owned(),
-                    v: prop.value.type_of(),
-                },
-                tail: r,
+            r = MonoType::Obj(Box::new(types::Record::Extension {
+                lab: prop.key.name.clone(),
+                typ: prop.value.type_of(),
+                ext: r,
             }));
         }
         Ok((

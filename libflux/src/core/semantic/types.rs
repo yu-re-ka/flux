@@ -1396,17 +1396,28 @@ impl fmt::Display for Parameter {
                 lab: a,
                 typ: t,
                 ext: r,
-            } => write!(f, "{}:{}, {}", a, t, r),
+            } => match r == &MonoType::Par(Box::new(Parameter::None)) {
+                true => write!(f, "{}:{}", a, t),
+                false => write!(f, "{}:{}, {}", a, t, r),
+            },
             Parameter::Opt {
                 lab: a,
                 typ: t,
                 ext: r,
-            } => write!(f, "?{}:{}, {}", a, t, r),
+            } => match r == &MonoType::Par(Box::new(Parameter::None)) {
+                true => write!(f, "?{}:{}", a, t),
+                false => write!(f, "?{}:{}, {}", a, t, r),
+            },
             Parameter::Pipe {
                 lab: a,
                 typ: t,
                 ext: r,
-            } => write!(f, "{}:{}, {}", a, t, r),
+            } => match (r == &MonoType::Par(Box::new(Parameter::None)), a == "<-") {
+                (true, true) => write!(f, "{}:{}", a, t),
+                (true, false) => write!(f, "<-{}:{}", a, t),
+                (false, true) => write!(f, "{}:{}, {}", a, t, r),
+                (false, false) => write!(f, "<-{}:{}, {}", a, t, r),
+            },
         }
     }
 }
