@@ -148,6 +148,7 @@ pub enum Error {
     CannotUnifyReturn(MonoType, MonoType),
     MissingPipeArgument,
     MultiplePipeArguments(String, String),
+    Def,
 }
 
 impl fmt::Display for Error {
@@ -167,6 +168,7 @@ impl fmt::Display for Error {
             Error::MultiplePipeArguments(a, b) => {
                 write!(f, "inconsistent pipe arguments {} != {}", a, b)
             }
+            Error::Def => write!(f, "uh oh"),
         }
     }
 }
@@ -231,6 +233,9 @@ pub enum MonoType {
     Arr(Box<Array>),
     Row(Box<Row>),
     Fun(Box<Function>),
+    Obj(Box<Record>),
+    Par(Box<Parameter>),
+    Fnc(Box<Fun>),
 }
 
 pub type MonoTypeMap = SemanticMap<String, MonoType>;
@@ -253,6 +258,9 @@ impl fmt::Display for MonoType {
             MonoType::Arr(arr) => arr.fmt(f),
             MonoType::Row(obj) => obj.fmt(f),
             MonoType::Fun(fun) => fun.fmt(f),
+            MonoType::Obj(obj) => write!(f, "{}", obj),
+            MonoType::Par(par) => write!(f, "{}", par),
+            MonoType::Fnc(fun) => write!(f, "{}", fun),
         }
     }
 }
@@ -273,6 +281,9 @@ impl Substitutable for MonoType {
             MonoType::Arr(arr) => MonoType::Arr(Box::new(arr.apply(sub))),
             MonoType::Row(obj) => MonoType::Row(Box::new(obj.apply(sub))),
             MonoType::Fun(fun) => MonoType::Fun(Box::new(fun.apply(sub))),
+            MonoType::Obj(obj) => MonoType::Obj(Box::new(obj.apply(sub))),
+            MonoType::Par(par) => MonoType::Par(Box::new(par.apply(sub))),
+            MonoType::Fnc(fun) => MonoType::Fnc(Box::new(fun.apply(sub))),
         }
     }
     fn free_vars(&self) -> Vec<Tvar> {
@@ -290,6 +301,9 @@ impl Substitutable for MonoType {
             MonoType::Arr(arr) => arr.free_vars(),
             MonoType::Row(obj) => obj.free_vars(),
             MonoType::Fun(fun) => fun.free_vars(),
+            MonoType::Obj(obj) => obj.free_vars(),
+            MonoType::Par(par) => par.free_vars(),
+            MonoType::Fnc(fun) => fun.free_vars(),
         }
     }
 }
@@ -310,6 +324,9 @@ impl MaxTvar for MonoType {
             MonoType::Arr(arr) => arr.max_tvar(),
             MonoType::Row(obj) => obj.max_tvar(),
             MonoType::Fun(fun) => fun.max_tvar(),
+            MonoType::Obj(obj) => obj.max_tvar(),
+            MonoType::Par(par) => par.max_tvar(),
+            MonoType::Fnc(fun) => fun.max_tvar(),
         }
     }
 }
@@ -342,6 +359,9 @@ impl MonoType {
             (MonoType::Arr(t), MonoType::Arr(s)) => t.unify(*s, cons, f),
             (MonoType::Row(t), MonoType::Row(s)) => t.unify(*s, cons, f),
             (MonoType::Fun(t), MonoType::Fun(s)) => t.unify(*s, cons, f),
+            (MonoType::Obj(t), MonoType::Obj(s)) => unify_record(*t, *s, cons, f),
+            (MonoType::Par(t), MonoType::Par(s)) => unify_params(*t, *s, cons, f),
+            (MonoType::Fnc(t), MonoType::Fnc(s)) => unify_function(*t, *s, cons, f),
             (t, with) => Err(Error::CannotUnify(t, with)),
         }
     }
@@ -413,6 +433,9 @@ impl MonoType {
             MonoType::Arr(arr) => arr.constrain(with, cons),
             MonoType::Row(obj) => obj.constrain(with, cons),
             MonoType::Fun(fun) => fun.constrain(with, cons),
+            MonoType::Obj(obj) => obj.constrain(with, cons),
+            MonoType::Par(par) => par.constrain(with, cons),
+            MonoType::Fnc(fun) => fun.constrain(with, cons),
         }
     }
 
@@ -431,6 +454,9 @@ impl MonoType {
             MonoType::Arr(arr) => arr.contains(tv),
             MonoType::Row(row) => row.contains(tv),
             MonoType::Fun(fun) => fun.contains(tv),
+            MonoType::Obj(obj) => obj.contains(tv),
+            MonoType::Par(par) => par.contains(tv),
+            MonoType::Fnc(fun) => fun.contains(tv),
         }
     }
 }
@@ -1174,6 +1200,672 @@ impl Function {
 
 pub trait MaxTvar {
     fn max_tvar(&self) -> Tvar;
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum Record {
+    Empty,
+    Extension {
+        lab: String,
+        typ: MonoType,
+        ext: MonoType,
+    },
+}
+
+impl fmt::Display for Record {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            Record::Empty => write!(f, "{}", "{}"),
+            Record::Extension {
+                lab: a,
+                typ: t,
+                ext: r,
+            } => write!(f, "{}:{} | {}", a, t, r),
+        }
+    }
+}
+
+impl Substitutable for Record {
+    fn apply(self, sub: &Substitution) -> Self {
+        match self {
+            Record::Empty => Record::Empty,
+            Record::Extension {
+                lab: a,
+                typ: t,
+                ext: r,
+            } => Record::Extension {
+                lab: a,
+                typ: t.apply(sub),
+                ext: r.apply(sub),
+            },
+        }
+    }
+    fn free_vars(&self) -> Vec<Tvar> {
+        match self {
+            Record::Empty => Vec::new(),
+            Record::Extension {
+                lab: _,
+                typ: t,
+                ext: r,
+            } => union(t.free_vars(), r.free_vars()),
+        }
+    }
+}
+
+impl MaxTvar for Record {
+    fn max_tvar(&self) -> Tvar {
+        match self {
+            Record::Empty => Tvar(0),
+            Record::Extension {
+                lab: _,
+                typ: t,
+                ext: r,
+            } => vec![t.max_tvar(), r.max_tvar()].max_tvar(),
+        }
+    }
+}
+
+impl Record {
+    fn constrain(self, with: Kind, cons: &mut TvarKinds) -> Result<Substitution, Error> {
+        match with {
+            Kind::Row => Ok(Substitution::empty()),
+            Kind::Equatable => match self {
+                Record::Empty => Ok(Substitution::empty()),
+                Record::Extension { typ, ext, .. } => {
+                    let sub = typ.constrain(with, cons)?;
+                    Ok(sub.merge(ext.constrain(with, cons)?))
+                }
+            },
+            _ => Err(Error::CannotConstrain(MonoType::Obj(Box::new(self)), with)),
+        }
+    }
+
+    fn contains(&self, tv: Tvar) -> bool {
+        match self {
+            Record::Empty => false,
+            Record::Extension {
+                lab: _,
+                typ: t,
+                ext: r,
+            } => t.contains(tv) || r.contains(tv),
+        }
+    }
+}
+
+// Rules for record unification. In what follows a != b and t is a type variable.
+//
+// 1. {} == {}
+// 2. {} != {a: _ | _}
+// 3. {a: _ | t} != {b: _ | t}
+// 4. {a: u | t} == {a: v | t} => u == v
+// 5. {a: u | r} == {a: v | s} => t = u, r = s
+// 6. {a: u | r} == {b: v | s} => r = {b: v | t}, s = {a: u | t}
+//
+fn unify_record(
+    r: Record,
+    s: Record,
+    cons: &mut TvarKinds,
+    f: &mut Fresher,
+) -> Result<Substitution, Error> {
+    match (r, s) {
+        // 1. {} == {}
+        (Record::Empty, Record::Empty) => Ok(Substitution::empty()),
+        // 2. {} != {a: _ | _}
+        (Record::Empty, Record::Extension { .. }) | (Record::Extension { .. }, Record::Empty) => {
+            Err(Error::Def)
+        }
+        // 3. {a: _ | t} != {b: _ | t}
+        // 4. {a: u | t} == {a: v | t} => u == v
+        (
+            Record::Extension {
+                lab: a,
+                typ: u,
+                ext: MonoType::Var(r),
+            },
+            Record::Extension {
+                lab: b,
+                typ: v,
+                ext: MonoType::Var(s),
+            },
+        ) if r == s => match a == b {
+            true => u.unify(v, cons, f),
+            false => Err(Error::Def),
+        },
+        // 5. {a: u | r} == {a: v | s} => t = u, r = s
+        // 6. {a: u | r} == {b: v | s} => r = {b: v | t}, s = {a: u | t}
+        (
+            Record::Extension {
+                lab: a,
+                typ: u,
+                ext: r,
+            },
+            Record::Extension {
+                lab: b,
+                typ: v,
+                ext: s,
+            },
+        ) => match a == b {
+            true => {
+                let sub = u.unify(v, cons, f)?;
+                apply_then_unify(r, s, sub, cons, f)
+            }
+            false => {
+                let i = f.fresh();
+                let _ = Record::Extension {
+                    lab: b,
+                    typ: v,
+                    ext: MonoType::Var(i),
+                };
+                let _ = Record::Extension {
+                    lab: a,
+                    typ: u,
+                    ext: MonoType::Var(i),
+                };
+                let sub = r.unify(MonoType::Int /*x*/, cons, f)?;
+                apply_then_unify(s, MonoType::Int /*y*/, sub, cons, f)
+            }
+        },
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum Parameter {
+    None,
+    Req {
+        lab: String,
+        typ: MonoType,
+        ext: MonoType,
+    },
+    Opt {
+        lab: String,
+        typ: MonoType,
+        ext: MonoType,
+    },
+    Pipe {
+        lab: String,
+        typ: MonoType,
+        ext: MonoType,
+    },
+}
+
+impl fmt::Display for Parameter {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            Parameter::None => Ok(()),
+            Parameter::Req {
+                lab: a,
+                typ: t,
+                ext: r,
+            } => write!(f, "{}:{}, {}", a, t, r),
+            Parameter::Opt {
+                lab: a,
+                typ: t,
+                ext: r,
+            } => write!(f, "?{}:{}, {}", a, t, r),
+            Parameter::Pipe {
+                lab: a,
+                typ: t,
+                ext: r,
+            } => write!(f, "{}:{}, {}", a, t, r),
+        }
+    }
+}
+
+impl Substitutable for Parameter {
+    fn apply(self, sub: &Substitution) -> Self {
+        match self {
+            Parameter::None => Parameter::None,
+            Parameter::Req {
+                lab: a,
+                typ: t,
+                ext: r,
+            } => Parameter::Req {
+                lab: a,
+                typ: t.apply(sub),
+                ext: r.apply(sub),
+            },
+            Parameter::Opt {
+                lab: a,
+                typ: t,
+                ext: r,
+            } => Parameter::Opt {
+                lab: a,
+                typ: t.apply(sub),
+                ext: r.apply(sub),
+            },
+            Parameter::Pipe {
+                lab: a,
+                typ: t,
+                ext: r,
+            } => Parameter::Pipe {
+                lab: a,
+                typ: t.apply(sub),
+                ext: r.apply(sub),
+            },
+        }
+    }
+    fn free_vars(&self) -> Vec<Tvar> {
+        match self {
+            Parameter::None => Vec::new(),
+            Parameter::Req {
+                lab: _,
+                typ: t,
+                ext: r,
+            } => union(t.free_vars(), r.free_vars()),
+            Parameter::Opt {
+                lab: _,
+                typ: t,
+                ext: r,
+            } => union(t.free_vars(), r.free_vars()),
+            Parameter::Pipe {
+                lab: _,
+                typ: t,
+                ext: r,
+            } => union(t.free_vars(), r.free_vars()),
+        }
+    }
+}
+
+impl MaxTvar for Parameter {
+    fn max_tvar(&self) -> Tvar {
+        match self {
+            Parameter::None => Tvar(0),
+            Parameter::Req {
+                lab: _,
+                typ: t,
+                ext: r,
+            } => vec![t.max_tvar(), r.max_tvar()].max_tvar(),
+            Parameter::Opt {
+                lab: _,
+                typ: t,
+                ext: r,
+            } => vec![t.max_tvar(), r.max_tvar()].max_tvar(),
+            Parameter::Pipe {
+                lab: _,
+                typ: t,
+                ext: r,
+            } => vec![t.max_tvar(), r.max_tvar()].max_tvar(),
+        }
+    }
+}
+
+impl Parameter {
+    fn constrain(self, with: Kind, _: &mut TvarKinds) -> Result<Substitution, Error> {
+        Err(Error::CannotConstrain(MonoType::Par(Box::new(self)), with))
+    }
+
+    fn contains(&self, tv: Tvar) -> bool {
+        match self {
+            Parameter::None => false,
+            Parameter::Req {
+                lab: _,
+                typ: t,
+                ext: r,
+            } => t.contains(tv) || r.contains(tv),
+            Parameter::Opt {
+                lab: _,
+                typ: t,
+                ext: r,
+            } => t.contains(tv) || r.contains(tv),
+            Parameter::Pipe {
+                lab: _,
+                typ: t,
+                ext: r,
+            } => t.contains(tv) || r.contains(tv),
+        }
+    }
+}
+
+// Rules for parameter unification. In what follows a != b, t is a
+// type variable, > represents a pipe parameter, and ? represents
+// an optional parameter.
+//
+// 1. {} == {}
+// 2. {} != {a: _ | _}
+// 3. {} != {>: _ | _}
+// 4. {} == {?: _ | r} => {} == r
+// 5. {a: _ | t} != {b: _ | t}
+// 6. {a: u | t} == {a: v | t} => u == v
+// 7. {>: u | r} == {>: v | s} => t = u, r = s
+// 8. {>: _ | _} != {?: _ | _}
+// 9. {a: u | r} == {a: v | s} => t = u, r = s
+// 10. {a: u | r} == {b: v | s} => r = {b: v | t}, s = {a: u | t}
+//
+fn unify_params(
+    x: Parameter,
+    y: Parameter,
+    cons: &mut TvarKinds,
+    f: &mut Fresher,
+) -> Result<Substitution, Error> {
+    match (x, y) {
+        // 1. {} == {}
+        (Parameter::None, Parameter::None) => Ok(Substitution::empty()),
+        // 2. {} != {a: _ | _}
+        // 3. {} != {>: _ | _}
+        (Parameter::Req { .. }, Parameter::None)
+        | (Parameter::None, Parameter::Req { .. })
+        | (Parameter::Pipe { .. }, Parameter::None)
+        | (Parameter::None, Parameter::Pipe { .. }) => Err(Error::Def),
+        // 4. {} == {?: _ | r} => {} == r
+        (Parameter::Opt { .. }, Parameter::None) | (Parameter::None, Parameter::Opt { .. }) => {
+            // unify(Parameter::None, r, cons, f)
+            Ok(Substitution::empty())
+        }
+        // 5. {a: _ | t} != {b: _ | t}
+        // 6. {a: u | t} == {a: v | t} => u == v
+        (
+            Parameter::Req {
+                lab: a,
+                typ: u,
+                ext: MonoType::Var(r),
+            },
+            Parameter::Req {
+                lab: b,
+                typ: v,
+                ext: MonoType::Var(s),
+            },
+        )
+        | (
+            Parameter::Opt {
+                lab: a,
+                typ: u,
+                ext: MonoType::Var(r),
+            },
+            Parameter::Opt {
+                lab: b,
+                typ: v,
+                ext: MonoType::Var(s),
+            },
+        )
+        | (
+            Parameter::Pipe {
+                lab: a,
+                typ: u,
+                ext: MonoType::Var(r),
+            },
+            Parameter::Pipe {
+                lab: b,
+                typ: v,
+                ext: MonoType::Var(s),
+            },
+        ) if r == s => match a == b {
+            true => u.unify(v, cons, f),
+            false => Err(Error::Def),
+        },
+        // 7. {>: u | r} == {>: v | s} => t = u, r = s
+        (
+            Parameter::Pipe {
+                lab: a,
+                typ: u,
+                ext: r,
+            },
+            Parameter::Pipe {
+                lab: b,
+                typ: v,
+                ext: s,
+            },
+        ) => {
+            if a == ">" || b == ">" || a == b {
+                let sub = u.unify(v, cons, f)?;
+                apply_then_unify(r, s, sub, cons, f)
+            } else {
+                Err(Error::Def)
+            }
+        }
+        // 9.  {a: u | r} == {a: v | s} => u == v, r == s
+        // 10. {a: u | r} == {b: v | s} => r == {b: v | t}, s == {a: u | t}
+        (
+            Parameter::Req {
+                lab: a,
+                typ: u,
+                ext: r,
+            },
+            Parameter::Req {
+                lab: b,
+                typ: v,
+                ext: s,
+            },
+        ) => match a == b {
+            true => {
+                let sub = u.unify(v, cons, f)?;
+                apply_then_unify(r, s, sub, cons, f)
+            }
+            false => {
+                let i = f.fresh();
+                let _ = Parameter::Req {
+                    lab: b,
+                    typ: v,
+                    ext: MonoType::Var(i),
+                };
+                let _ = Parameter::Req {
+                    lab: a,
+                    typ: u,
+                    ext: MonoType::Var(i),
+                };
+                let sub = r.unify(MonoType::Int /*x*/, cons, f)?;
+                apply_then_unify(s, MonoType::Int /*y*/, sub, cons, f)
+            }
+        },
+        // 9.  {a: u | r} == {a: v | s} => u == v, r == s
+        // 10. {a: u | r} == {b: v | s} => r == {b: v | t}, s == {a: u | t}
+        (
+            Parameter::Opt {
+                lab: a,
+                typ: u,
+                ext: r,
+            },
+            Parameter::Opt {
+                lab: b,
+                typ: v,
+                ext: s,
+            },
+        ) => match a == b {
+            true => {
+                let sub = u.unify(v, cons, f)?;
+                apply_then_unify(r, s, sub, cons, f)
+            }
+            false => {
+                let i = f.fresh();
+                let _ = Parameter::Opt {
+                    lab: b,
+                    typ: v,
+                    ext: MonoType::Var(i),
+                };
+                let _ = Parameter::Opt {
+                    lab: a,
+                    typ: u,
+                    ext: MonoType::Var(i),
+                };
+                let sub = r.unify(MonoType::Int /*x*/, cons, f)?;
+                apply_then_unify(s, MonoType::Int /*y*/, sub, cons, f)
+            }
+        },
+        // 9.  {a: u | r} == {a: v | s} => u == v, r == s
+        // 10. {a: u | r} == {b: v | s} => r == {b: v | t}, s == {a: u | t}
+        (
+            Parameter::Req {
+                lab: a,
+                typ: u,
+                ext: r,
+            },
+            Parameter::Opt {
+                lab: b,
+                typ: v,
+                ext: s,
+            },
+        )
+        | (
+            Parameter::Opt {
+                lab: b,
+                typ: v,
+                ext: s,
+            },
+            Parameter::Req {
+                lab: a,
+                typ: u,
+                ext: r,
+            },
+        ) => match a == b {
+            true => {
+                let sub = u.unify(v, cons, f)?;
+                apply_then_unify(r, s, sub, cons, f)
+            }
+            false => {
+                let i = f.fresh();
+                let _ = Parameter::Req {
+                    lab: a,
+                    typ: u,
+                    ext: MonoType::Var(i),
+                };
+                let _ = Parameter::Opt {
+                    lab: b,
+                    typ: v,
+                    ext: MonoType::Var(i),
+                };
+                let sub = r.unify(MonoType::Int /*x*/, cons, f)?;
+                apply_then_unify(s, MonoType::Int /*y*/, sub, cons, f)
+            }
+        },
+        // 9.  {a: u | r} == {a: v | s} => u == v, r == s
+        // 10. {a: u | r} == {b: v | s} => r == {b: v | t}, s == {a: u | t}
+        (
+            Parameter::Req {
+                lab: a,
+                typ: u,
+                ext: r,
+            },
+            Parameter::Pipe {
+                lab: b,
+                typ: v,
+                ext: s,
+            },
+        )
+        | (
+            Parameter::Pipe {
+                lab: b,
+                typ: v,
+                ext: s,
+            },
+            Parameter::Req {
+                lab: a,
+                typ: u,
+                ext: r,
+            },
+        ) => match a == b {
+            true => {
+                let sub = u.unify(v, cons, f)?;
+                apply_then_unify(r, s, sub, cons, f)
+            }
+            false => {
+                let i = f.fresh();
+                let _ = Parameter::Req {
+                    lab: a,
+                    typ: u,
+                    ext: MonoType::Var(i),
+                };
+                let _ = Parameter::Pipe {
+                    lab: b,
+                    typ: v,
+                    ext: MonoType::Var(i),
+                };
+                let sub = r.unify(MonoType::Int /*x*/, cons, f)?;
+                apply_then_unify(s, MonoType::Int /*y*/, sub, cons, f)
+            }
+        },
+        // 8. {>: _ | _} != {?: _ | _}
+        // 10. {a: u | r} == {b: v | s} => r == {b: v | t}, s == {a: u | t}
+        (
+            Parameter::Opt {
+                lab: a,
+                typ: u,
+                ext: r,
+            },
+            Parameter::Pipe {
+                lab: b,
+                typ: v,
+                ext: s,
+            },
+        )
+        | (
+            Parameter::Pipe {
+                lab: b,
+                typ: v,
+                ext: s,
+            },
+            Parameter::Opt {
+                lab: a,
+                typ: u,
+                ext: r,
+            },
+        ) => match a == b {
+            true => Err(Error::Def),
+            false => {
+                let i = f.fresh();
+                let _ = Parameter::Opt {
+                    lab: a,
+                    typ: u,
+                    ext: MonoType::Var(i),
+                };
+                let _ = Parameter::Pipe {
+                    lab: b,
+                    typ: v,
+                    ext: MonoType::Var(i),
+                };
+                let sub = r.unify(MonoType::Int /*x*/, cons, f)?;
+                apply_then_unify(s, MonoType::Int /*y*/, sub, cons, f)
+            }
+        },
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct Fun {
+    pub x: MonoType,
+    pub e: MonoType,
+}
+
+impl fmt::Display for Fun {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "({}) -> {}", self.x, self.e)
+    }
+}
+
+impl Substitutable for Fun {
+    fn apply(self, sub: &Substitution) -> Self {
+        Fun {
+            x: self.x.apply(sub),
+            e: self.e.apply(sub),
+        }
+    }
+    fn free_vars(&self) -> Vec<Tvar> {
+        union(self.x.free_vars(), self.e.free_vars())
+    }
+}
+
+impl MaxTvar for Fun {
+    fn max_tvar(&self) -> Tvar {
+        vec![self.x.max_tvar(), self.e.max_tvar()].max_tvar()
+    }
+}
+
+fn unify_function(
+    t: Fun,
+    with: Fun,
+    cons: &mut TvarKinds,
+    f: &mut Fresher,
+) -> Result<Substitution, Error> {
+    let sub = t.x.unify(with.x, cons, f)?;
+    apply_then_unify(t.e, with.e, sub, cons, f)
+}
+
+impl Fun {
+    fn constrain(self, with: Kind, _: &mut TvarKinds) -> Result<Substitution, Error> {
+        Err(Error::CannotConstrain(MonoType::Fnc(Box::new(self)), with))
+    }
+
+    fn contains(&self, tv: Tvar) -> bool {
+        self.x.contains(tv) || self.e.contains(tv)
+    }
 }
 
 #[cfg(test)]

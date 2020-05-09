@@ -420,6 +420,7 @@ pub fn build_type<'a>(
             let offset = build_fun(builder, *fun);
             (offset.as_union_value(), fb::MonoType::Fun)
         }
+        _ => panic!("ahh!"),
     }
 }
 
