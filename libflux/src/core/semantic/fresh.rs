@@ -1,5 +1,5 @@
 use crate::semantic::types::{
-    Array, Function, MonoType, MonoTypeVecMap, PolyType, Property, Row, SemanticMap, Tvar, TvarMap,
+    Array, Fun, MonoType, Parameter, PolyType, Property, Record, SemanticMap, Tvar, TvarMap,
 };
 use std::collections::BTreeMap;
 use std::hash::Hash;
@@ -87,11 +87,81 @@ impl Fresh for PolyType {
 impl Fresh for MonoType {
     fn fresh(self, f: &mut Fresher, sub: &mut TvarMap) -> Self {
         match self {
+            MonoType::Bool
+            | MonoType::Int
+            | MonoType::Uint
+            | MonoType::Float
+            | MonoType::String
+            | MonoType::Time
+            | MonoType::Duration
+            | MonoType::Regexp
+            | MonoType::Bytes => self,
             MonoType::Var(tvr) => MonoType::Var(tvr.fresh(f, sub)),
             MonoType::Arr(arr) => MonoType::Arr(arr.fresh(f, sub)),
-            MonoType::Row(obj) => MonoType::Row(obj.fresh(f, sub)),
-            MonoType::Fun(fun) => MonoType::Fun(fun.fresh(f, sub)),
-            _ => self,
+            MonoType::Obj(obj) => MonoType::Obj(obj.fresh(f, sub)),
+            MonoType::Par(par) => MonoType::Par(par.fresh(f, sub)),
+            MonoType::Fnc(fun) => MonoType::Fnc(fun.fresh(f, sub)),
+        }
+    }
+}
+
+impl Fresh for Record {
+    fn fresh(self, f: &mut Fresher, sub: &mut TvarMap) -> Self {
+        match self {
+            Record::Empty => Record::Empty,
+            Record::Extension {
+                lab: a,
+                typ: t,
+                ext: r,
+            } => Record::Extension {
+                lab: a,
+                typ: t.fresh(f, sub),
+                ext: r.fresh(f, sub),
+            },
+        }
+    }
+}
+
+impl Fresh for Parameter {
+    fn fresh(self, f: &mut Fresher, sub: &mut TvarMap) -> Self {
+        match self {
+            Parameter::None => Parameter::None,
+            Parameter::Req {
+                lab: a,
+                typ: t,
+                ext: r,
+            } => Parameter::Req {
+                lab: a,
+                typ: t.fresh(f, sub),
+                ext: r.fresh(f, sub),
+            },
+            Parameter::Opt {
+                lab: a,
+                typ: t,
+                ext: r,
+            } => Parameter::Opt {
+                lab: a,
+                typ: t.fresh(f, sub),
+                ext: r.fresh(f, sub),
+            },
+            Parameter::Pipe {
+                lab: a,
+                typ: t,
+                ext: r,
+            } => Parameter::Pipe {
+                lab: a,
+                typ: t.fresh(f, sub),
+                ext: r.fresh(f, sub),
+            },
+        }
+    }
+}
+
+impl Fresh for Fun {
+    fn fresh(self, f: &mut Fresher, sub: &mut TvarMap) -> Self {
+        Fun {
+            x: self.x.fresh(f, sub),
+            e: self.e.fresh(f, sub),
         }
     }
 }
@@ -108,82 +178,11 @@ impl Fresh for Array {
     }
 }
 
-impl Fresh for Row {
-    fn fresh(mut self, f: &mut Fresher, sub: &mut TvarMap) -> Self {
-        let mut props = MonoTypeVecMap::new();
-        let mut extends = false;
-        let mut tv = Tvar(0);
-        loop {
-            match self {
-                Row::Empty => {
-                    break;
-                }
-                Row::Extension {
-                    head,
-                    tail: MonoType::Row(b),
-                } => {
-                    props.entry(head.k).or_insert_with(Vec::new).push(head.v);
-                    self = *b;
-                }
-                Row::Extension {
-                    head,
-                    tail: MonoType::Var(t),
-                } => {
-                    extends = true;
-                    tv = t;
-                    props.entry(head.k).or_insert_with(Vec::new).push(head.v);
-                    break;
-                }
-                _ => {
-                    break;
-                }
-            }
-        }
-        // If record extends a tvar, freshen it.
-        // Otherwise record must extend empty record.
-        let mut r: MonoType = if extends {
-            MonoType::Var(tv.fresh(f, sub))
-        } else {
-            MonoType::Row(Box::new(Row::Empty))
-        };
-        // Freshen record properties in deterministic order
-        props = props.fresh(f, sub);
-        // Construct new record from the fresh properties
-        for (label, types) in props {
-            for ty in types {
-                let extension = Row::Extension {
-                    head: Property {
-                        k: label.clone(),
-                        v: ty,
-                    },
-                    tail: r,
-                };
-                r = MonoType::Row(Box::new(extension));
-            }
-        }
-        match r {
-            MonoType::Row(b) => *b,
-            _ => Row::Empty,
-        }
-    }
-}
-
 impl Fresh for Property {
     fn fresh(self, f: &mut Fresher, sub: &mut TvarMap) -> Self {
         Property {
             k: self.k,
             v: self.v.fresh(f, sub),
-        }
-    }
-}
-
-impl Fresh for Function {
-    fn fresh(self, f: &mut Fresher, sub: &mut TvarMap) -> Self {
-        Function {
-            req: self.req.fresh(f, sub),
-            opt: self.opt.fresh(f, sub),
-            pipe: self.pipe.fresh(f, sub),
-            retn: self.retn.fresh(f, sub),
         }
     }
 }

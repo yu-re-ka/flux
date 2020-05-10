@@ -1,7 +1,7 @@
 use core::ast;
 use core::semantic::convert_source;
 use core::semantic::nodes::*;
-use core::semantic::types::{Function, MonoType, SemanticMap, Tvar};
+use core::semantic::types::{Fun, MonoType, Parameter, Tvar};
 use core::semantic::walk::{walk_mut, NodeMut};
 
 use pretty_assertions::assert_eq;
@@ -18,29 +18,29 @@ f(a: s)
         "#,
     )
     .unwrap();
-    let f_type = Function {
-        req: core::semantic_map! {
-            "a".to_string() => MonoType::Var(Tvar(4)),
-        },
-        opt: SemanticMap::new(),
-        pipe: None,
-        retn: MonoType::Var(Tvar(4)),
+    let f_type = Fun {
+        x: MonoType::Par(Box::new(Parameter::Req {
+            lab: String::from("a"),
+            typ: MonoType::Var(Tvar(4)),
+            ext: MonoType::Par(Box::new(Parameter::None)),
+        })),
+        e: MonoType::Var(Tvar(4)),
     };
-    let f_call_int_type = Function {
-        req: core::semantic_map! {
-            "a".to_string() => MonoType::Int,
-        },
-        opt: SemanticMap::new(),
-        pipe: None,
-        retn: MonoType::Int,
+    let f_call_int_type = Fun {
+        x: MonoType::Par(Box::new(Parameter::Req {
+            lab: String::from("a"),
+            typ: MonoType::Int,
+            ext: MonoType::Par(Box::new(Parameter::None)),
+        })),
+        e: MonoType::Int,
     };
-    let f_call_string_type = Function {
-        req: core::semantic_map! {
-            "a".to_string() => MonoType::String,
-        },
-        opt: SemanticMap::new(),
-        pipe: None,
-        retn: MonoType::String,
+    let f_call_string_type = Fun {
+        x: MonoType::Par(Box::new(Parameter::Req {
+            lab: String::from("a"),
+            typ: MonoType::String,
+            ext: MonoType::Par(Box::new(Parameter::None)),
+        })),
+        e: MonoType::String,
     };
     let want = Package {
         loc: ast::BaseNode::default().location,
@@ -79,7 +79,7 @@ f(a: s)
                     },
                     Expression::Function(Box::new(FunctionExpr {
                         loc: ast::BaseNode::default().location,
-                        typ: MonoType::Fun(Box::new(f_type)),
+                        typ: MonoType::Fnc(Box::new(f_type)),
                         params: vec![FunctionParameter {
                             loc: ast::BaseNode::default().location,
                             is_pipe: false,
@@ -118,7 +118,7 @@ f(a: s)
                         pipe: None,
                         callee: Expression::Identifier(IdentifierExpr {
                             loc: ast::BaseNode::default().location,
-                            typ: MonoType::Fun(Box::new(f_call_int_type)),
+                            typ: MonoType::Fnc(Box::new(f_call_int_type)),
                             name: "f".to_string(),
                         }),
                         arguments: vec![Property {
@@ -143,7 +143,7 @@ f(a: s)
                         pipe: None,
                         callee: Expression::Identifier(IdentifierExpr {
                             loc: ast::BaseNode::default().location,
-                            typ: MonoType::Fun(Box::new(f_call_string_type)),
+                            typ: MonoType::Fnc(Box::new(f_call_string_type)),
                             name: "f".to_string(),
                         }),
                         arguments: vec![Property {

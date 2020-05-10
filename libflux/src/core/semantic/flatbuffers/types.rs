@@ -11,14 +11,12 @@ use crate::semantic::fresh::Fresher;
 #[rustfmt::skip]
 use crate::semantic::types::{
     Array,
-    Function,
     Kind,
     MonoType,
     MonoTypeMap,
     PolyType,
     PolyTypeMap,
     Property,
-    Row,
     Tvar,
     TvarKinds,
 };
@@ -124,11 +122,8 @@ fn from_table(table: flatbuffers::Table, t: fb::MonoType) -> Option<MonoType> {
             let opt: Option<Array> = fb::Arr::init_from_table(table).into();
             Some(MonoType::Arr(Box::new(opt?)))
         }
-        fb::MonoType::Fun => {
-            let opt: Option<Function> = fb::Fun::init_from_table(table).into();
-            Some(MonoType::Fun(Box::new(opt?)))
-        }
-        fb::MonoType::Row => fb::Row::init_from_table(table).into(),
+        fb::MonoType::Row => None,
+        fb::MonoType::Fun => None,
         fb::MonoType::NONE => None,
     }
 }
@@ -161,60 +156,11 @@ impl From<fb::Arr<'_>> for Option<Array> {
     }
 }
 
-impl From<fb::Row<'_>> for Option<MonoType> {
-    fn from(t: fb::Row) -> Option<MonoType> {
-        let mut r = match t.extends() {
-            None => MonoType::Row(Box::new(Row::Empty)),
-            Some(tv) => MonoType::Var(tv.into()),
-        };
-        let p = t.props()?;
-        for value in p.iter().rev() {
-            let prop: Option<Property> = value.into();
-            r = MonoType::Row(Box::new(Row::Extension {
-                head: prop?,
-                tail: r,
-            }));
-        }
-        Some(r)
-    }
-}
-
 impl From<fb::Prop<'_>> for Option<Property> {
     fn from(t: fb::Prop) -> Option<Property> {
         Some(Property {
             k: t.k()?.to_owned(),
             v: from_table(t.v()?, t.v_type())?,
-        })
-    }
-}
-
-impl From<fb::Fun<'_>> for Option<Function> {
-    fn from(t: fb::Fun) -> Option<Function> {
-        let args = t.args()?;
-        let mut req = MonoTypeMap::new();
-        let mut opt = MonoTypeMap::new();
-        let mut pipe = None;
-        for value in args.iter() {
-            match value.into() {
-                None => {
-                    return None;
-                }
-                Some((k, v, true, _)) => {
-                    pipe = Some(Property { k, v });
-                }
-                Some((name, t, _, true)) => {
-                    opt.insert(name, t);
-                }
-                Some((name, t, false, false)) => {
-                    req.insert(name, t);
-                }
-            };
-        }
-        Some(Function {
-            req,
-            opt,
-            pipe,
-            retn: from_table(t.retn()?, t.retn_type())?,
         })
     }
 }
@@ -412,14 +358,6 @@ pub fn build_type<'a>(
             let offset = build_arr(builder, *arr);
             (offset.as_union_value(), fb::MonoType::Arr)
         }
-        MonoType::Row(row) => {
-            let offset = build_row(builder, *row);
-            (offset.as_union_value(), fb::MonoType::Row)
-        }
-        MonoType::Fun(fun) => {
-            let offset = build_fun(builder, *fun);
-            (offset.as_union_value(), fb::MonoType::Fun)
-        }
         _ => panic!("ahh!"),
     }
 }
@@ -445,50 +383,6 @@ fn build_arr<'a>(
     )
 }
 
-fn build_row<'a>(
-    builder: &mut flatbuffers::FlatBufferBuilder<'a>,
-    mut row: Row,
-) -> flatbuffers::WIPOffset<fb::Row<'a>> {
-    let mut props = Vec::new();
-    let extends = loop {
-        match row {
-            Row::Empty => {
-                break None;
-            }
-            Row::Extension {
-                head,
-                tail: MonoType::Row(o),
-            } => {
-                props.push(head);
-                row = *o;
-            }
-            Row::Extension {
-                head,
-                tail: MonoType::Var(t),
-            } => {
-                props.push(head);
-                break Some(t);
-            }
-            Row::Extension { head, tail } => {
-                break None;
-            }
-        }
-    };
-    let props = build_vec(props, builder, build_prop);
-    let props = builder.create_vector(props.as_slice());
-    let extends = match extends {
-        None => None,
-        Some(tv) => Some(build_var(builder, tv)),
-    };
-    fb::Row::create(
-        builder,
-        &fb::RowArgs {
-            props: Some(props),
-            extends,
-        },
-    )
-}
-
 fn build_prop<'a>(
     builder: &mut flatbuffers::FlatBufferBuilder<'a>,
     prop: Property,
@@ -501,34 +395,6 @@ fn build_prop<'a>(
             k: Some(k),
             v_type: typ,
             v: Some(off),
-        },
-    )
-}
-
-fn build_fun<'a>(
-    builder: &mut flatbuffers::FlatBufferBuilder<'a>,
-    mut fun: Function,
-) -> flatbuffers::WIPOffset<fb::Fun<'a>> {
-    let mut args = Vec::new();
-    if let Some(pipe) = fun.pipe {
-        args.push((pipe.k, pipe.v, true, false))
-    };
-    for (k, v) in fun.req {
-        args.push((k, v, false, false));
-    }
-    for (k, v) in fun.opt {
-        args.push((k, v, false, true));
-    }
-    let args = build_vec(args, builder, build_arg);
-    let args = builder.create_vector(args.as_slice());
-
-    let (ret, typ) = build_type(builder, fun.retn);
-    fb::Fun::create(
-        builder,
-        &fb::FunArgs {
-            args: Some(args),
-            retn_type: typ,
-            retn: Some(ret),
         },
     )
 }

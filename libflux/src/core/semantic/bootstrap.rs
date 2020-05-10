@@ -18,8 +18,7 @@ use crate::semantic::parser::parse;
 use crate::semantic::sub::Substitutable;
 use crate::semantic::types;
 use crate::semantic::types::{
-    MaxTvar, MonoType, PolyType, PolyTypeMap, PolyTypeMapMap, Property, Row, SemanticMap, Tvar,
-    TvarKinds,
+    MaxTvar, MonoType, PolyType, PolyTypeMap, PolyTypeMapMap, Record, SemanticMap, Tvar, TvarKinds,
 };
 
 use walkdir::WalkDir;
@@ -235,12 +234,12 @@ pub fn build_polytype(from: PolyTypeMap, f: &mut Fresher) -> Result<PolyType, Er
     Ok(infer::generalize(
         &Environment::empty(),
         &kinds,
-        MonoType::Row(Box::new(r)).apply(&sub),
+        MonoType::Obj(Box::new(r)).apply(&sub),
     ))
 }
 
-fn build_row(from: PolyTypeMap, f: &mut Fresher) -> (Row, Constraints) {
-    let mut r = Row::Empty;
+fn build_row(from: PolyTypeMap, f: &mut Fresher) -> (Record, Constraints) {
+    let mut r = Record::Empty;
     let mut cons = Constraints::empty();
 
     for (name, poly) in from {
@@ -254,9 +253,10 @@ fn build_row(from: PolyTypeMap, f: &mut Fresher) -> (Row, Constraints) {
                 source: None,
             },
         );
-        r = Row::Extension {
-            head: Property { k: name, v: ty },
-            tail: MonoType::Row(Box::new(r)),
+        r = Record::Extension {
+            lab: name,
+            typ: ty,
+            ext: MonoType::Obj(Box::new(r)),
         };
         cons = cons + constraints;
     }
