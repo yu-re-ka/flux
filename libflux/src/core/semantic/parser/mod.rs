@@ -1,5 +1,6 @@
 use std::{iter::Peekable, slice::Iter, str::Chars};
 
+use crate::ast;
 use crate::semantic::types::{
     Array, Fun, Kind, MonoType, Parameter, PolyType, Property, Record, Tvar, TvarKinds,
 };
@@ -523,6 +524,12 @@ impl Parser<'_> {
             if token.token_type == TokenType::IDENTIFIER {
                 if let Ok(arg) = self.parse_required_optional(&token) {
                     x = MonoType::Par(Box::new(Parameter::Req {
+                        loc: ast::SourceLocation {
+                            file: None,
+                            start: ast::Position::default(),
+                            end: ast::Position::default(),
+                            source: None,
+                        },
                         lab: arg.0,
                         typ: arg.1,
                         ext: x,
@@ -537,6 +544,12 @@ impl Parser<'_> {
                 // that we parse required arguments
                 if let Ok(arg) = self.parse_required_optional(&token) {
                     x = MonoType::Par(Box::new(Parameter::Opt {
+                        loc: ast::SourceLocation {
+                            file: None,
+                            start: ast::Position::default(),
+                            end: ast::Position::default(),
+                            source: None,
+                        },
                         lab: arg.0,
                         typ: arg.1,
                         ext: x,
@@ -551,6 +564,12 @@ impl Parser<'_> {
                     }
                     Some(arg) => {
                         x = MonoType::Par(Box::new(Parameter::Pipe {
+                            loc: ast::SourceLocation {
+                                file: None,
+                                start: ast::Position::default(),
+                                end: ast::Position::default(),
+                                source: None,
+                            },
                             lab: arg.k,
                             typ: arg.v,
                             ext: x,
@@ -669,6 +688,12 @@ impl Parser<'_> {
                     let prop = self.parse_property(name)?;
                     let tok = self.next();
                     Ok(MonoType::Obj(Box::new(Record::Extension {
+                        loc: ast::SourceLocation {
+                            file: None,
+                            start: ast::Position::default(),
+                            end: ast::Position::default(),
+                            source: None,
+                        },
                         lab: prop.k,
                         typ: prop.v,
                         ext: self.parse_record(&tok)?,

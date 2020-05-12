@@ -149,7 +149,7 @@ impl Expression {
             Expression::Identifier(e) => e.typ.clone(),
             Expression::Array(e) => e.typ.clone(),
             Expression::Function(e) => e.typ.clone(),
-            Expression::Logical(_) => MonoType::Bool,
+            Expression::Logical(e) => MonoType::Bool { loc: e.loc.clone() },
             Expression::Object(e) => e.typ.clone(),
             Expression::Member(e) => e.typ.clone(),
             Expression::Index(e) => e.typ.clone(),
@@ -157,15 +157,15 @@ impl Expression {
             Expression::Unary(e) => e.typ.clone(),
             Expression::Call(e) => e.typ.clone(),
             Expression::Conditional(e) => e.alternate.type_of(),
-            Expression::StringExpr(_) => MonoType::String,
-            Expression::Integer(_) => MonoType::Int,
-            Expression::Float(_) => MonoType::Float,
-            Expression::StringLit(_) => MonoType::String,
-            Expression::Duration(_) => MonoType::Duration,
-            Expression::Uint(_) => MonoType::Uint,
-            Expression::Boolean(_) => MonoType::Bool,
-            Expression::DateTime(_) => MonoType::Time,
-            Expression::Regexp(_) => MonoType::Regexp,
+            Expression::StringExpr(e) => MonoType::String { loc: e.loc.clone() },
+            Expression::Integer(e) => MonoType::Int { loc: e.loc.clone() },
+            Expression::Float(e) => MonoType::Float { loc: e.loc.clone() },
+            Expression::StringLit(e) => MonoType::String { loc: e.loc.clone() },
+            Expression::Duration(e) => MonoType::Duration { loc: e.loc.clone() },
+            Expression::Uint(e) => MonoType::Uint { loc: e.loc.clone() },
+            Expression::Boolean(e) => MonoType::Bool { loc: e.loc.clone() },
+            Expression::DateTime(e) => MonoType::Time { loc: e.loc.clone() },
+            Expression::Regexp(e) => MonoType::Regexp { loc: e.loc.clone() },
         }
     }
     pub fn loc(&self) -> &ast::SourceLocation {
@@ -631,7 +631,9 @@ impl StringExpr {
                 constraints.append(&mut Vec::from(cons));
                 constraints.push(Constraint::Equal(
                     ip.expression.type_of(),
-                    MonoType::String,
+                    MonoType::String {
+                        loc: ip.expression.loc().clone(),
+                    },
                     ip.expression.loc().clone(),
                 ));
                 env = e
@@ -746,6 +748,7 @@ impl FunctionExpr {
                 let (nenv, ncons) = e.infer(env, f)?;
                 cons = cons + ncons;
                 x = MonoType::Par(Box::new(types::Parameter::Opt {
+                    loc: p.loc,
                     lab: p.key.name.clone(),
                     typ: e.type_of(),
                     ext: x,
@@ -760,6 +763,7 @@ impl FunctionExpr {
             } else if p.is_pipe {
                 let tv = f.fresh();
                 x = MonoType::Par(Box::new(types::Parameter::Pipe {
+                    loc: p.loc,
                     lab: p.key.name.clone(),
                     typ: MonoType::Var(tv),
                     ext: x,
@@ -773,6 +777,7 @@ impl FunctionExpr {
             } else {
                 let tv = f.fresh();
                 x = MonoType::Par(Box::new(types::Parameter::Req {
+                    loc: p.loc,
                     lab: p.key.name.clone(),
                     typ: MonoType::Var(tv),
                     ext: x,
@@ -1163,13 +1168,14 @@ impl CallExpr {
         for Property {
             key: ref mut id,
             value: ref mut expr,
-            ..
+            loc: loc,
         } in &mut self.arguments
         {
             let (nenv, ncons) = expr.infer(env, f)?;
             cons = cons + ncons;
             env = nenv;
             x = MonoType::Par(Box::new(types::Parameter::Req {
+                loc: loc.clone(),
                 lab: id.name.clone(),
                 typ: expr.type_of(),
                 ext: x,
@@ -1180,6 +1186,7 @@ impl CallExpr {
             cons = cons + ncons;
             env = nenv;
             x = MonoType::Par(Box::new(types::Parameter::Pipe {
+                loc: self.loc,
                 lab: String::from("<-"),
                 typ: p.type_of(),
                 ext: x,
@@ -1301,6 +1308,7 @@ impl MemberExpr {
     //
     fn infer(&mut self, env: Environment, f: &mut Fresher) -> Result {
         let r = MonoType::Obj(Box::new(types::Record::Extension {
+            loc: self.loc,
             lab: self.property.clone(),
             typ: self.typ.clone(),
             ext: MonoType::Var(f.fresh()),
@@ -1390,6 +1398,7 @@ impl ObjectExpr {
             env = e;
             cons = cons + rest;
             r = MonoType::Obj(Box::new(types::Record::Extension {
+                loc: prop.loc,
                 lab: prop.key.name.clone(),
                 typ: prop.value.type_of(),
                 ext: r,

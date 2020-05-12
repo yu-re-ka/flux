@@ -110,10 +110,12 @@ impl Fresh for Record {
         match self {
             Record::Empty => Record::Empty,
             Record::Extension {
+                loc: l,
                 lab: a,
                 typ: t,
                 ext: r,
             } => Record::Extension {
+                loc: l,
                 lab: a,
                 typ: t.fresh(f, sub),
                 ext: r.fresh(f, sub),
@@ -127,28 +129,34 @@ impl Fresh for Parameter {
         match self {
             Parameter::None => Parameter::None,
             Parameter::Req {
+                loc: l,
                 lab: a,
                 typ: t,
                 ext: r,
             } => Parameter::Req {
+                loc: l,
                 lab: a,
                 typ: t.fresh(f, sub),
                 ext: r.fresh(f, sub),
             },
             Parameter::Opt {
+                loc: l,
                 lab: a,
                 typ: t,
                 ext: r,
             } => Parameter::Opt {
+                loc: l,
                 lab: a,
                 typ: t.fresh(f, sub),
                 ext: r.fresh(f, sub),
             },
             Parameter::Pipe {
+                loc: l,
                 lab: a,
                 typ: t,
                 ext: r,
             } => Parameter::Pipe {
+                loc: l,
                 lab: a,
                 typ: t.fresh(f, sub),
                 ext: r.fresh(f, sub),

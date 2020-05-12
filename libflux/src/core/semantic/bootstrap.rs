@@ -254,6 +254,12 @@ fn build_row(from: PolyTypeMap, f: &mut Fresher) -> (Record, Constraints) {
             },
         );
         r = Record::Extension {
+            loc: ast::SourceLocation {
+                file: None,
+                start: ast::Position::default(),
+                end: ast::Position::default(),
+                source: None,
+            },
             lab: name,
             typ: ty,
             ext: MonoType::Obj(Box::new(r)),
