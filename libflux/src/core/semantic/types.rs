@@ -1,3 +1,4 @@
+use crate::ast::SourceLocation;
 use crate::semantic::fresh::{Fresh, Fresher};
 use crate::semantic::sub::{Substitutable, Substitution};
 
@@ -138,37 +139,41 @@ pub fn minus<T: PartialEq>(vars: &[T], mut from: Vec<T>) -> Vec<T> {
 
 #[derive(Debug, PartialEq)]
 pub enum Error {
-    CannotUnify(MonoType, MonoType),
-    CannotConstrain(MonoType, Kind),
-    OccursCheck(Tvar, MonoType),
-    MissingLabel(String),
-    CannotUnifyLabel(String, MonoType, MonoType),
-    MissingArgument(String),
-    CannotUnifyArgument(String, Box<Error>),
-    CannotUnifyReturn(MonoType, MonoType),
-    MissingPipeArgument,
-    MultiplePipeArguments(String, String),
-    Def,
+    RecordType {
+        err: RecordTypeError,
+    },
+    ParamType {
+        err: ParamTypeError,
+    },
+    PipeArgument {
+        err: PipeError,
+    },
+    CannotUnify {
+        expected: MonoType,
+        actual: MonoType,
+    },
+    CannotConstrain {
+        expected: Kind,
+        actual: MonoType,
+    },
+    OccursCheck {
+        tv: Tvar,
+        ty: MonoType,
+    },
 }
 
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Error::CannotUnify(t, with) => write!(f, "{} != {}", t, with),
-            Error::CannotConstrain(t, with) => write!(f, "{} is not {}", t, with),
-            Error::OccursCheck(tv, ty) => write!(f, "{} != {} (recursive type)", tv, ty),
-            Error::MissingLabel(a) => write!(f, "record is missing label {}", a),
-            Error::CannotUnifyLabel(a, t, with) => {
-                write!(f, "{} != {} (record label {})", t, with, a)
+            Error::CannotUnify { expected, actual } => write!(
+                f,
+                "types do not match\nexpected: {}\nfound: {}",
+                expected, actual
+            ),
+            Error::CannotConstrain { expected, actual } => {
+                write!(f, "{} is not {}", expected, actual)
             }
-            Error::MissingArgument(x) => write!(f, "missing required argument {}", x),
-            Error::CannotUnifyArgument(x, e) => write!(f, "{} (argument {})", e, x),
-            Error::CannotUnifyReturn(t, with) => write!(f, "return type {} != {}", t, with),
-            Error::MissingPipeArgument => write!(f, "missing pipe argument"),
-            Error::MultiplePipeArguments(a, b) => {
-                write!(f, "inconsistent pipe arguments {} != {}", a, b)
-            }
-            Error::Def => write!(f, "uh oh"),
+            Error::OccursCheck { tv, ty } => write!(f, "recursive type {} != {}", tv, ty),
         }
     }
 }
@@ -340,10 +345,13 @@ impl MonoType {
             (MonoType::Var(tv), t) => tv.unify(t, cons),
             (t, MonoType::Var(tv)) => tv.unify(t, cons),
             (MonoType::Arr(t), MonoType::Arr(s)) => t.unify(*s, cons, f),
-            (MonoType::Obj(t), MonoType::Obj(s)) => unify_record(*t, *s, cons, f),
+            (MonoType::Obj(t), MonoType::Obj(s)) => unify_records(*t, *s, cons, f),
             (MonoType::Par(t), MonoType::Par(s)) => unify_params(*t, *s, cons, f),
             (MonoType::Fnc(t), MonoType::Fnc(s)) => unify_function(*t, *s, cons, f),
-            (t, with) => Err(Error::CannotUnify(t, with)),
+            (t, with) => Err(Error::CannotUnify {
+                expected: t,
+                actual: with,
+            }),
         }
     }
 
@@ -351,7 +359,10 @@ impl MonoType {
         match self {
             MonoType::Bool => match with {
                 Kind::Equatable | Kind::Nullable => Ok(Substitution::empty()),
-                _ => Err(Error::CannotConstrain(self, with)),
+                _ => Err(Error::CannotConstrain {
+                    actual: self,
+                    expected: with,
+                }),
             },
             MonoType::Int => match with {
                 Kind::Addable
@@ -362,7 +373,10 @@ impl MonoType {
                 | Kind::Equatable
                 | Kind::Nullable
                 | Kind::Negatable => Ok(Substitution::empty()),
-                _ => Err(Error::CannotConstrain(self, with)),
+                _ => Err(Error::CannotConstrain {
+                    actual: self,
+                    expected: with,
+                }),
             },
             MonoType::Uint => match with {
                 Kind::Addable
@@ -373,7 +387,10 @@ impl MonoType {
                 | Kind::Equatable
                 | Kind::Nullable
                 | Kind::Negatable => Ok(Substitution::empty()),
-                _ => Err(Error::CannotConstrain(self, with)),
+                _ => Err(Error::CannotConstrain {
+                    actual: self,
+                    expected: with,
+                }),
             },
             MonoType::Float => match with {
                 Kind::Addable
@@ -384,28 +401,46 @@ impl MonoType {
                 | Kind::Equatable
                 | Kind::Nullable
                 | Kind::Negatable => Ok(Substitution::empty()),
-                _ => Err(Error::CannotConstrain(self, with)),
+                _ => Err(Error::CannotConstrain {
+                    actual: self,
+                    expected: with,
+                }),
             },
             MonoType::String => match with {
                 Kind::Addable | Kind::Comparable | Kind::Equatable | Kind::Nullable => {
                     Ok(Substitution::empty())
                 }
-                _ => Err(Error::CannotConstrain(self, with)),
+                _ => Err(Error::CannotConstrain {
+                    actual: self,
+                    expected: with,
+                }),
             },
             MonoType::Duration => match with {
                 Kind::Comparable | Kind::Equatable | Kind::Nullable | Kind::Negatable => {
                     Ok(Substitution::empty())
                 }
-                _ => Err(Error::CannotConstrain(self, with)),
+                _ => Err(Error::CannotConstrain {
+                    actual: self,
+                    expected: with,
+                }),
             },
             MonoType::Time => match with {
                 Kind::Comparable | Kind::Equatable | Kind::Nullable => Ok(Substitution::empty()),
-                _ => Err(Error::CannotConstrain(self, with)),
+                _ => Err(Error::CannotConstrain {
+                    actual: self,
+                    expected: with,
+                }),
             },
-            MonoType::Regexp => Err(Error::CannotConstrain(self, with)),
+            MonoType::Regexp => Err(Error::CannotConstrain {
+                actual: self,
+                expected: with,
+            }),
             MonoType::Bytes => match with {
                 Kind::Equatable => Ok(Substitution::empty()),
-                _ => Err(Error::CannotConstrain(self, with)),
+                _ => Err(Error::CannotConstrain {
+                    actual: self,
+                    expected: with,
+                }),
             },
             MonoType::Var(tvr) => {
                 tvr.constrain(with, cons);
@@ -478,7 +513,7 @@ impl Tvar {
             _ => {
                 if with.contains(self) {
                     // Invalid recursive type
-                    Err(Error::OccursCheck(self, with))
+                    Err(Error::OccursCheck { tv: self, ty: with })
                 } else {
                     // Unify a type variable with a monotype.
                     // The monotype must satisify any
@@ -507,15 +542,16 @@ impl Tvar {
         let sub = Substitution::from(semantic_map! {self => t.clone()});
         match cons.remove(&self) {
             None => Ok(sub),
-            Some(kinds) => Ok(sub.merge(kinds.into_iter().try_fold(
-                Substitution::empty(),
-                |sub, kind| {
+            Some(kinds) => {
+                let mut s = Substitution::empty();
+                for kind in kinds {
                     // The monotype that is being unified with the
                     // tvar must be constrained with the same kinds
                     // as that of the tvar.
-                    Ok(sub.merge(t.clone().constrain(kind, cons)?))
-                },
-            )?)),
+                    s = s.merge(t.clone().constrain(kind, cons)?);
+                }
+                Ok(sub.merge(s))
+            }
         }
     }
 
@@ -571,32 +607,16 @@ impl Array {
     fn constrain(self, with: Kind, cons: &mut TvarKinds) -> Result<Substitution, Error> {
         match with {
             Kind::Equatable => self.0.constrain(with, cons),
-            _ => Err(Error::CannotConstrain(MonoType::Arr(Box::new(self)), with)),
+            _ => Err(Error::CannotConstrain {
+                expected: with,
+                actual: MonoType::Arr(Box::new(self)),
+            }),
         }
     }
 
     fn contains(&self, tv: Tvar) -> bool {
         self.0.contains(tv)
     }
-}
-
-// Unification requires that the current substitution be applied
-// to both sides of a constraint before unifying.
-//
-// This helper function applies a substitution to a constraint
-// before unifying the two types. Note the substitution produced
-// from unification is merged with input substitution before it
-// is returned.
-//
-fn apply_then_unify(
-    l: MonoType,
-    r: MonoType,
-    sub: Substitution,
-    cons: &mut TvarKinds,
-    f: &mut Fresher,
-) -> Result<Substitution, Error> {
-    let s = l.apply(&sub).unify(r.apply(&sub), cons, f)?;
-    Ok(sub.merge(s))
 }
 
 // A key value pair representing a property type in a record
@@ -679,8 +699,11 @@ pub trait MaxTvar {
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Record {
-    Empty,
+    Empty {
+        loc: SourceLocation,
+    },
     Extension {
+        loc: SourceLocation,
         lab: String,
         typ: MonoType,
         ext: MonoType,
@@ -690,8 +713,9 @@ pub enum Record {
 impl fmt::Display for Record {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Record::Empty => write!(f, "{}", "{}"),
+            Record::Empty { .. } => write!(f, "{}", "{}"),
             Record::Extension {
+                loc: _,
                 lab: a,
                 typ: t,
                 ext: r,
@@ -703,12 +727,14 @@ impl fmt::Display for Record {
 impl Substitutable for Record {
     fn apply(self, sub: &Substitution) -> Self {
         match self {
-            Record::Empty => Record::Empty,
+            Record::Empty { .. } => self,
             Record::Extension {
+                loc: l,
                 lab: a,
                 typ: t,
                 ext: r,
             } => Record::Extension {
+                loc: l,
                 lab: a,
                 typ: t.apply(sub),
                 ext: r.apply(sub),
@@ -717,8 +743,9 @@ impl Substitutable for Record {
     }
     fn free_vars(&self) -> Vec<Tvar> {
         match self {
-            Record::Empty => Vec::new(),
+            Record::Empty { .. } => Vec::new(),
             Record::Extension {
+                loc: _,
                 lab: _,
                 typ: t,
                 ext: r,
@@ -730,8 +757,9 @@ impl Substitutable for Record {
 impl MaxTvar for Record {
     fn max_tvar(&self) -> Tvar {
         match self {
-            Record::Empty => Tvar(0),
+            Record::Empty { .. } => Tvar(0),
             Record::Extension {
+                loc: _,
                 lab: _,
                 typ: t,
                 ext: r,
@@ -745,20 +773,23 @@ impl Record {
         match with {
             Kind::Row => Ok(Substitution::empty()),
             Kind::Equatable => match self {
-                Record::Empty => Ok(Substitution::empty()),
+                Record::Empty { .. } => Ok(Substitution::empty()),
                 Record::Extension { typ, ext, .. } => {
                     let sub = typ.constrain(with, cons)?;
                     Ok(sub.merge(ext.constrain(with, cons)?))
                 }
             },
-            _ => Err(Error::CannotConstrain(MonoType::Obj(Box::new(self)), with)),
+            _ => Err(Error::CannotConstrain {
+                expected: with,
+                actual: MonoType::Obj(Box::new(self)),
+            }),
         }
     }
-
     fn contains(&self, tv: Tvar) -> bool {
         match self {
-            Record::Empty => false,
+            Record::Empty { .. } => false,
             Record::Extension {
+                loc: _,
                 lab: _,
                 typ: t,
                 ext: r,
@@ -767,57 +798,106 @@ impl Record {
     }
 }
 
+#[derive(Debug, PartialEq)]
+pub enum RecordTypeError {
+    NotFound {
+        lab: String,
+        loc: SourceLocation,
+    },
+    Unexpected {
+        lab: String,
+        loc: SourceLocation,
+    },
+    Mismatch {
+        exp: String,
+        act: String,
+        loc: SourceLocation,
+    },
+}
+
+impl fmt::Display for RecordTypeError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            RecordTypeError::NotFound { lab, .. } => write!(f, "label {} not found", lab),
+            RecordTypeError::Unexpected { lab, .. } => write!(f, "unexpected label {}", lab),
+            RecordTypeError::Mismatch { exp, act, .. } => write!(
+                f,
+                "unexpected record labels\nExpected: {}\nFound: {}",
+                exp, act
+            ),
+        }
+    }
+}
+
+impl From<RecordTypeError> for Error {
+    fn from(err: RecordTypeError) -> Self {
+        Error::RecordType { err }
+    }
+}
+
 // Rules for record unification. In what follows a != b and t is a type variable.
 //
 // 1. {} == {}
-// 2. {} != {a: _ | _}
+// 2. {a: _ | _} != {}
 // 3. {a: _ | t} != {b: _ | t}
 // 4. {a: u | t} == {a: v | t} => u == v
-// 5. {a: u | r} == {a: v | s} => t = u, r = s
-// 6. {a: u | r} == {b: v | s} => r = {b: v | t}, s = {a: u | t}
+// 5. {a: u | r} == {a: v | s} => t == u, r == s
+// 6. {a: u | r} == {b: v | s} => r == {b: v | t}, s == {a: u | t}
 //
-fn unify_record(
-    r: Record,
-    s: Record,
+fn unify_records(
+    exp: Record,
+    act: Record,
     cons: &mut TvarKinds,
     f: &mut Fresher,
 ) -> Result<Substitution, Error> {
-    match (r, s) {
+    match (exp.clone(), act.clone()) {
         // 1. {} == {}
-        (Record::Empty, Record::Empty) => Ok(Substitution::empty()),
-        // 2. {} != {a: _ | _}
-        (Record::Empty, Record::Extension { .. }) | (Record::Extension { .. }, Record::Empty) => {
-            Err(Error::Def)
+        (Record::Empty { .. }, Record::Empty { .. }) => Ok(Substitution::empty()),
+        // 2. {a: _ | _} != {}
+        (Record::Extension { lab: a, .. }, Record::Empty { loc }) => {
+            Err(RecordTypeError::NotFound { lab: a, loc }.into())
+        }
+        (Record::Empty { .. }, Record::Extension { lab: a, loc, .. }) => {
+            Err(RecordTypeError::Unexpected { lab: a, loc }.into())
         }
         // 3. {a: _ | t} != {b: _ | t}
         // 4. {a: u | t} == {a: v | t} => u == v
         (
             Record::Extension {
+                loc: _,
                 lab: a,
                 typ: u,
                 ext: MonoType::Var(r),
             },
             Record::Extension {
+                loc: l,
                 lab: b,
                 typ: v,
                 ext: MonoType::Var(s),
             },
         ) if r == s => match a == b {
             true => u.unify(v, cons, f),
-            false => Err(Error::Def),
+            false => Err(RecordTypeError::Mismatch {
+                exp: a,
+                act: b,
+                loc: l,
+            }
+            .into()),
         },
-        // 5. {a: u | r} == {a: v | s} => t = u, r = s
-        // 6. {a: u | r} == {b: v | s} => r = {b: v | t}, s = {a: u | t}
+        // 5. {a: u | r} == {a: v | s} => t == u, r == s
+        // 6. {a: u | r} == {b: v | s} => r == {b: v | t}, s == {a: u | t}
         (
             Record::Extension {
                 lab: a,
                 typ: u,
                 ext: r,
+                loc: k,
             },
             Record::Extension {
                 lab: b,
                 typ: v,
                 ext: s,
+                loc: l,
             },
         ) => match a == b {
             true => {
@@ -826,18 +906,20 @@ fn unify_record(
             }
             false => {
                 let i = f.fresh();
-                let _ = Record::Extension {
+                let x = MonoType::Obj(Box::new(Record::Extension {
+                    loc: l,
                     lab: b,
                     typ: v,
                     ext: MonoType::Var(i),
-                };
-                let _ = Record::Extension {
+                }));
+                let y = MonoType::Obj(Box::new(Record::Extension {
+                    loc: k,
                     lab: a,
                     typ: u,
                     ext: MonoType::Var(i),
-                };
-                let sub = r.unify(MonoType::Int /*x*/, cons, f)?;
-                apply_then_unify(s, MonoType::Int /*y*/, sub, cons, f)
+                }));
+                let sub = r.unify(x, cons, f)?;
+                apply_then_unify(y, s, sub, cons, f)
             }
         },
     }
@@ -845,18 +927,23 @@ fn unify_record(
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Parameter {
-    None,
+    None {
+        loc: SourceLocation,
+    },
     Req {
+        loc: SourceLocation,
         lab: String,
         typ: MonoType,
         ext: MonoType,
     },
     Opt {
+        loc: SourceLocation,
         lab: String,
         typ: MonoType,
         ext: MonoType,
     },
     Pipe {
+        loc: SourceLocation,
         lab: String,
         typ: MonoType,
         ext: MonoType,
@@ -866,33 +953,31 @@ pub enum Parameter {
 impl fmt::Display for Parameter {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Parameter::None => Ok(()),
+            Parameter::None { .. } => Ok(()),
             Parameter::Req {
+                loc: _,
                 lab: a,
                 typ: t,
                 ext: r,
-            } => match r == &MonoType::Par(Box::new(Parameter::None)) {
-                true => write!(f, "{}:{}", a, t),
-                false => write!(f, "{}:{}, {}", a, t, r),
-            },
+            } => write!(f, "{}:{}, {}", a, t, r),
             Parameter::Opt {
+                loc: _,
                 lab: a,
                 typ: t,
                 ext: r,
-            } => match r == &MonoType::Par(Box::new(Parameter::None)) {
-                true => write!(f, "?{}:{}", a, t),
-                false => write!(f, "?{}:{}, {}", a, t, r),
-            },
+            } => write!(f, "?{}:{}, {}", a, t, r),
             Parameter::Pipe {
+                loc: _,
                 lab: a,
                 typ: t,
                 ext: r,
-            } => match (r == &MonoType::Par(Box::new(Parameter::None)), a == "<-") {
-                (true, true) => write!(f, "{}:{}", a, t),
-                (true, false) => write!(f, "<-{}:{}", a, t),
-                (false, true) => write!(f, "{}:{}, {}", a, t, r),
-                (false, false) => write!(f, "<-{}:{}, {}", a, t, r),
-            },
+            } => {
+                if a == "<-" {
+                    write!(f, "{}:{}, {}", a, t, r)
+                } else {
+                    write!(f, "<-{}:{}, {}", a, t, r)
+                }
+            }
         }
     }
 }
@@ -900,30 +985,36 @@ impl fmt::Display for Parameter {
 impl Substitutable for Parameter {
     fn apply(self, sub: &Substitution) -> Self {
         match self {
-            Parameter::None => Parameter::None,
+            Parameter::None { .. } => self,
             Parameter::Req {
+                loc: l,
                 lab: a,
                 typ: t,
                 ext: r,
             } => Parameter::Req {
+                loc: l,
                 lab: a,
                 typ: t.apply(sub),
                 ext: r.apply(sub),
             },
             Parameter::Opt {
+                loc: l,
                 lab: a,
                 typ: t,
                 ext: r,
             } => Parameter::Opt {
+                loc: l,
                 lab: a,
                 typ: t.apply(sub),
                 ext: r.apply(sub),
             },
             Parameter::Pipe {
+                loc: l,
                 lab: a,
                 typ: t,
                 ext: r,
             } => Parameter::Pipe {
+                loc: l,
                 lab: a,
                 typ: t.apply(sub),
                 ext: r.apply(sub),
@@ -932,18 +1023,21 @@ impl Substitutable for Parameter {
     }
     fn free_vars(&self) -> Vec<Tvar> {
         match self {
-            Parameter::None => Vec::new(),
+            Parameter::None { .. } => Vec::new(),
             Parameter::Req {
+                loc: _,
                 lab: _,
                 typ: t,
                 ext: r,
             } => union(t.free_vars(), r.free_vars()),
             Parameter::Opt {
+                loc: _,
                 lab: _,
                 typ: t,
                 ext: r,
             } => union(t.free_vars(), r.free_vars()),
             Parameter::Pipe {
+                loc: _,
                 lab: _,
                 typ: t,
                 ext: r,
@@ -955,18 +1049,21 @@ impl Substitutable for Parameter {
 impl MaxTvar for Parameter {
     fn max_tvar(&self) -> Tvar {
         match self {
-            Parameter::None => Tvar(0),
+            Parameter::None { .. } => Tvar(0),
             Parameter::Req {
+                loc: _,
                 lab: _,
                 typ: t,
                 ext: r,
             } => vec![t.max_tvar(), r.max_tvar()].max_tvar(),
             Parameter::Opt {
+                loc: _,
                 lab: _,
                 typ: t,
                 ext: r,
             } => vec![t.max_tvar(), r.max_tvar()].max_tvar(),
             Parameter::Pipe {
+                loc: _,
                 lab: _,
                 typ: t,
                 ext: r,
@@ -977,23 +1074,28 @@ impl MaxTvar for Parameter {
 
 impl Parameter {
     fn constrain(self, with: Kind, _: &mut TvarKinds) -> Result<Substitution, Error> {
-        Err(Error::CannotConstrain(MonoType::Par(Box::new(self)), with))
+        Err(Error::CannotConstrain {
+            expected: with,
+            actual: MonoType::Par(Box::new(self)),
+        })
     }
-
     fn contains(&self, tv: Tvar) -> bool {
         match self {
-            Parameter::None => false,
+            Parameter::None { .. } => false,
             Parameter::Req {
+                loc: _,
                 lab: _,
                 typ: t,
                 ext: r,
             } => t.contains(tv) || r.contains(tv),
             Parameter::Opt {
+                loc: _,
                 lab: _,
                 typ: t,
                 ext: r,
             } => t.contains(tv) || r.contains(tv),
             Parameter::Pipe {
+                loc: _,
                 lab: _,
                 typ: t,
                 ext: r,
@@ -1002,50 +1104,144 @@ impl Parameter {
     }
 }
 
+#[derive(Debug, PartialEq)]
+pub enum ParamTypeError {
+    NotFound {
+        arg: String,
+        loc: SourceLocation,
+    },
+    Unexpected {
+        arg: String,
+        loc: SourceLocation,
+    },
+    Mismatch {
+        exp: String,
+        act: String,
+        loc: SourceLocation,
+    },
+}
+
+impl fmt::Display for ParamTypeError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            ParamTypeError::NotFound { arg, .. } => {
+                write!(f, "required argument {} not found", arg)
+            }
+            ParamTypeError::Unexpected { arg, .. } => {
+                write!(f, "function does not take an argument named {}", arg)
+            }
+            ParamTypeError::Mismatch { exp, act, .. } => write!(
+                f,
+                "unexpected function argument\nExpected: {}\nFound: {}",
+                exp, act
+            ),
+        }
+    }
+}
+
+impl From<ParamTypeError> for Error {
+    fn from(err: ParamTypeError) -> Self {
+        Error::ParamType { err }
+    }
+}
+
+#[derive(Debug, PartialEq)]
+pub enum PipeError {
+    NotFound {
+        loc: SourceLocation,
+    },
+    Unexpected {
+        loc: SourceLocation,
+    },
+    Optional {
+        arg: String,
+        loc: SourceLocation,
+    },
+    Mismatch {
+        exp: String,
+        act: String,
+        loc: SourceLocation,
+    },
+}
+
+impl fmt::Display for PipeError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            PipeError::NotFound { .. } => write!(f, "pipe argument not found"),
+            PipeError::Unexpected { .. } => write!(f, "function does not take a pipe argument"),
+            PipeError::Optional { arg, loc } => {
+                write!(f, "pipe argument {} is not allowed to be optional", arg)
+            }
+            PipeError::Mismatch { exp, act, loc } => write!(
+                f,
+                "pipe arguments do not match\nExpected: {}\nFound: {}",
+                exp, act
+            ),
+        }
+    }
+}
+
+impl From<PipeError> for Error {
+    fn from(err: PipeError) -> Self {
+        Error::PipeArgument { err }
+    }
+}
+
 // Rules for parameter unification. In what follows a != b, t is a
-// type variable, > represents a pipe parameter, and ? represents
-// an optional parameter.
+// type variable, > is a pipe parameter, and ? is an optional parameter.
 //
-// 1. {} == {}
-// 2. {} != {a: _ | _}
-// 3. {} != {>: _ | _}
-// 4. {} == {?: _ | r} => {} == r
-// 5. {a: _ | t} != {b: _ | t}
-// 6. {a: u | t} == {a: v | t} => u == v
-// 7. {>: u | r} == {>: v | s} => t = u, r = s
-// 8. {>: _ | _} != {?: _ | _}
-// 9. {a: u | r} == {a: v | s} => t = u, r = s
-// 10. {a: u | r} == {b: v | s} => r = {b: v | t}, s = {a: u | t}
+// 0. {} == {}
+// 1. {a: _ | _} != {}
+// 2. {>: _ | _} != {}
+// 3. {?: _ | r} == {} => r == {}
+// 4. {a: _ | t} != {b: _ | t}
+// 5. {a: u | t} == {a: v | t} => u == v
+// 6. {>: u | r} == {>: v | s} => t = u, r = s
+// 7. {>: _ | _} != {?: _ | _}
+// 8. {a: u | r} == {a: v | s} => t = u, r = s
+// 9. {a: u | r} == {b: v | s} => r = {b: v | t}, s = {a: u | t}
 //
 fn unify_params(
-    x: Parameter,
-    y: Parameter,
+    exp: Parameter,
+    act: Parameter,
     cons: &mut TvarKinds,
     f: &mut Fresher,
 ) -> Result<Substitution, Error> {
-    match (x, y) {
-        // 1. {} == {}
-        (Parameter::None, Parameter::None) => Ok(Substitution::empty()),
-        // 2. {} != {a: _ | _}
-        // 3. {} != {>: _ | _}
-        (Parameter::Req { .. }, Parameter::None)
-        | (Parameter::None, Parameter::Req { .. })
-        | (Parameter::Pipe { .. }, Parameter::None)
-        | (Parameter::None, Parameter::Pipe { .. }) => Err(Error::Def),
-        // 4. {} == {?: _ | r} => {} == r
-        (Parameter::Opt { .. }, Parameter::None) | (Parameter::None, Parameter::Opt { .. }) => {
-            // unify(Parameter::None, r, cons, f)
-            Ok(Substitution::empty())
+    match (exp, act) {
+        // 0. {} == {}
+        (Parameter::None { .. }, Parameter::None { .. }) => Ok(Substitution::empty()),
+        // 1. {a: _ | _} != {}
+        // 2. {>: _ | _} != {}
+        (Parameter::Req { lab: a, .. }, Parameter::None { loc: l }) => {
+            Err(ParamTypeError::NotFound { arg: a, loc: l }.into())
         }
-        // 5. {a: _ | t} != {b: _ | t}
-        // 6. {a: u | t} == {a: v | t} => u == v
+        (Parameter::Pipe { .. }, Parameter::None { loc }) => {
+            Err(PipeError::NotFound { loc }.into())
+        }
+        (Parameter::None { .. }, Parameter::Req { lab: a, loc, .. }) => {
+            Err(ParamTypeError::Unexpected { arg: a, loc }.into())
+        }
+        (Parameter::None { .. }, Parameter::Pipe { loc, .. }) => {
+            Err(PipeError::Unexpected { loc }.into())
+        }
+        // 3. {?: _ | r} == {} => r == {}
+        (Parameter::Opt { ext: r, .. }, Parameter::None { loc }) => {
+            r.unify(MonoType::Par(Box::new(act)), cons, f)
+        }
+        (Parameter::None { loc }, Parameter::Opt { ext: r, .. }) => {
+            MonoType::Par(Box::new(exp)).unify(r, cons, f)
+        }
+        // 4. {a: _ | t} != {b: _ | t}
+        // 5. {a: u | t} == {a: v | t} => u == v
         (
             Parameter::Req {
+                loc: _,
                 lab: a,
                 typ: u,
                 ext: MonoType::Var(r),
             },
             Parameter::Req {
+                loc: l,
                 lab: b,
                 typ: v,
                 ext: MonoType::Var(s),
@@ -1053,60 +1249,91 @@ fn unify_params(
         )
         | (
             Parameter::Opt {
+                loc: _,
                 lab: a,
                 typ: u,
                 ext: MonoType::Var(r),
             },
             Parameter::Opt {
-                lab: b,
-                typ: v,
-                ext: MonoType::Var(s),
-            },
-        )
-        | (
-            Parameter::Pipe {
-                lab: a,
-                typ: u,
-                ext: MonoType::Var(r),
-            },
-            Parameter::Pipe {
+                loc: l,
                 lab: b,
                 typ: v,
                 ext: MonoType::Var(s),
             },
         ) if r == s => match a == b {
             true => u.unify(v, cons, f),
-            false => Err(Error::Def),
+            false => Err(ParamTypeError::Mismatch {
+                exp: a,
+                act: b,
+                loc: l,
+            }
+            .into()),
         },
-        // 7. {>: u | r} == {>: v | s} => t = u, r = s
+        // 4. {a: _ | t} != {b: _ | t}
+        // 5. {a: u | t} == {a: v | t} => u == v
         (
             Parameter::Pipe {
+                loc: _,
+                lab: a,
+                typ: u,
+                ext: MonoType::Var(r),
+            },
+            Parameter::Pipe {
+                loc: l,
+                lab: b,
+                typ: v,
+                ext: MonoType::Var(s),
+            },
+        ) if r == s => {
+            if a == "<-" || b == "<-" || a == b {
+                u.unify(v, cons, f)
+            } else {
+                Err(PipeError::Mismatch {
+                    exp: a,
+                    act: b,
+                    loc: l,
+                }
+                .into())
+            }
+        }
+        // 6. {>: u | r} == {>: v | s} => t = u, r = s
+        (
+            Parameter::Pipe {
+                loc: _,
                 lab: a,
                 typ: u,
                 ext: r,
             },
             Parameter::Pipe {
+                loc: l,
                 lab: b,
                 typ: v,
                 ext: s,
             },
         ) => {
-            if a == ">" || b == ">" || a == b {
+            if a == "<-" || b == "<-" || a == b {
                 let sub = u.unify(v, cons, f)?;
                 apply_then_unify(r, s, sub, cons, f)
             } else {
-                Err(Error::Def)
+                Err(PipeError::Mismatch {
+                    exp: a,
+                    act: b,
+                    loc: l,
+                }
+                .into())
             }
         }
-        // 9.  {a: u | r} == {a: v | s} => u == v, r == s
-        // 10. {a: u | r} == {b: v | s} => r == {b: v | t}, s == {a: u | t}
+        // 8. {a: u | r} == {a: v | s} => u == v, r == s
+        // 9. {a: u | r} == {b: v | s} => r == {b: v | t}, s == {a: u | t}
         (
             Parameter::Req {
+                loc: k,
                 lab: a,
                 typ: u,
                 ext: r,
             },
             Parameter::Req {
+                loc: l,
                 lab: b,
                 typ: v,
                 ext: s,
@@ -1118,29 +1345,33 @@ fn unify_params(
             }
             false => {
                 let i = f.fresh();
-                let _ = Parameter::Req {
+                let x = MonoType::Par(Box::new(Parameter::Req {
+                    loc: l,
                     lab: b,
                     typ: v,
                     ext: MonoType::Var(i),
-                };
-                let _ = Parameter::Req {
+                }));
+                let y = MonoType::Par(Box::new(Parameter::Req {
+                    loc: k,
                     lab: a,
                     typ: u,
                     ext: MonoType::Var(i),
-                };
-                let sub = r.unify(MonoType::Int /*x*/, cons, f)?;
-                apply_then_unify(s, MonoType::Int /*y*/, sub, cons, f)
+                }));
+                let sub = r.unify(x, cons, f)?;
+                apply_then_unify(y, s, sub, cons, f)
             }
         },
-        // 9.  {a: u | r} == {a: v | s} => u == v, r == s
-        // 10. {a: u | r} == {b: v | s} => r == {b: v | t}, s == {a: u | t}
+        // 8. {a: u | r} == {a: v | s} => u == v, r == s
+        // 9. {a: u | r} == {b: v | s} => r == {b: v | t}, s == {a: u | t}
         (
             Parameter::Opt {
+                loc: k,
                 lab: a,
                 typ: u,
                 ext: r,
             },
             Parameter::Opt {
+                loc: l,
                 lab: b,
                 typ: v,
                 ext: s,
@@ -1152,44 +1383,36 @@ fn unify_params(
             }
             false => {
                 let i = f.fresh();
-                let _ = Parameter::Opt {
+                let x = MonoType::Par(Box::new(Parameter::Opt {
+                    loc: l,
                     lab: b,
                     typ: v,
                     ext: MonoType::Var(i),
-                };
-                let _ = Parameter::Opt {
+                }));
+                let y = MonoType::Par(Box::new(Parameter::Opt {
+                    loc: k,
                     lab: a,
                     typ: u,
                     ext: MonoType::Var(i),
-                };
-                let sub = r.unify(MonoType::Int /*x*/, cons, f)?;
-                apply_then_unify(s, MonoType::Int /*y*/, sub, cons, f)
+                }));
+                let sub = r.unify(x, cons, f)?;
+                apply_then_unify(y, s, sub, cons, f)
             }
         },
-        // 9.  {a: u | r} == {a: v | s} => u == v, r == s
-        // 10. {a: u | r} == {b: v | s} => r == {b: v | t}, s == {a: u | t}
+        // 8. {a: u | r} == {a: v | s} => u == v, r == s
+        // 9. {a: u | r} == {b: v | s} => r == {b: v | t}, s == {a: u | t}
         (
             Parameter::Req {
+                loc: k,
                 lab: a,
                 typ: u,
                 ext: r,
             },
             Parameter::Opt {
+                loc: l,
                 lab: b,
                 typ: v,
                 ext: s,
-            },
-        )
-        | (
-            Parameter::Opt {
-                lab: b,
-                typ: v,
-                ext: s,
-            },
-            Parameter::Req {
-                lab: a,
-                typ: u,
-                ext: r,
             },
         ) => match a == b {
             true => {
@@ -1198,44 +1421,36 @@ fn unify_params(
             }
             false => {
                 let i = f.fresh();
-                let _ = Parameter::Req {
-                    lab: a,
-                    typ: u,
-                    ext: MonoType::Var(i),
-                };
-                let _ = Parameter::Opt {
+                let x = MonoType::Par(Box::new(Parameter::Opt {
+                    loc: l,
                     lab: b,
                     typ: v,
                     ext: MonoType::Var(i),
-                };
-                let sub = r.unify(MonoType::Int /*x*/, cons, f)?;
-                apply_then_unify(s, MonoType::Int /*y*/, sub, cons, f)
+                }));
+                let y = MonoType::Par(Box::new(Parameter::Req {
+                    loc: k,
+                    lab: a,
+                    typ: u,
+                    ext: MonoType::Var(i),
+                }));
+                let sub = r.unify(x, cons, f)?;
+                apply_then_unify(y, s, sub, cons, f)
             }
         },
-        // 9.  {a: u | r} == {a: v | s} => u == v, r == s
-        // 10. {a: u | r} == {b: v | s} => r == {b: v | t}, s == {a: u | t}
+        // 8. {a: u | r} == {a: v | s} => u == v, r == s
+        // 9. {a: u | r} == {b: v | s} => r == {b: v | t}, s == {a: u | t}
         (
-            Parameter::Req {
+            Parameter::Opt {
+                loc: k,
                 lab: a,
                 typ: u,
                 ext: r,
             },
-            Parameter::Pipe {
-                lab: b,
-                typ: v,
-                ext: s,
-            },
-        )
-        | (
-            Parameter::Pipe {
-                lab: b,
-                typ: v,
-                ext: s,
-            },
             Parameter::Req {
-                lab: a,
-                typ: u,
-                ext: r,
+                loc: l,
+                lab: b,
+                typ: v,
+                ext: s,
             },
         ) => match a == b {
             true => {
@@ -1244,61 +1459,166 @@ fn unify_params(
             }
             false => {
                 let i = f.fresh();
-                let _ = Parameter::Req {
-                    lab: a,
-                    typ: u,
-                    ext: MonoType::Var(i),
-                };
-                let _ = Parameter::Pipe {
+                let x = MonoType::Par(Box::new(Parameter::Req {
+                    loc: l,
                     lab: b,
                     typ: v,
                     ext: MonoType::Var(i),
-                };
-                let sub = r.unify(MonoType::Int /*x*/, cons, f)?;
-                apply_then_unify(s, MonoType::Int /*y*/, sub, cons, f)
+                }));
+                let y = MonoType::Par(Box::new(Parameter::Opt {
+                    loc: k,
+                    lab: a,
+                    typ: u,
+                    ext: MonoType::Var(i),
+                }));
+                let sub = r.unify(x, cons, f)?;
+                apply_then_unify(y, s, sub, cons, f)
             }
         },
-        // 8. {>: _ | _} != {?: _ | _}
-        // 10. {a: u | r} == {b: v | s} => r == {b: v | t}, s == {a: u | t}
+        // 8. {a: u | r} == {a: v | s} => u == v, r == s
+        // 9. {a: u | r} == {b: v | s} => r == {b: v | t}, s == {a: u | t}
         (
-            Parameter::Opt {
+            Parameter::Req {
+                loc: k,
                 lab: a,
                 typ: u,
                 ext: r,
             },
             Parameter::Pipe {
+                loc: l,
                 lab: b,
                 typ: v,
                 ext: s,
-            },
-        )
-        | (
-            Parameter::Pipe {
-                lab: b,
-                typ: v,
-                ext: s,
-            },
-            Parameter::Opt {
-                lab: a,
-                typ: u,
-                ext: r,
             },
         ) => match a == b {
-            true => Err(Error::Def),
+            true => {
+                let sub = u.unify(v, cons, f)?;
+                apply_then_unify(r, s, sub, cons, f)
+            }
             false => {
                 let i = f.fresh();
-                let _ = Parameter::Opt {
-                    lab: a,
-                    typ: u,
-                    ext: MonoType::Var(i),
-                };
-                let _ = Parameter::Pipe {
+                let x = MonoType::Par(Box::new(Parameter::Pipe {
+                    loc: l,
                     lab: b,
                     typ: v,
                     ext: MonoType::Var(i),
-                };
-                let sub = r.unify(MonoType::Int /*x*/, cons, f)?;
-                apply_then_unify(s, MonoType::Int /*y*/, sub, cons, f)
+                }));
+                let y = MonoType::Par(Box::new(Parameter::Req {
+                    loc: k,
+                    lab: a,
+                    typ: u,
+                    ext: MonoType::Var(i),
+                }));
+                let sub = r.unify(x, cons, f)?;
+                apply_then_unify(y, s, sub, cons, f)
+            }
+        },
+        // 8. {a: u | r} == {a: v | s} => u == v, r == s
+        // 9. {a: u | r} == {b: v | s} => r == {b: v | t}, s == {a: u | t}
+        (
+            Parameter::Pipe {
+                loc: k,
+                lab: a,
+                typ: u,
+                ext: r,
+            },
+            Parameter::Req {
+                loc: l,
+                lab: b,
+                typ: v,
+                ext: s,
+            },
+        ) => match a == b {
+            true => {
+                let sub = u.unify(v, cons, f)?;
+                apply_then_unify(r, s, sub, cons, f)
+            }
+            false => {
+                let i = f.fresh();
+                let x = MonoType::Par(Box::new(Parameter::Req {
+                    loc: l,
+                    lab: b,
+                    typ: v,
+                    ext: MonoType::Var(i),
+                }));
+                let y = MonoType::Par(Box::new(Parameter::Pipe {
+                    loc: k,
+                    lab: a,
+                    typ: u,
+                    ext: MonoType::Var(i),
+                }));
+                let sub = r.unify(x, cons, f)?;
+                apply_then_unify(y, s, sub, cons, f)
+            }
+        },
+        // 7. {>: _ | _} != {?: _ | _}
+        // 9. {a: u | r} == {b: v | s} => r == {b: v | t}, s == {a: u | t}
+        (
+            Parameter::Opt {
+                loc: k,
+                lab: a,
+                typ: u,
+                ext: r,
+            },
+            Parameter::Pipe {
+                loc: l,
+                lab: b,
+                typ: v,
+                ext: s,
+            },
+        ) => match a == b {
+            true => Err(PipeError::Optional { arg: a, loc: l }.into()),
+            false => {
+                let i = f.fresh();
+                let x = MonoType::Par(Box::new(Parameter::Pipe {
+                    loc: l,
+                    lab: b,
+                    typ: v,
+                    ext: MonoType::Var(i),
+                }));
+                let y = MonoType::Par(Box::new(Parameter::Opt {
+                    loc: k,
+                    lab: a,
+                    typ: u,
+                    ext: MonoType::Var(i),
+                }));
+                let sub = r.unify(x, cons, f)?;
+                apply_then_unify(y, s, sub, cons, f)
+            }
+        },
+        // 7. {>: _ | _} != {?: _ | _}
+        // 9. {a: u | r} == {b: v | s} => r == {b: v | t}, s == {a: u | t}
+        (
+            Parameter::Pipe {
+                loc: k,
+                lab: a,
+                typ: u,
+                ext: r,
+            },
+            Parameter::Opt {
+                loc: l,
+                lab: b,
+                typ: v,
+                ext: s,
+            },
+        ) => match a == b {
+            true => Err(PipeError::Optional { arg: a, loc: l }.into()),
+            false => {
+                let i = f.fresh();
+                let x = MonoType::Par(Box::new(Parameter::Opt {
+                    loc: l,
+                    lab: b,
+                    typ: v,
+                    ext: MonoType::Var(i),
+                }));
+                let y = MonoType::Par(Box::new(Parameter::Pipe {
+                    loc: k,
+                    lab: a,
+                    typ: u,
+                    ext: MonoType::Var(i),
+                }));
+                let sub = r.unify(x, cons, f)?;
+                apply_then_unify(y, s, sub, cons, f)
             }
         },
     }
@@ -1335,21 +1655,41 @@ impl MaxTvar for Fun {
 }
 
 fn unify_function(
-    t: Fun,
-    with: Fun,
+    act: Fun,
+    exp: Fun,
     cons: &mut TvarKinds,
     f: &mut Fresher,
 ) -> Result<Substitution, Error> {
-    let sub = t.x.unify(with.x, cons, f)?;
-    apply_then_unify(t.e, with.e, sub, cons, f)
+    let sub = act.x.unify(exp.x, cons, f)?;
+    apply_then_unify(act.e, exp.e, sub, cons, f)
 }
 
 impl Fun {
     fn constrain(self, with: Kind, _: &mut TvarKinds) -> Result<Substitution, Error> {
-        Err(Error::CannotConstrain(MonoType::Fnc(Box::new(self)), with))
+        Err(Error::CannotConstrain {
+            expected: with,
+            actual: MonoType::Fnc(Box::new(self)),
+        })
     }
-
     fn contains(&self, tv: Tvar) -> bool {
         self.x.contains(tv) || self.e.contains(tv)
     }
+}
+
+// Unification requires that the current substitution be applied
+// to both sides of a constraint before unifying.
+//
+// This helper function applies a substitution to a constraint
+// before unifying the two types. Note the substitution produced
+// from unification is merged with input substitution before it
+// is returned.
+//
+fn apply_then_unify(
+    exp: MonoType,
+    act: MonoType,
+    sub: Substitution,
+    cons: &mut TvarKinds,
+    f: &mut Fresher,
+) -> Result<Substitution, Error> {
+    Ok(sub.merge(exp.apply(&sub).unify(act.apply(&sub), cons, f)?))
 }
