@@ -1,5 +1,5 @@
 use crate::semantic::types::{
-    Array, Fun, MonoType, Parameter, PolyType, Property, Record, SemanticMap, Tvar, TvarMap,
+    Array, Function, MonoType, Parameter, PolyType, Property, Record, SemanticMap, Tvar, TvarMap,
 };
 use std::collections::BTreeMap;
 use std::hash::Hash;
@@ -100,7 +100,7 @@ impl Fresh for MonoType {
             MonoType::Arr(arr) => MonoType::Arr(arr.fresh(f, sub)),
             MonoType::Obj(obj) => MonoType::Obj(obj.fresh(f, sub)),
             MonoType::Par(par) => MonoType::Par(par.fresh(f, sub)),
-            MonoType::Fnc(fun) => MonoType::Fnc(fun.fresh(f, sub)),
+            MonoType::Fun(fun) => MonoType::Fun(fun.fresh(f, sub)),
         }
     }
 }
@@ -108,12 +108,14 @@ impl Fresh for MonoType {
 impl Fresh for Record {
     fn fresh(self, f: &mut Fresher, sub: &mut TvarMap) -> Self {
         match self {
-            Record::Empty => Record::Empty,
+            Record::Empty { .. } => self,
             Record::Extension {
+                loc: l,
                 lab: a,
                 typ: t,
                 ext: r,
             } => Record::Extension {
+                loc: l,
                 lab: a,
                 typ: t.fresh(f, sub),
                 ext: r.fresh(f, sub),
@@ -125,30 +127,36 @@ impl Fresh for Record {
 impl Fresh for Parameter {
     fn fresh(self, f: &mut Fresher, sub: &mut TvarMap) -> Self {
         match self {
-            Parameter::None => Parameter::None,
+            Parameter::None { .. } => self,
             Parameter::Req {
+                loc: l,
                 lab: a,
                 typ: t,
                 ext: r,
             } => Parameter::Req {
+                loc: l,
                 lab: a,
                 typ: t.fresh(f, sub),
                 ext: r.fresh(f, sub),
             },
             Parameter::Opt {
+                loc: l,
                 lab: a,
                 typ: t,
                 ext: r,
             } => Parameter::Opt {
+                loc: l,
                 lab: a,
                 typ: t.fresh(f, sub),
                 ext: r.fresh(f, sub),
             },
             Parameter::Pipe {
+                loc: l,
                 lab: a,
                 typ: t,
                 ext: r,
             } => Parameter::Pipe {
+                loc: l,
                 lab: a,
                 typ: t.fresh(f, sub),
                 ext: r.fresh(f, sub),
@@ -157,9 +165,9 @@ impl Fresh for Parameter {
     }
 }
 
-impl Fresh for Fun {
+impl Fresh for Function {
     fn fresh(self, f: &mut Fresher, sub: &mut TvarMap) -> Self {
-        Fun {
+        Function {
             x: self.x.fresh(f, sub),
             e: self.e.fresh(f, sub),
         }

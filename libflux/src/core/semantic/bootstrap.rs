@@ -239,21 +239,13 @@ pub fn build_polytype(from: PolyTypeMap, f: &mut Fresher) -> Result<PolyType, Er
 }
 
 fn build_row(from: PolyTypeMap, f: &mut Fresher) -> (Record, Constraints) {
-    let mut r = Record::Empty;
+    let mut r = Record::Empty { loc: None };
     let mut cons = Constraints::empty();
 
-    for (name, poly) in from {
-        let (ty, constraints) = infer::instantiate(
-            poly.clone(),
-            f,
-            ast::SourceLocation {
-                file: None,
-                start: ast::Position::default(),
-                end: ast::Position::default(),
-                source: None,
-            },
-        );
+    for (name, poly) in from.into_iter().rev() {
+        let (ty, constraints) = infer::instantiate(poly, f, ast::SourceLocation::default());
         r = Record::Extension {
+            loc: None,
             lab: name,
             typ: ty,
             ext: MonoType::Obj(Box::new(r)),
@@ -412,10 +404,12 @@ mod tests {
             String::from("b") => parse("forall [] {x: int | y: int}")?,
         };
         if want != imports {
+            print!("{:?}\n", want);
+            print!("{:?}\n", imports);
             return Err(Error {
                 msg: format!(
                     "unexpected type importer:\n\nwant: {:?}\n\ngot: {:?}",
-                    want, types
+                    want, imports
                 ),
             });
         }

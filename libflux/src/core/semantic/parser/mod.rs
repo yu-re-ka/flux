@@ -1,7 +1,7 @@
 use std::{iter::Peekable, slice::Iter, str::Chars};
 
 use crate::semantic::types::{
-    Array, Fun, Kind, MonoType, Parameter, PolyType, Property, Record, Tvar, TvarKinds,
+    Array, Function, Kind, MonoType, Parameter, PolyType, Property, Record, Tvar, TvarKinds,
 };
 
 #[derive(Debug, PartialEq, Copy, Clone)]
@@ -495,6 +495,51 @@ impl Parser<'_> {
         }
     }
 
+    fn parse_parameters(&mut self, token: &Token) -> Result<MonoType, &'static str> {
+        match token.token_type {
+            TokenType::RIGHTPAREN => Ok(MonoType::Par(Box::new(Parameter::None { loc: None }))),
+            TokenType::IDENTIFIER => {
+                let arg = self.parse_required_optional(token)?;
+                let token = &self.next();
+                Ok(MonoType::Par(Box::new(Parameter::Req {
+                    loc: None,
+                    lab: arg.0,
+                    typ: arg.1,
+                    ext: self.parse_parameters(token)?,
+                })))
+            }
+            TokenType::QUESTIONMARK => {
+                let token = &self.next();
+                let arg = self.parse_required_optional(token)?;
+                let token = &self.next();
+                println!("here");
+                Ok(MonoType::Par(Box::new(Parameter::Opt {
+                    loc: None,
+                    lab: arg.0,
+                    typ: arg.1,
+                    ext: self.parse_parameters(token)?,
+                })))
+            }
+            TokenType::PIPE => match self.parse_pipe() {
+                None => Err("Invalid format for pipe arguments"),
+                Some(arg) => {
+                    let token = &self.next();
+                    Ok(MonoType::Par(Box::new(Parameter::Pipe {
+                        loc: None,
+                        lab: if arg.k == "<-" { None } else { Some(arg.k) },
+                        typ: arg.v,
+                        ext: self.parse_parameters(token)?,
+                    })))
+                }
+            },
+            TokenType::COMMA => {
+                let token = &self.next();
+                self.parse_parameters(token)
+            }
+            _ => Err("invalid arguments for this function"),
+        }
+    }
+
     // parse_function parses a single function monotype
     fn parse_function(&mut self, token: &Token) -> Result<MonoType, &'static str> {
         if token.token_type != TokenType::LEFTPAREN {
@@ -504,70 +549,7 @@ impl Parser<'_> {
         self.next();
         let mut token = self.next();
 
-        let mut x = MonoType::Par(Box::new(Parameter::None));
-        let mut need_comma = false;
-        loop {
-            if token.token_type == TokenType::RIGHTPAREN {
-                // end of arguments
-                break;
-            }
-
-            if need_comma {
-                if token.token_type == TokenType::COMMA {
-                    token = self.next();
-                } else {
-                    return Err("expected comma between arguments");
-                }
-            }
-
-            if token.token_type == TokenType::IDENTIFIER {
-                if let Ok(arg) = self.parse_required_optional(&token) {
-                    x = MonoType::Par(Box::new(Parameter::Req {
-                        lab: arg.0,
-                        typ: arg.1,
-                        ext: x,
-                    }));
-                } else {
-                    return Err("Must have valid required arguments");
-                }
-            } else if token.token_type == TokenType::QUESTIONMARK {
-                token = self.next(); // skip question mark
-
-                // now we can parse this optional argument the same way
-                // that we parse required arguments
-                if let Ok(arg) = self.parse_required_optional(&token) {
-                    x = MonoType::Par(Box::new(Parameter::Opt {
-                        lab: arg.0,
-                        typ: arg.1,
-                        ext: x,
-                    }));
-                } else {
-                    return Err("Invalid format for optional arguments");
-                }
-            } else if token.token_type == TokenType::PIPE {
-                match self.parse_pipe() {
-                    None => {
-                        return Err("Invalid format for pipe arguments");
-                    }
-                    Some(arg) => {
-                        x = MonoType::Par(Box::new(Parameter::Pipe {
-                            lab: arg.k,
-                            typ: arg.v,
-                            ext: x,
-                        }));
-                    }
-                }
-            } else {
-                return Err("Invalid arguments for this function.");
-            }
-
-            token = self.next();
-            need_comma = true;
-        }
-
-        if token.token_type != TokenType::RIGHTPAREN {
-            return Err("Function arguments must be follow by a right paren");
-        }
+        let x = self.parse_parameters(&token)?;
 
         token = self.next(); // move to arrow
 
@@ -579,7 +561,7 @@ impl Parser<'_> {
         let return_type = self.parse_monotype();
 
         if let Ok(e) = return_type {
-            Ok(MonoType::Fnc(Box::new(Fun { x: x, e: e })))
+            Ok(MonoType::Fun(Box::new(Function { x: x, e: e })))
         } else {
             Err("Function must have a valid return type")
         }
@@ -655,7 +637,7 @@ impl Parser<'_> {
 
     fn parse_record(&mut self, token: &Token) -> Result<MonoType, &'static str> {
         match token.token_type {
-            TokenType::RIGHTCURLYBRAC => Ok(MonoType::Obj(Box::new(Record::Empty))),
+            TokenType::RIGHTCURLYBRAC => Ok(MonoType::Obj(Box::new(Record::Empty { loc: None }))),
             TokenType::WITH => {
                 let tok = self.next();
                 self.parse_record(&tok)
@@ -669,6 +651,7 @@ impl Parser<'_> {
                     let prop = self.parse_property(name)?;
                     let tok = self.next();
                     Ok(MonoType::Obj(Box::new(Record::Extension {
+                        loc: None,
                         lab: prop.k,
                         typ: prop.v,
                         ext: self.parse_record(&tok)?,
@@ -712,19 +695,21 @@ mod tests {
         let parse_text = "forall [t0] (x: t0, y: float) -> t0";
 
         let x = MonoType::Par(Box::new(Parameter::Req {
+            loc: None,
             lab: String::from("x"),
             typ: MonoType::Var(Tvar(0)),
             ext: MonoType::Par(Box::new(Parameter::Req {
+                loc: None,
                 lab: String::from("y"),
                 typ: MonoType::Float,
-                ext: MonoType::Par(Box::new(Parameter::None)),
+                ext: MonoType::Par(Box::new(Parameter::None { loc: None })),
             })),
         }));
 
         let output = PolyType {
             vars: vec![Tvar(0)],
             cons: TvarKinds::new(),
-            expr: MonoType::Fnc(Box::new(Fun {
+            expr: MonoType::Fun(Box::new(Function {
                 x: x,
                 e: MonoType::Var(Tvar(0)),
             })),
@@ -957,6 +942,7 @@ mod tests {
             cons: TvarKinds::new(),
             expr: MonoType::Arr(Box::new(Array(MonoType::Obj(Box::new(
                 Record::Extension {
+                    loc: None,
                     lab: String::from("foo"),
                     typ: MonoType::Int,
                     ext: MonoType::Var(Tvar(0)),
@@ -978,15 +964,18 @@ mod tests {
         bounds.insert(Tvar(12), kinds);
 
         let x = MonoType::Par(Box::new(Parameter::Req {
+            loc: None,
             lab: String::from("x"),
             typ: MonoType::Var(Tvar(12)),
             ext: MonoType::Par(Box::new(Parameter::Opt {
+                loc: None,
                 lab: String::from("y"),
                 typ: MonoType::Int,
                 ext: MonoType::Par(Box::new(Parameter::Pipe {
-                    lab: String::from("var"),
+                    loc: None,
+                    lab: Some(String::from("var")),
                     typ: MonoType::Float,
-                    ext: MonoType::Par(Box::new(Parameter::None)),
+                    ext: MonoType::Par(Box::new(Parameter::None { loc: None })),
                 })),
             })),
         }));
@@ -994,7 +983,7 @@ mod tests {
         let output = PolyType {
             vars: vec![Tvar(12)],
             cons: bounds,
-            expr: MonoType::Fnc(Box::new(Fun {
+            expr: MonoType::Fun(Box::new(Function {
                 x: x,
                 e: MonoType::Var(Tvar(12)),
             })),
@@ -1011,15 +1000,16 @@ mod tests {
         bounds.insert(Tvar(0), kinds);
 
         let x = MonoType::Par(Box::new(Parameter::Req {
+            loc: None,
             lab: String::from("x"),
             typ: MonoType::Var(Tvar(0)),
-            ext: MonoType::Par(Box::new(Parameter::None)),
+            ext: MonoType::Par(Box::new(Parameter::None { loc: None })),
         }));
 
         let output = PolyType {
             vars: vec![Tvar(0)],
             cons: bounds,
-            expr: MonoType::Fnc(Box::new(Fun {
+            expr: MonoType::Fun(Box::new(Function {
                 x: x,
                 e: MonoType::Var(Tvar(0)),
             })),
@@ -1041,19 +1031,21 @@ mod tests {
         bounds.insert(Tvar(10), kinds);
 
         let x = MonoType::Par(Box::new(Parameter::Req {
+            loc: None,
             lab: String::from("x"),
             typ: MonoType::Var(Tvar(1)),
-            ext: MonoType::Par(Box::new(Parameter::Req {
+            ext: MonoType::Par(Box::new(Parameter::Opt {
+                loc: None,
                 lab: String::from("y"),
                 typ: MonoType::Var(Tvar(10)),
-                ext: MonoType::Par(Box::new(Parameter::None)),
+                ext: MonoType::Par(Box::new(Parameter::None { loc: None })),
             })),
         }));
 
         let output = PolyType {
             vars: vec![Tvar(1), Tvar(10), Tvar(100)],
             cons: bounds,
-            expr: MonoType::Fnc(Box::new(Fun {
+            expr: MonoType::Fun(Box::new(Function {
                 x: x,
                 e: MonoType::Var(Tvar(100)),
             })),
@@ -1070,15 +1062,16 @@ mod tests {
         bounds.insert(Tvar(0), kinds);
 
         let x = MonoType::Par(Box::new(Parameter::Pipe {
-            lab: String::from("x"),
+            loc: None,
+            lab: Some(String::from("x")),
             typ: MonoType::Var(Tvar(0)),
-            ext: MonoType::Par(Box::new(Parameter::None)),
+            ext: MonoType::Par(Box::new(Parameter::None { loc: None })),
         }));
 
         let output = PolyType {
             vars: vec![Tvar(0)],
             cons: bounds,
-            expr: MonoType::Fnc(Box::new(Fun {
+            expr: MonoType::Fun(Box::new(Function {
                 x: x,
                 e: MonoType::Var(Tvar(0)),
             })),
@@ -1095,15 +1088,16 @@ mod tests {
         bounds.insert(Tvar(0), kinds);
 
         let x = MonoType::Par(Box::new(Parameter::Pipe {
-            lab: String::from("<-"),
+            loc: None,
+            lab: None,
             typ: MonoType::Var(Tvar(0)),
-            ext: MonoType::Par(Box::new(Parameter::None)),
+            ext: MonoType::Par(Box::new(Parameter::None { loc: None })),
         }));
 
         let output = PolyType {
             vars: vec![Tvar(0), Tvar(1)],
             cons: bounds,
-            expr: MonoType::Fnc(Box::new(Fun {
+            expr: MonoType::Fun(Box::new(Function {
                 x: x,
                 e: MonoType::Var(Tvar(0)),
             })),
@@ -1113,22 +1107,25 @@ mod tests {
 
         let text = "forall [] (_p1: int, ?p_2: int, <-_p3: string) -> int";
         let x = MonoType::Par(Box::new(Parameter::Req {
+            loc: None,
             lab: String::from("_p1"),
             typ: MonoType::Int,
             ext: MonoType::Par(Box::new(Parameter::Opt {
+                loc: None,
                 lab: String::from("p_2"),
                 typ: MonoType::Int,
                 ext: MonoType::Par(Box::new(Parameter::Pipe {
-                    lab: String::from("_p3"),
+                    loc: None,
+                    lab: Some(String::from("_p3")),
                     typ: MonoType::String,
-                    ext: MonoType::Par(Box::new(Parameter::None)),
+                    ext: MonoType::Par(Box::new(Parameter::None { loc: None })),
                 })),
             })),
         }));
         let output = PolyType {
             vars: vec![],
             cons: TvarKinds::new(),
-            expr: MonoType::Fnc(Box::new(Fun {
+            expr: MonoType::Fun(Box::new(Function {
                 x: x,
                 e: MonoType::Int,
             })),
@@ -1139,8 +1136,8 @@ mod tests {
         let output = PolyType {
             vars: vec![],
             cons: TvarKinds::new(),
-            expr: MonoType::Fnc(Box::new(Fun {
-                x: MonoType::Par(Box::new(Parameter::None)),
+            expr: MonoType::Fun(Box::new(Function {
+                x: MonoType::Par(Box::new(Parameter::None { loc: None })),
                 e: MonoType::Bytes,
             })),
         };
@@ -1155,9 +1152,11 @@ mod tests {
                 vars: vec![Tvar(0)],
                 cons: TvarKinds::new(),
                 expr: MonoType::Obj(Box::new(Record::Extension {
+                    loc: None,
                     lab: String::from("a"),
                     typ: MonoType::Int,
                     ext: MonoType::Obj(Box::new(Record::Extension {
+                        loc: None,
                         lab: String::from("b"),
                         typ: MonoType::Float,
                         ext: MonoType::Var(Tvar(0)),
@@ -1185,15 +1184,18 @@ mod tests {
             vars: vec![Tvar(1), Tvar(2)],
             cons: bounds,
             expr: MonoType::Obj(Box::new(Record::Extension {
+                loc: None,
                 lab: String::from("test"),
                 typ: MonoType::Var(Tvar(1)),
                 ext: MonoType::Obj(Box::new(Record::Extension {
+                    loc: None,
                     lab: String::from("testAgain"),
                     typ: MonoType::Bool,
                     ext: MonoType::Obj(Box::new(Record::Extension {
+                        loc: None,
                         lab: String::from("testLast"),
                         typ: MonoType::Arr(Box::new(Array(MonoType::Uint))),
-                        ext: MonoType::Obj(Box::new(Record::Empty)),
+                        ext: MonoType::Obj(Box::new(Record::Empty { loc: None })),
                     })),
                 })),
             })),
@@ -1212,7 +1214,7 @@ mod tests {
         let output = PolyType {
             vars: vec![Tvar(0)],
             cons: bounds,
-            expr: MonoType::Obj(Box::new(Record::Empty)),
+            expr: MonoType::Obj(Box::new(Record::Empty { loc: None })),
         };
 
         assert_eq!(Ok(output), parse(text));
@@ -1229,15 +1231,18 @@ mod tests {
             vars: vec![Tvar(0)],
             cons: bounds,
             expr: MonoType::Obj(Box::new(Record::Extension {
+                loc: None,
                 lab: String::from("a"),
                 typ: MonoType::Int,
                 ext: MonoType::Obj(Box::new(Record::Extension {
+                    loc: None,
                     lab: String::from("b"),
                     typ: MonoType::String,
                     ext: MonoType::Obj(Box::new(Record::Extension {
+                        loc: None,
                         lab: String::from("c"),
                         typ: MonoType::Bool,
-                        ext: MonoType::Obj(Box::new(Record::Empty)),
+                        ext: MonoType::Obj(Box::new(Record::Empty { loc: None })),
                     })),
                 })),
             })),
@@ -1251,12 +1256,14 @@ mod tests {
             vars: vec![],
             cons: TvarKinds::new(),
             expr: MonoType::Obj(Box::new(Record::Extension {
+                loc: None,
                 lab: String::from("_label"),
                 typ: MonoType::Int,
                 ext: MonoType::Obj(Box::new(Record::Extension {
+                    loc: None,
                     lab: String::from("lab_el"),
                     typ: MonoType::String,
-                    ext: MonoType::Obj(Box::new(Record::Empty)),
+                    ext: MonoType::Obj(Box::new(Record::Empty { loc: None })),
                 })),
             })),
         };

@@ -2660,7 +2660,7 @@ fn pseudo_complete_query() {
                 |> map(fn: (r) => ({r with value: int(v: r.value)}))
         "#,
         exp: map![
-            "out" => "forall [t0,t1,t2,t3] where t2: Equatable, t3: Equatable [{value: int | host: t2 | measurement: t3 | field: string | value: t1 | t0}]",
+            "out" => "forall [t0,t1,t2,t3] where t2: Equatable, t3: Equatable [{value: int | value: t1 | field: string | host: t2 | measurement: t3 | t0}]",
         ],
     }
 }
@@ -3239,7 +3239,7 @@ fn function_default_arguments_and_pipes() {
             v = 2.2 |> f(f: z, g: {m: "4.5"})
         "#,
         exp: map![
-            "f" => "forall [t0, t1, t2] (<-t: t1, f: (<-: t1, a: t0) -> t2, g: t0) -> t2",
+            "f" => "forall [t0, t1, t2] (f: (<-: t1, a: t0) -> t2, g: t0, <-t: t1) -> t2",
             "x" => "forall [] (a: int, ?b: int, <-m: int) -> int",
             "z" => "forall [t0, t1] (a: {m: t0 | t1}, ?b: float, ?c: float, <-m: float) -> {r: t0 | s: float}",
             "y" => "forall [] int",

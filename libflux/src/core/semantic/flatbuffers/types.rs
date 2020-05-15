@@ -19,6 +19,9 @@ use crate::semantic::types::{
     Property,
     Tvar,
     TvarKinds,
+    Function,
+    Record,
+    Parameter,
 };
 
 impl From<fb::Fresher<'_>> for Fresher {
@@ -122,8 +125,11 @@ fn from_table(table: flatbuffers::Table, t: fb::MonoType) -> Option<MonoType> {
             let opt: Option<Array> = fb::Arr::init_from_table(table).into();
             Some(MonoType::Arr(Box::new(opt?)))
         }
-        fb::MonoType::Row => None,
-        fb::MonoType::Fun => None,
+        fb::MonoType::Fun => {
+            let opt: Option<Function> = fb::Fun::init_from_table(table).into();
+            Some(MonoType::Fun(Box::new(opt?)))
+        }
+        fb::MonoType::Row => fb::Row::init_from_table(table).into(),
         fb::MonoType::NONE => None,
     }
 }
@@ -156,11 +162,79 @@ impl From<fb::Arr<'_>> for Option<Array> {
     }
 }
 
+impl From<fb::Row<'_>> for Option<MonoType> {
+    fn from(t: fb::Row) -> Option<MonoType> {
+        let mut r = match t.extends() {
+            None => MonoType::Obj(Box::new(Record::Empty { loc: None })),
+            Some(tv) => MonoType::Var(tv.into()),
+        };
+        let p = t.props()?;
+        for value in p.iter().rev() {
+            match value.into() {
+                None => {
+                    return None;
+                }
+                Some(Property { k, v }) => {
+                    r = MonoType::Obj(Box::new(Record::Extension {
+                        loc: None,
+                        lab: k,
+                        typ: v,
+                        ext: r,
+                    }));
+                }
+            }
+        }
+        Some(r)
+    }
+}
+
 impl From<fb::Prop<'_>> for Option<Property> {
     fn from(t: fb::Prop) -> Option<Property> {
         Some(Property {
             k: t.k()?.to_owned(),
             v: from_table(t.v()?, t.v_type())?,
+        })
+    }
+}
+
+impl From<fb::Fun<'_>> for Option<Function> {
+    fn from(t: fb::Fun) -> Option<Function> {
+        let args = t.args()?;
+        let mut r = MonoType::Par(Box::new(Parameter::None { loc: None }));
+        for value in args.iter().rev() {
+            match value.into() {
+                None => {
+                    return None;
+                }
+                Some((k, v, true, _)) => {
+                    r = MonoType::Par(Box::new(Parameter::Pipe {
+                        loc: None,
+                        lab: if k == "<-" { None } else { Some(k) },
+                        typ: v,
+                        ext: r,
+                    }));
+                }
+                Some((name, t, _, true)) => {
+                    r = MonoType::Par(Box::new(Parameter::Opt {
+                        loc: None,
+                        lab: name,
+                        typ: t,
+                        ext: r,
+                    }));
+                }
+                Some((name, t, false, false)) => {
+                    r = MonoType::Par(Box::new(Parameter::Req {
+                        loc: None,
+                        lab: name,
+                        typ: t,
+                        ext: r,
+                    }));
+                }
+            };
+        }
+        Some(Function {
+            x: r,
+            e: from_table(t.retn()?, t.retn_type())?,
         })
     }
 }
@@ -358,7 +432,15 @@ pub fn build_type<'a>(
             let offset = build_arr(builder, *arr);
             (offset.as_union_value(), fb::MonoType::Arr)
         }
-        _ => panic!("ahh!"),
+        MonoType::Obj(obj) => {
+            let offset = build_record(builder, *obj, Vec::new());
+            (offset.as_union_value(), fb::MonoType::Row)
+        }
+        MonoType::Fun(fun) => {
+            let offset = build_fun(builder, fun.x, fun.e, Vec::new());
+            (offset.as_union_value(), fb::MonoType::Fun)
+        }
+        MonoType::Par(_) => panic!("invalid type"),
     }
 }
 
@@ -381,6 +463,126 @@ fn build_arr<'a>(
             t: Some(off),
         },
     )
+}
+
+fn build_record<'a>(
+    builder: &mut flatbuffers::FlatBufferBuilder<'a>,
+    mut r: Record,
+    mut props: Vec<Property>,
+) -> flatbuffers::WIPOffset<fb::Row<'a>> {
+    match r {
+        Record::Empty { .. } => {
+            let props = build_vec(props, builder, build_prop);
+            let props = builder.create_vector(props.as_slice());
+            fb::Row::create(
+                builder,
+                &fb::RowArgs {
+                    props: Some(props),
+                    extends: None,
+                },
+            )
+        }
+        Record::Extension {
+            loc: _,
+            lab: a,
+            typ: t,
+            ext: MonoType::Var(tv),
+        } => {
+            props.push(Property { k: a, v: t });
+            let props = build_vec(props, builder, build_prop);
+            let props = builder.create_vector(props.as_slice());
+            let r = Some(build_var(builder, tv));
+            fb::Row::create(
+                builder,
+                &fb::RowArgs {
+                    props: Some(props),
+                    extends: r,
+                },
+            )
+        }
+        Record::Extension {
+            loc: _,
+            lab: a,
+            typ: t,
+            ext: MonoType::Obj(r),
+        } => {
+            props.push(Property { k: a, v: t });
+            build_record(builder, *r, props)
+        }
+        Record::Extension {
+            loc: _,
+            lab: a,
+            typ: t,
+            ext: r,
+        } => build_record(builder, Record::Empty { loc: None }, props),
+    }
+}
+
+fn build_fun<'a>(
+    builder: &mut flatbuffers::FlatBufferBuilder<'a>,
+    r: MonoType,
+    e: MonoType,
+    mut args: Vec<(String, MonoType, bool, bool)>,
+) -> flatbuffers::WIPOffset<fb::Fun<'a>> {
+    match r {
+        MonoType::Par(r) => match *r {
+            Parameter::None { .. } => {
+                let args = build_vec(args, builder, build_arg);
+                let args = builder.create_vector(args.as_slice());
+                let (e, typ) = build_type(builder, e);
+                fb::Fun::create(
+                    builder,
+                    &fb::FunArgs {
+                        args: Some(args),
+                        retn_type: typ,
+                        retn: Some(e),
+                    },
+                )
+            }
+            Parameter::Req {
+                loc: _,
+                lab: a,
+                typ: t,
+                ext: r,
+            } => {
+                args.push((a, t, false, false));
+                build_fun(builder, r, e, args)
+            }
+            Parameter::Opt {
+                loc: _,
+                lab: a,
+                typ: t,
+                ext: r,
+            } => {
+                args.push((a, t, false, true));
+                build_fun(builder, r, e, args)
+            }
+            Parameter::Pipe {
+                loc: _,
+                lab: None,
+                typ: t,
+                ext: r,
+            } => {
+                args.push((String::from("<-"), t, true, false));
+                build_fun(builder, r, e, args)
+            }
+            Parameter::Pipe {
+                loc: _,
+                lab: Some(a),
+                typ: t,
+                ext: r,
+            } => {
+                args.push((a, t, true, false));
+                build_fun(builder, r, e, args)
+            }
+        },
+        _ => build_fun(
+            builder,
+            MonoType::Par(Box::new(Parameter::None { loc: None })),
+            e,
+            args,
+        ),
+    }
 }
 
 fn build_prop<'a>(

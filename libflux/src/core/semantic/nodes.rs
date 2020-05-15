@@ -739,13 +739,16 @@ pub struct FunctionExpr {
 impl FunctionExpr {
     fn infer(&mut self, mut env: Environment, f: &mut Fresher) -> Result {
         let mut cons = Constraints::empty();
-        let mut x = MonoType::Par(Box::new(types::Parameter::None));
+        let mut x = MonoType::Par(Box::new(types::Parameter::None {
+            loc: Some(self.loc.clone()),
+        }));
         let mut params = PolyTypeMap::new();
-        for p in &mut self.params {
+        for p in self.params.iter_mut().rev() {
             if let Some(ref mut e) = &mut p.default {
                 let (nenv, ncons) = e.infer(env, f)?;
                 cons = cons + ncons;
                 x = MonoType::Par(Box::new(types::Parameter::Opt {
+                    loc: Some(p.loc.clone()),
                     lab: p.key.name.clone(),
                     typ: e.type_of(),
                     ext: x,
@@ -760,7 +763,8 @@ impl FunctionExpr {
             } else if p.is_pipe {
                 let tv = f.fresh();
                 x = MonoType::Par(Box::new(types::Parameter::Pipe {
-                    lab: p.key.name.clone(),
+                    loc: Some(p.loc.clone()),
+                    lab: Some(p.key.name.clone()),
                     typ: MonoType::Var(tv),
                     ext: x,
                 }));
@@ -773,6 +777,7 @@ impl FunctionExpr {
             } else {
                 let tv = f.fresh();
                 x = MonoType::Par(Box::new(types::Parameter::Req {
+                    loc: Some(p.loc.clone()),
                     lab: p.key.name.clone(),
                     typ: MonoType::Var(tv),
                     ext: x,
@@ -794,7 +799,7 @@ impl FunctionExpr {
         let (nenv, bcons) = self.body.infer(nenv, f)?;
         // Now pop the nested environment, we don't need it anymore.
         let env = nenv.pop();
-        let func = MonoType::Fnc(Box::new(types::Fun {
+        let func = MonoType::Fun(Box::new(types::Function {
             x: x,
             e: self.body.type_of(),
         }));
@@ -1159,17 +1164,20 @@ impl CallExpr {
         // update the environment and the constraints, and use the inferred types to
         // build the fields of the type for this call expression.
         let (mut env, mut cons) = self.callee.infer(env, f)?;
-        let mut x = MonoType::Par(Box::new(types::Parameter::None));
+        let mut x = MonoType::Par(Box::new(types::Parameter::None {
+            loc: Some(self.loc.clone()),
+        }));
         for Property {
             key: ref mut id,
             value: ref mut expr,
-            ..
+            loc,
         } in &mut self.arguments
         {
             let (nenv, ncons) = expr.infer(env, f)?;
             cons = cons + ncons;
             env = nenv;
             x = MonoType::Par(Box::new(types::Parameter::Req {
+                loc: Some(loc.clone()),
                 lab: id.name.clone(),
                 typ: expr.type_of(),
                 ext: x,
@@ -1180,14 +1188,15 @@ impl CallExpr {
             cons = cons + ncons;
             env = nenv;
             x = MonoType::Par(Box::new(types::Parameter::Pipe {
-                lab: String::from("<-"),
+                loc: Some(p.loc().clone()),
+                lab: None,
                 typ: p.type_of(),
                 ext: x,
             }));
         }
         // Constrain the callee to be a Function.
         cons.add(Constraint::Equal(
-            MonoType::Fnc(Box::new(types::Fun {
+            MonoType::Fun(Box::new(types::Function {
                 x: x,
                 e: self.typ.clone(),
             })),
@@ -1301,6 +1310,7 @@ impl MemberExpr {
     //
     fn infer(&mut self, env: Environment, f: &mut Fresher) -> Result {
         let r = MonoType::Obj(Box::new(types::Record::Extension {
+            loc: Some(self.loc.clone()),
             lab: self.property.clone(),
             typ: self.typ.clone(),
             ext: MonoType::Var(f.fresh()),
@@ -1380,7 +1390,9 @@ impl ObjectExpr {
                 (expr.typ.to_owned(), cons)
             }
             None => (
-                MonoType::Obj(Box::new(types::Record::Empty)),
+                MonoType::Obj(Box::new(types::Record::Empty {
+                    loc: Some(self.loc.clone()),
+                })),
                 Constraints::empty(),
             ),
         };
@@ -1390,6 +1402,7 @@ impl ObjectExpr {
             env = e;
             cons = cons + rest;
             r = MonoType::Obj(Box::new(types::Record::Extension {
+                loc: Some(prop.loc.clone()),
                 lab: prop.key.name.clone(),
                 typ: prop.value.type_of(),
                 ext: r,
