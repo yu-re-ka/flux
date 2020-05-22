@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
-	"os"
 
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
@@ -17,7 +16,6 @@ import (
 var SpecialFns map[string]values.Function
 
 func randFloat() values.Function {
-	fmt.Fprintln(os.Stderr, "typoe ", runtime.MustLookupBuiltinType("math", "randFloat"))
 	return values.NewFunction(
 		"randFloat",
 		runtime.MustLookupBuiltinType("math", "randFloat"),
