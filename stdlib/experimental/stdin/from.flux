@@ -1,0 +1,3 @@
+package stdin
+
+builtin from

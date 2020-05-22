@@ -91,6 +91,9 @@ pub fn builtins() -> Builtins<'static> {
             "experimental/prometheus" => semantic_map! {
                 "scrape" => "forall [t0] where t0: Row (url: string) -> [t0]",
             },
+            "experimental/stdin" => semantic_map! {
+                "from" => "forall [] () -> [{_measurement: string | _time: time | t0}]",
+            },
             "experimental" => semantic_map! {
                  "addDuration" => "forall [] (d: duration, to: time) -> time",
                  "chain" => "forall [t0, t1] where t0: Row, t1: Row (first: [t0], second: [t1]) -> [t1]",

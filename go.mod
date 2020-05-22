@@ -19,7 +19,7 @@ require (
 	github.com/google/go-cmp v0.3.0
 	github.com/google/uuid v1.1.1 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
-	github.com/influxdata/line-protocol v0.0.0-20180522152040-32c6aa80de5e
+	github.com/influxdata/line-protocol v0.0.0-20200327222509-2487e7298839
 	github.com/influxdata/pkg-config v0.2.0
 	github.com/influxdata/promql/v2 v2.12.0
 	github.com/influxdata/tdigest v0.0.0-20181121200506-bf2b5ad3c0a9
@@ -42,6 +42,7 @@ require (
 	github.com/sergi/go-diff v1.0.0 // indirect
 	github.com/snowflakedb/gosnowflake v1.3.4
 	github.com/spf13/cobra v0.0.3
+	go.opencensus.io v0.22.0
 	go.uber.org/zap v1.9.1
 	golang.org/x/crypto v0.0.0-20200323165209-0ec3e9974c59 // indirect
 	golang.org/x/exp v0.0.0-20190510132918-efd6b22b2522
