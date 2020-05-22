@@ -42,11 +42,14 @@ require (
 	github.com/sergi/go-diff v1.0.0 // indirect
 	github.com/snowflakedb/gosnowflake v1.3.4
 	github.com/spf13/cobra v0.0.3
+	github.com/spf13/pflag v1.0.5 // indirect
 	go.uber.org/zap v1.9.1
 	golang.org/x/crypto v0.0.0-20200323165209-0ec3e9974c59 // indirect
 	golang.org/x/exp v0.0.0-20190510132918-efd6b22b2522
-	golang.org/x/net v0.0.0-20190620200207-3b0461eec859
+	golang.org/x/net v0.0.0-20191004110552-13f9640d40b9
+	golang.org/x/sys v0.0.0-20191022100944-742c48ecaeb7 // indirect
 	golang.org/x/tools v0.0.0-20191029190741-b9c20aec41a5
 	gonum.org/v1/gonum v0.0.0-20181121035319-3f7ecaa7e8ca
 	google.golang.org/api v0.7.0
+	gopkg.in/yaml.v2 v2.2.8 // indirect
 )

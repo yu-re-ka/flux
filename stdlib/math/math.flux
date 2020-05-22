@@ -82,3 +82,6 @@ builtin trunc
 builtin y0
 builtin y1
 builtin yn
+builtin randFloat
+builtin randInt
+builtin randUint

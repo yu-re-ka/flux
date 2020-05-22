@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"math/rand"
+	"os"
 
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
@@ -13,6 +15,93 @@ import (
 )
 
 var SpecialFns map[string]values.Function
+
+func randFloat() values.Function {
+	fmt.Fprintln(os.Stderr, "typoe ", runtime.MustLookupBuiltinType("math", "randFloat"))
+	return values.NewFunction(
+		"randFloat",
+		runtime.MustLookupBuiltinType("math", "randFloat"),
+		func(ctx context.Context, args values.Object) (values.Value, error) {
+			min, ok := args.Get("min")
+			if !ok {
+				min = values.NewFloat(0.0)
+			}
+			max, ok := args.Get("max")
+			if !ok {
+				max = values.NewFloat(1.0)
+			}
+			if min.Type().Nature() != semantic.Float {
+				return nil, fmt.Errorf("cannot convert argument min of type %v to float", min.Type().Nature())
+			}
+			if max.Type().Nature() != semantic.Float {
+				return nil, fmt.Errorf("cannot convert argument max of type %v to float", max.Type().Nature())
+			}
+			if min.Float() >= max.Float() {
+				return nil, fmt.Errorf("min must be below max")
+			}
+
+			rtn := min.Float() + rand.Float64()*(max.Float()-min.Float())
+			return values.NewFloat(rtn), nil
+		}, false,
+	)
+}
+
+func randInt() values.Function {
+	return values.NewFunction(
+		"randInt",
+		runtime.MustLookupBuiltinType("math", "randInt"),
+		func(ctx context.Context, args values.Object) (values.Value, error) {
+			min, ok := args.Get("min")
+			if !ok {
+				min = values.NewInt(math.MinInt64)
+			}
+			max, ok := args.Get("max")
+			if !ok {
+				max = values.NewInt(math.MaxInt64)
+			}
+			if min.Type().Nature() != semantic.Int {
+				return nil, fmt.Errorf("cannot convert argument min of type %v to int", min.Type().Nature())
+			}
+			if max.Type().Nature() != semantic.Int {
+				return nil, fmt.Errorf("cannot convert argument max of type %v to int", max.Type().Nature())
+			}
+			if min.Int() >= max.Int() {
+				return nil, fmt.Errorf("min must be below max")
+			}
+			rtn := (rand.Int63n(max.Int()-min.Int()) + min.Int())
+			return values.NewInt(rtn), nil
+		}, false,
+	)
+}
+
+func randUint() values.Function {
+	return values.NewFunction(
+		"randUint",
+		runtime.MustLookupBuiltinType("math", "randUint"),
+		func(ctx context.Context, args values.Object) (values.Value, error) {
+			min, ok := args.Get("min")
+			if !ok {
+				min = values.NewUInt(0)
+			}
+			max, ok := args.Get("max")
+			if !ok {
+				max = values.NewUInt(math.MaxUint64)
+			}
+			if min.Type().Nature() != semantic.UInt {
+				return nil, fmt.Errorf("cannot convert argument min of type %v to uint", min.Type().Nature())
+			}
+			if max.Type().Nature() != semantic.UInt {
+				return nil, fmt.Errorf("cannot convert argument max of type %v to uint", max.Type().Nature())
+			}
+			if min.UInt() >= max.UInt() {
+				return nil, fmt.Errorf("min must be below max")
+			}
+
+			rtn := min.UInt() + rand.Uint64()*(max.UInt()-min.UInt())
+			return values.NewUInt(rtn), nil
+		}, false,
+	)
+}
 
 func generateMathFunctionX(name string, mathFn func(float64) float64) values.Function {
 	return values.NewFunction(
@@ -132,6 +221,10 @@ func init() {
 	runtime.RegisterPackageValue("math", "trunc", generateMathFunctionX("trunc", math.Trunc))
 	runtime.RegisterPackageValue("math", "y0", generateMathFunctionX("y0", math.Y0))
 	runtime.RegisterPackageValue("math", "y1", generateMathFunctionX("y1", math.Y1))
+
+	runtime.RegisterPackageValue("math", "randFloat", randFloat())
+	runtime.RegisterPackageValue("math", "randInt", randInt())
+	runtime.RegisterPackageValue("math", "randUint", randUint())
 
 	SpecialFns = map[string]values.Function{
 		// float --> uint

@@ -21,11 +21,11 @@ var pkgAST = &ast.Package{
 			Errors: nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
-					Column: 11,
-					Line:   84,
+					Column: 17,
+					Line:   87,
 				},
 				File:   "math.flux",
-				Source: "package math\n\n// builtin constants\nbuiltin pi\nbuiltin e\nbuiltin phi\nbuiltin sqrt2\nbuiltin sqrte\nbuiltin sqrtpi\nbuiltin sqrtphi\nbuiltin ln2\nbuiltin log2e\nbuiltin ln10\nbuiltin log10e\nbuiltin maxfloat\nbuiltin smallestNonzeroFloat\nbuiltin maxint\nbuiltin minint\nbuiltin maxuint\n\n// builtin functions\nbuiltin abs\nbuiltin acos\nbuiltin acosh\nbuiltin asin\nbuiltin asinh\nbuiltin atan\nbuiltin atan2\nbuiltin atanh\nbuiltin cbrt\nbuiltin ceil\nbuiltin copysign\nbuiltin cos\nbuiltin cosh\nbuiltin dim\nbuiltin erf\nbuiltin erfc\nbuiltin erfcinv\nbuiltin erfinv\nbuiltin exp\nbuiltin exp2\nbuiltin expm1\nbuiltin float64bits\nbuiltin float64frombits\nbuiltin floor\nbuiltin frexp\nbuiltin gamma\nbuiltin hypot\nbuiltin ilogb\nbuiltin mInf\nbuiltin isInf\nbuiltin isNaN\nbuiltin j0\nbuiltin j1\nbuiltin jn\nbuiltin ldexp\nbuiltin lgamma\nbuiltin log\nbuiltin log10\nbuiltin log1p\nbuiltin log2\nbuiltin logb\nbuiltin mMax\nbuiltin mMin\nbuiltin mod\nbuiltin modf\nbuiltin NaN\nbuiltin nextafter\nbuiltin pow\nbuiltin pow10\nbuiltin remainder\nbuiltin round\nbuiltin roundtoeven\nbuiltin signbit\nbuiltin sin\nbuiltin sincos\nbuiltin sinh\nbuiltin sqrt\nbuiltin tan\nbuiltin tanh\nbuiltin trunc\nbuiltin y0\nbuiltin y1\nbuiltin yn",
+				Source: "package math\n\n// builtin constants\nbuiltin pi\nbuiltin e\nbuiltin phi\nbuiltin sqrt2\nbuiltin sqrte\nbuiltin sqrtpi\nbuiltin sqrtphi\nbuiltin ln2\nbuiltin log2e\nbuiltin ln10\nbuiltin log10e\nbuiltin maxfloat\nbuiltin smallestNonzeroFloat\nbuiltin maxint\nbuiltin minint\nbuiltin maxuint\n\n// builtin functions\nbuiltin abs\nbuiltin acos\nbuiltin acosh\nbuiltin asin\nbuiltin asinh\nbuiltin atan\nbuiltin atan2\nbuiltin atanh\nbuiltin cbrt\nbuiltin ceil\nbuiltin copysign\nbuiltin cos\nbuiltin cosh\nbuiltin dim\nbuiltin erf\nbuiltin erfc\nbuiltin erfcinv\nbuiltin erfinv\nbuiltin exp\nbuiltin exp2\nbuiltin expm1\nbuiltin float64bits\nbuiltin float64frombits\nbuiltin floor\nbuiltin frexp\nbuiltin gamma\nbuiltin hypot\nbuiltin ilogb\nbuiltin mInf\nbuiltin isInf\nbuiltin isNaN\nbuiltin j0\nbuiltin j1\nbuiltin jn\nbuiltin ldexp\nbuiltin lgamma\nbuiltin log\nbuiltin log10\nbuiltin log1p\nbuiltin log2\nbuiltin logb\nbuiltin mMax\nbuiltin mMin\nbuiltin mod\nbuiltin modf\nbuiltin NaN\nbuiltin nextafter\nbuiltin pow\nbuiltin pow10\nbuiltin remainder\nbuiltin round\nbuiltin roundtoeven\nbuiltin signbit\nbuiltin sin\nbuiltin sincos\nbuiltin sinh\nbuiltin sqrt\nbuiltin tan\nbuiltin tanh\nbuiltin trunc\nbuiltin y0\nbuiltin y1\nbuiltin yn\nbuiltin randFloat\nbuiltin randInt\nbuiltin randUint",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -2717,6 +2717,108 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "yn",
+			},
+		}, &ast.BuiltinStatement{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 18,
+						Line:   85,
+					},
+					File:   "math.flux",
+					Source: "builtin randFloat",
+					Start: ast.Position{
+						Column: 1,
+						Line:   85,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 18,
+							Line:   85,
+						},
+						File:   "math.flux",
+						Source: "randFloat",
+						Start: ast.Position{
+							Column: 9,
+							Line:   85,
+						},
+					},
+				},
+				Name: "randFloat",
+			},
+		}, &ast.BuiltinStatement{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 16,
+						Line:   86,
+					},
+					File:   "math.flux",
+					Source: "builtin randInt",
+					Start: ast.Position{
+						Column: 1,
+						Line:   86,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 16,
+							Line:   86,
+						},
+						File:   "math.flux",
+						Source: "randInt",
+						Start: ast.Position{
+							Column: 9,
+							Line:   86,
+						},
+					},
+				},
+				Name: "randInt",
+			},
+		}, &ast.BuiltinStatement{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   87,
+					},
+					File:   "math.flux",
+					Source: "builtin randUint",
+					Start: ast.Position{
+						Column: 1,
+						Line:   87,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   87,
+						},
+						File:   "math.flux",
+						Source: "randUint",
+						Start: ast.Position{
+							Column: 9,
+							Line:   87,
+						},
+					},
+				},
+				Name: "randUint",
 			},
 		}},
 		Imports:  nil,
