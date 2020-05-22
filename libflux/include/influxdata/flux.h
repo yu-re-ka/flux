@@ -140,6 +140,11 @@ struct flux_semantic_pkgset_t *flux_semantic_pkgset_new();
 // This will maintain its own reference count to the package.
 struct flux_error_t *flux_semantic_pkgset_add(struct flux_semantic_pkgset_t *pkgset, struct flux_semantic_pkg_t *pkg);
 
+// flux_semantic_pkgset_get will return a package with the given name.
+// If no package with that name exists in the package set, then this
+// will return NULL.
+struct flux_semantic_pkg_t *flux_semantic_pkgset_get(struct flux_semantic_pkgset_t *pkgset, const char *path);
+
 // flux_semantic_pkgset_free will free the memory associated with
 // this package set and any packages contained within.
 void flux_semantic_pkgset_free(struct flux_semantic_pkgset_t *);

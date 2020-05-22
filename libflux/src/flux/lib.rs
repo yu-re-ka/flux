@@ -509,7 +509,7 @@ pub unsafe extern "C" fn flux_get_env_stdlib(buf: *mut flux_buffer_t) {
 
 pub struct Package {
     path: String,
-    pkg: Result<crate::semantic::nodes::Package, Rc<dyn error::Error>>,
+    pkg: Result<Rc<crate::semantic::nodes::Package>, Rc<dyn error::Error>>,
 }
 
 #[no_mangle]
@@ -518,7 +518,7 @@ pub extern "C" fn flux_analyze_package(pkg: &ast::Package) -> Box<Package> {
     Box::new(Package {
         path: pkg.path.clone(),
         pkg: match analyze(ast_pkg) {
-            Ok(sem_pkg) => Ok(sem_pkg),
+            Ok(sem_pkg) => Ok(Rc::new(sem_pkg)),
             Err(e) => Err(Rc::new(e)),
         }
     })
@@ -538,18 +538,22 @@ pub struct PackageSet {
 }
 
 impl PackageSet {
-    fn add(&mut self, pkg: Box<Package>) -> Result<(), Rc<dyn error::Error>> {
+    fn add(&mut self, pkg: &Box<Package>) -> Result<(), Rc<dyn error::Error>> {
         if self.pkgs.contains_key(&pkg.path) {
             return Err(Rc::new(crate::Error::from(format!("conflicting import {}", pkg.path))));
         }
 
         let path = pkg.path.clone();
         let pkg = match pkg.pkg {
-            Ok(pkg) => pkg,
-            Err(e) => return Err(e),
+            Ok(ref pkg) => Rc::clone(pkg),
+            Err(ref e) => return Err(Rc::clone(e)),
         };
-        self.pkgs.insert(path, Rc::new(pkg));
+        self.pkgs.insert(path, pkg);
         Ok(())
+    }
+
+    fn get(&self, path: &str) -> Option<&Rc<crate::semantic::nodes::Package>> {
+        self.pkgs.get(path)
     }
 }
 
@@ -561,13 +565,28 @@ pub extern "C" fn flux_semantic_pkgset_new() -> Box<PackageSet> {
 }
 
 #[no_mangle]
-pub extern "C" fn flux_semantic_pkgset_add(pkgset: &mut PackageSet, pkg: Box<Package>) -> Option<Box<ErrorHandle>> {
+pub extern "C" fn flux_semantic_pkgset_add(pkgset: &mut PackageSet, pkg: &Box<Package>) -> Option<Box<ErrorHandle>> {
     if let Err(e) = pkgset.add(pkg) {
         return Some(Box::new(ErrorHandle {
             err: e,
         }))
     }
     None
+}
+
+#[no_mangle]
+pub extern "C" fn flux_semantic_pkgset_get(pkgset: &PackageSet, cpath: *const c_char) -> Option<Box<Package>> {
+    let path = unsafe {
+        String::from_utf8(CStr::from_ptr(cpath).to_bytes().to_vec()).unwrap()
+    };
+    let pkg = match pkgset.get(&path) {
+        Some(pkg) => Rc::clone(pkg),
+        None => return None,
+    };
+    Some(Box::new(Package {
+        path,
+        pkg: Ok(pkg),
+    }))
 }
 
 #[no_mangle]
