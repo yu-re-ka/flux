@@ -156,6 +156,10 @@ func (r *runtime) Eval(ctx context.Context, astPkg flux.ASTHandle, opts ...flux.
 	return sideEffects, scope, nil
 }
 
+func (r *runtime) NewScopeFor(pkgpath string, imp interpreter.Importer) (values.Scope, error) {
+	return r.newScopeFor(pkgpath, imp)
+}
+
 // newScopeFor constructs a new scope for the given package using the
 // passed in importer.
 func (r *runtime) newScopeFor(pkgpath string, imp interpreter.Importer) (values.Scope, error) {

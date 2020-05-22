@@ -14,14 +14,21 @@ import (
 
 // SemanticPkg is a Rust pointer to a semantic package.
 type SemanticPkg struct {
-	ptr  *C.struct_flux_semantic_pkg_t
-	free func(ptr *C.struct_flux_semantic_pkg_t)
+	ptr       *C.struct_flux_semantic_pkg_t
+	marshalFB func(ptr *C.struct_flux_semantic_pkg_t, buf *C.struct_flux_buffer_t) *C.struct_flux_error_t
+	free      func(ptr *C.struct_flux_semantic_pkg_t)
 }
 
 // MarshalFB serializes the given semantic package into a flatbuffer.
 func (p *SemanticPkg) MarshalFB() ([]byte, error) {
 	var buf C.struct_flux_buffer_t
-	if err := C.flux_semantic_marshal_fb(p.ptr, &buf); err != nil {
+	marshalFB := p.marshalFB
+	if marshalFB == nil {
+		marshalFB = func(ptr *C.struct_flux_semantic_pkg_t, buf *C.struct_flux_buffer_t) *C.struct_flux_error_t {
+			return C.flux_semantic_marshal_fb(p.ptr, buf)
+		}
+	}
+	if err := marshalFB(p.ptr, &buf); err != nil {
 		defer C.flux_free_error(err)
 		cstr := C.flux_error_str(err)
 		defer C.flux_free_bytes(cstr)
@@ -103,6 +110,9 @@ func AnalyzePackage(pkgpath string, astPkg *ASTPkg, imports *SemanticPkgSet) (*S
 	runtime.KeepAlive(imports)
 	p := &SemanticPkg{
 		ptr: semPkg,
+		marshalFB: func(ptr *C.struct_flux_semantic_pkg_t, buf *C.struct_flux_buffer_t) *C.struct_flux_error_t {
+			return C.flux_semantic_pkg_marshal_fb(ptr, buf)
+		},
 		free: func(ptr *C.struct_flux_semantic_pkg_t) {
 			C.flux_semantic_pkg_free(ptr)
 		},
@@ -136,6 +146,27 @@ func (p *SemanticPkgSet) Add(pkg *SemanticPkg) error {
 	runtime.KeepAlive(pkg)
 	runtime.KeepAlive(p)
 	return nil
+}
+
+func (p *SemanticPkgSet) Get(pkgpath string) (*SemanticPkg, bool) {
+	cpkgpath := C.CString(pkgpath)
+	defer C.free(unsafe.Pointer(cpkgpath))
+
+	ptr := C.flux_semantic_pkgset_get(p.ptr, cpkgpath)
+	if ptr == nil {
+		return nil, false
+	}
+	spkg := &SemanticPkg{
+		ptr: ptr,
+		marshalFB: func(ptr *C.struct_flux_semantic_pkg_t, buf *C.struct_flux_buffer_t) *C.struct_flux_error_t {
+			return C.flux_semantic_pkg_marshal_fb(ptr, buf)
+		},
+		free: func(ptr *C.struct_flux_semantic_pkg_t) {
+			C.flux_semantic_pkg_free(ptr)
+		},
+	}
+	runtime.KeepAlive(p)
+	return spkg, true
 }
 
 func (p *SemanticPkgSet) Free() {

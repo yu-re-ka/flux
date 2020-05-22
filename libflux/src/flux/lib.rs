@@ -584,6 +584,34 @@ pub fn analyze_package<T>(
 }
 
 #[no_mangle]
+pub unsafe extern "C" fn flux_semantic_pkg_marshal_fb(
+    sem_pkg: &PackageHandle,
+    buf: *mut flux_buffer_t,
+) -> Option<Box<ErrorHandle>> {
+    let pkg = match &sem_pkg.pkg {
+        Ok(pkg) => &pkg.pkg,
+        Err(e) => return Some(Box::new(ErrorHandle {
+            err: Rc::clone(e),
+        }))
+    };
+    let (mut vec, offset) = match semantic::flatbuffers::serialize(pkg) {
+        Ok(vec_offset) => vec_offset,
+        Err(err) => {
+            let errh = ErrorHandle {
+                err: Rc::new(Error::from(err)),
+            };
+            return Some(Box::new(errh));
+        }
+    };
+
+    // Note, split_off() does a copy: https://github.com/influxdata/flux/issues/2194
+    let data = vec.split_off(offset);
+    (*buf).len = data.len();
+    (*buf).data = Box::into_raw(data.into_boxed_slice()) as *mut u8;
+    None
+}
+
+#[no_mangle]
 pub extern "C" fn flux_semantic_pkg_get_error(pkg: &PackageHandle) -> Option<Box<ErrorHandle>> {
     if let Err(ref e) = pkg.pkg {
         let err = Rc::clone(e);

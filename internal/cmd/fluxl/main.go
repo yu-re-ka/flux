@@ -1,16 +1,23 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/influxdata/flux/ast"
+	_ "github.com/influxdata/flux/builtin"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/libflux/go/libflux"
+	"github.com/influxdata/flux/runtime"
+	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/values"
 	"github.com/spf13/cobra"
 )
 
@@ -87,8 +94,18 @@ func (pl *packageLoader) LoadImportsFor(pkg *libflux.ASTPkg) error {
 	return nil
 }
 
+var prelude = []string{
+	"universe",
+	"influxdata/influxdb",
+}
+
 func (pl *packageLoader) LoadPrelude() error {
-	return pl.LoadImportPath("universe")
+	for _, path := range prelude {
+		if err := pl.LoadImportPath(path); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (pl *packageLoader) LoadMainPackage(fname string) error {
@@ -125,8 +142,111 @@ func (pl *packageLoader) EvalImports() (*libflux.SemanticPkgSet, error) {
 	return pkgset, nil
 }
 
-func (pl *packageLoader) Eval(imports *libflux.SemanticPkgSet) (*libflux.SemanticPkg, error) {
-	return libflux.AnalyzePackage("main", pl.main, imports)
+func (pl *packageLoader) Eval(ctx context.Context, imports *libflux.SemanticPkgSet) ([]interpreter.SideEffect, values.Scope, error) {
+	pkg, err := libflux.AnalyzePackage("main", pl.main, imports)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	data, err := pkg.MarshalFB()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	semPkg, err := semantic.DeserializeFromFlatBuffer(data)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	imp := &importer{imports: imports}
+	scope, err := runtime.Default.NewScopeFor("main", imp)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	itrp := interpreter.NewInterpreter(nil)
+	sideEffects, err := itrp.Eval(ctx, semPkg, scope, imp)
+	if err != nil {
+		return nil, nil, err
+	}
+	return sideEffects, scope, nil
+}
+
+type importer struct {
+	imports *libflux.SemanticPkgSet
+	pkgs    map[string]*interpreter.Package
+}
+
+func (imp *importer) Import(path string) (semantic.MonoType, error) {
+	p, err := imp.ImportPackageObject(path)
+	if err != nil {
+		return semantic.MonoType{}, err
+	}
+	return p.Type(), nil
+}
+
+func (imp *importer) ImportPackageObject(path string) (*interpreter.Package, error) {
+	// If this package has been imported previously, return the import now.
+	if p, ok := imp.pkgs[path]; ok {
+		if p == nil {
+			return nil, errors.Newf(codes.Invalid, "detected cyclical import for package path %q", path)
+		}
+		return p, nil
+	}
+
+	// Mark down that we are currently evaluating this package
+	// so that we can detect a circular import.
+	if imp.pkgs == nil {
+		imp.pkgs = make(map[string]*interpreter.Package)
+	}
+	imp.pkgs[path] = nil
+
+	// If this package is part of the prelude, fill in a fake
+	// empty package to resolve cyclical imports.
+	for _, ppath := range []string{"universe", "influxdata/influxdb"} {
+		if ppath == path {
+			imp.pkgs[path] = interpreter.NewPackage(path)
+			break
+		}
+	}
+
+	// Find the package for the given import path.
+	semPkgHandle, ok := imp.imports.Get(path)
+	if !ok {
+		return nil, errors.Newf(codes.Invalid, "invalid import path %s", path)
+	}
+
+	data, err := semPkgHandle.MarshalFB()
+	if err != nil {
+		return nil, err
+	}
+
+	semPkg, err := semantic.DeserializeFromFlatBuffer(data)
+	if err != nil {
+		return nil, err
+	}
+
+	// Construct the prelude scope from the prelude paths.
+	// If we are importing part of the prelude, we do not
+	// include it as part of the prelude and will stop
+	// including values as soon as we hit the prelude.
+	// This allows us to import all previous paths when loading
+	// the prelude, but avoid a circular import.
+	scope, err := runtime.Default.NewScopeFor(path, imp)
+	if err != nil {
+		return nil, err
+	}
+
+	// Run the interpreter on the package to construct the values
+	// created by the package. Pass in the previously initialized
+	// packages as importable packages as we evaluate these in order.
+	itrp := interpreter.NewInterpreter(nil)
+	if _, err := itrp.Eval(context.Background(), semPkg, scope, imp); err != nil {
+		return nil, err
+	}
+	obj := newObjectFromScope(scope)
+	imp.pkgs[path] = interpreter.NewPackageWithValues(itrp.PackageName(), path, obj)
+	return imp.pkgs[path], nil
 }
 
 // func loadPackage(path string) error {
@@ -159,12 +279,27 @@ func runE(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	mainPkg, err := pl.Eval(imports)
+	sideEffects, scope, err := pl.Eval(context.Background(), imports)
 	if err != nil {
 		return err
 	}
-	mainPkg.Free()
+	fmt.Println(sideEffects)
+	fmt.Println(scope.Return())
 	return nil
+}
+
+func newObjectFromScope(scope values.Scope) values.Object {
+	obj, _ := values.BuildObject(func(set values.ObjectSetter) error {
+		scope.LocalRange(func(k string, v values.Value) {
+			// Packages should not expose the packages they import.
+			if _, ok := v.(values.Package); ok {
+				return
+			}
+			set(k, v)
+		})
+		return nil
+	})
+	return obj
 }
 
 func main() {
