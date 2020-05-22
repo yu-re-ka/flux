@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -19,13 +18,6 @@ var cmd = &cobra.Command{
 	Use:  "flux",
 	Args: cobra.MinimumNArgs(1),
 	RunE: runE,
-}
-
-// func getImports(pkg *libflux.ASTPkg)
-
-type Package struct {
-	main    *libflux.ASTPkg
-	imports []*libflux.ASTPkg
 }
 
 type packageLoader struct {
@@ -113,6 +105,7 @@ func (pl *packageLoader) LoadMainPackage(fname string) error {
 		return err
 	}
 	pl.loadOrder = append(pl.loadOrder, preludeOrder...)
+	pl.main = astPkg
 	return nil
 }
 
@@ -120,7 +113,7 @@ func (pl *packageLoader) EvalImports() (*libflux.SemanticPkgSet, error) {
 	pkgset := libflux.NewSemanticPkgSet()
 	for i := len(pl.loadOrder) - 1; i >= 0; i-- {
 		path := pl.loadOrder[i]
-		pkg, err := libflux.AnalyzePackage(path, pl.imports[path])
+		pkg, err := libflux.AnalyzePackage(path, pl.imports[path], pkgset)
 		if err != nil {
 			return nil, err
 		}
@@ -130,6 +123,10 @@ func (pl *packageLoader) EvalImports() (*libflux.SemanticPkgSet, error) {
 		}
 	}
 	return pkgset, nil
+}
+
+func (pl *packageLoader) Eval(imports *libflux.SemanticPkgSet) (*libflux.SemanticPkg, error) {
+	return libflux.AnalyzePackage("main", pl.main, imports)
 }
 
 // func loadPackage(path string) error {
@@ -153,17 +150,20 @@ func runE(cmd *cobra.Command, args []string) error {
 	if err := pl.LoadPrelude(); err != nil {
 		return err
 	}
-	fmt.Println(pl.loadOrder)
 	if err := pl.LoadMainPackage(args[0]); err != nil {
 		return err
 	}
-	fmt.Println(pl.loadOrder)
 
 	imports, err := pl.EvalImports()
 	if err != nil {
 		return err
 	}
-	imports.Free()
+
+	mainPkg, err := pl.Eval(imports)
+	if err != nil {
+		return err
+	}
+	mainPkg.Free()
 	return nil
 }
 

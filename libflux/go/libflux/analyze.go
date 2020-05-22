@@ -5,7 +5,6 @@ package libflux
 import "C"
 
 import (
-	"fmt"
 	"runtime"
 	"unsafe"
 
@@ -15,7 +14,8 @@ import (
 
 // SemanticPkg is a Rust pointer to a semantic package.
 type SemanticPkg struct {
-	ptr *C.struct_flux_semantic_pkg_t
+	ptr  *C.struct_flux_semantic_pkg_t
+	free func(ptr *C.struct_flux_semantic_pkg_t)
 }
 
 // MarshalFB serializes the given semantic package into a flatbuffer.
@@ -40,7 +40,11 @@ func (p *SemanticPkg) MarshalFB() ([]byte, error) {
 // Free frees the memory allocated by Rust for the semantic graph.
 func (p *SemanticPkg) Free() {
 	if p.ptr != nil {
-		C.flux_free_semantic_pkg(p.ptr)
+		if p.free != nil {
+			p.free(p.ptr)
+		} else {
+			C.flux_free_semantic_pkg(p.ptr)
+		}
 	}
 	p.ptr = nil
 
@@ -75,13 +79,17 @@ func Analyze(astPkg *ASTPkg) (*SemanticPkg, error) {
 	return p, nil
 }
 
-func AnalyzePackage(pkgpath string, astPkg *ASTPkg) (*SemanticPkg, error) {
+func AnalyzePackage(pkgpath string, astPkg *ASTPkg, imports *SemanticPkgSet) (*SemanticPkg, error) {
 	defer func() { astPkg.ptr = nil }()
 
 	cpkgpath := C.CString(pkgpath)
 	defer C.free(unsafe.Pointer(cpkgpath))
 
-	semPkg := C.flux_analyze_package(cpkgpath, astPkg.ptr)
+	var importsPtr *C.struct_flux_semantic_pkgset_t
+	if imports != nil {
+		importsPtr = imports.ptr
+	}
+	semPkg := C.flux_analyze_package(cpkgpath, astPkg.ptr, importsPtr)
 	if err := C.flux_semantic_pkg_get_error(semPkg); err != nil {
 		C.flux_semantic_pkg_free(semPkg)
 		defer C.flux_free_error(err)
@@ -92,7 +100,13 @@ func AnalyzePackage(pkgpath string, astPkg *ASTPkg) (*SemanticPkg, error) {
 		return nil, errors.New(codes.Invalid, str)
 	}
 	runtime.KeepAlive(astPkg)
-	p := &SemanticPkg{ptr: semPkg}
+	runtime.KeepAlive(imports)
+	p := &SemanticPkg{
+		ptr: semPkg,
+		free: func(ptr *C.struct_flux_semantic_pkg_t) {
+			C.flux_semantic_pkg_free(ptr)
+		},
+	}
 	runtime.SetFinalizer(p, free)
 	return p, nil
 }
@@ -111,7 +125,6 @@ func NewSemanticPkgSet() *SemanticPkgSet {
 func (p *SemanticPkgSet) Add(pkg *SemanticPkg) error {
 	defer func() { pkg.ptr = nil }()
 
-	fmt.Println(p.ptr, pkg.ptr)
 	if err := C.flux_semantic_pkgset_add(p.ptr, pkg.ptr); err != nil {
 		defer C.flux_free_error(err)
 		cstr := C.flux_error_str(err)

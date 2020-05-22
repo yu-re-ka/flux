@@ -25,7 +25,7 @@ use std::os::raw::c_char;
 use std::rc::Rc;
 use std::collections::HashMap;
 use core::semantic::types::PolyType;
-use std::str::from_utf8;
+use core::semantic::bootstrap::build_polytype;
 
 pub fn prelude() -> Option<Environment> {
     let buf = include_bytes!(concat!(env!("OUT_DIR"), "/prelude.data"));
@@ -92,23 +92,6 @@ pub unsafe extern "C" fn flux_parse(
 ) -> Box<ast::Package> {
     let fname = String::from_utf8(CStr::from_ptr(cfname).to_bytes().to_vec()).unwrap();
     let src = String::from_utf8(CStr::from_ptr(csrc).to_bytes().to_vec()).unwrap();
-    let mut p = Parser::new(&src);
-    let pkg: ast::Package = p.parse_file(fname).into();
-    Box::new(pkg)
-}
-
-#[no_mangle]
-pub extern "C" fn flux_parse_file(
-    cpkgpath: *const c_char,
-    cfname: *const c_char,
-    csrc: *const c_char,
-) -> Box<ast::Package> {
-    let fname = unsafe {
-        String::from_utf8(CStr::from_ptr(cfname).to_bytes().to_vec()).unwrap()
-    };
-    let src = unsafe {
-        String::from_utf8(CStr::from_ptr(csrc).to_bytes().to_vec()).unwrap()
-    };
     let mut p = Parser::new(&src);
     let pkg: ast::Package = p.parse_file(fname).into();
     Box::new(pkg)
@@ -525,29 +508,83 @@ pub unsafe extern "C" fn flux_get_env_stdlib(buf: *mut flux_buffer_t) {
     buf.data = Box::into_raw(data.into_boxed_slice()) as *mut u8;
 }
 
+pub struct PackageHandle {
+    pkg: Result<Rc<Package>, Rc<dyn error::Error>>,
+}
+
 pub struct Package {
     path: String,
-    pkg: Result<Rc<crate::semantic::nodes::Package>, Rc<dyn error::Error>>,
+    pkg: crate::semantic::nodes::Package,
+    typ: PolyType,
 }
 
 #[no_mangle]
-pub extern "C" fn flux_analyze_package(cpkgpath: *mut c_char, pkg: &ast::Package) -> Box<Package> {
+pub extern "C" fn flux_analyze_package(
+    cpkgpath: *mut c_char,
+    pkg: &ast::Package,
+    imports: Option<&PackageSet>,
+) -> Box<PackageHandle> {
     let pkgpath = unsafe {
         String::from_utf8(CStr::from_ptr(cpkgpath).to_bytes().to_vec()).unwrap()
     };
     let mut ast_pkg = pkg.clone();
     ast_pkg.path = pkgpath.clone();
-    Box::new(Package {
-        path: pkgpath,
-        pkg: match analyze(ast_pkg) {
-            Ok(sem_pkg) => Ok(Rc::new(sem_pkg)),
-            Err(e) => Err(Rc::new(e)),
-        }
+
+    let default_importer = PackageSet { pkgs: HashMap::new() };
+    let importer = match imports {
+        Some(imports) => imports,
+        None => &default_importer,
+    };
+    let (pkg, ptype) = match analyze_package(ast_pkg, importer) {
+        Ok(v) => v,
+        Err(e) => return Box::new(PackageHandle {
+            pkg: Err(Rc::new(e)),
+        })
+    };
+    Box::new(PackageHandle {
+        pkg: Ok(Rc::new(Package{
+            path: pkgpath,
+            pkg,
+            typ: ptype,
+        })),
     })
 }
 
+/// analyze_package consumes the given AST package and returns a semantic package
+/// that has been type-inferred.  This function is aware of the standard library
+/// and prelude.
+pub fn analyze_package<T>(
+    ast_pkg: ast::Package,
+    importer: &T,
+) -> Result<(core::semantic::nodes::Package, PolyType), core::Error>
+    where T: Importer
+{
+    // First check to see if there are any errors in the AST.
+    let errs = ast::check::check(ast::walk::Node::Package(&ast_pkg));
+    if !errs.is_empty() {
+        return Err(core::Error::from(format!("{}", &errs[0])));
+    }
+
+    let pkgpath = ast_pkg.path.clone();
+    let mut f = fresher();
+    let mut sem_pkg = core::semantic::convert::convert_with(ast_pkg, &mut f)?;
+
+    check::check(&sem_pkg)?;
+
+    let prelude = match prelude() {
+        Some(prelude) => Environment::new(prelude),
+        None => return Err(core::Error::from("missing prelude")),
+    };
+    let builtin_importer = builtins().importer_for(&pkgpath, &mut f);
+    let (env, sub) = infer_pkg_types(&mut sem_pkg, prelude, &mut f, importer, &builtin_importer)?;
+    sem_pkg = inject_pkg_types(sem_pkg, &sub);
+
+    let ptype = build_polytype(env.values, &mut f).unwrap();
+    Ok((sem_pkg, ptype))
+}
+
 #[no_mangle]
-pub extern "C" fn flux_semantic_pkg_get_error(pkg: &Package) -> Option<Box<ErrorHandle>> {
+pub extern "C" fn flux_semantic_pkg_get_error(pkg: &PackageHandle) -> Option<Box<ErrorHandle>> {
     if let Err(ref e) = pkg.pkg {
         let err = Rc::clone(e);
         return Some(Box::new(ErrorHandle { err }))
@@ -556,29 +593,34 @@ pub extern "C" fn flux_semantic_pkg_get_error(pkg: &Package) -> Option<Box<Error
 }
 
 #[no_mangle]
-pub extern "C" fn flux_semantic_pkg_free(_: Option<Box<Package>>) {}
+pub extern "C" fn flux_semantic_pkg_free(_: Option<Box<PackageHandle>>) {}
 
 pub struct PackageSet {
-    pkgs: HashMap<String, Rc<crate::semantic::nodes::Package>>,
+    pkgs: HashMap<String, Rc<Package>>,
 }
 
 impl PackageSet {
-    fn add(&mut self, pkg: &Package) -> Result<(), Rc<dyn error::Error>> {
+    fn add(&mut self, pkg: &Rc<Package>) -> Result<(), Rc<dyn error::Error>> {
         if self.pkgs.contains_key(&pkg.path) {
             return Err(Rc::new(crate::Error::from(format!("conflicting import {}", pkg.path))));
         }
 
         let path = pkg.path.clone();
-        let pkg = match pkg.pkg {
-            Ok(ref pkg) => Rc::clone(pkg),
-            Err(ref e) => return Err(Rc::clone(e)),
-        };
-        self.pkgs.insert(path, pkg);
+        self.pkgs.insert(path, Rc::clone(pkg));
         Ok(())
     }
 
-    fn get(&self, path: &str) -> Option<&Rc<crate::semantic::nodes::Package>> {
+    fn get(&self, path: &str) -> Option<&Rc<Package>> {
         self.pkgs.get(path)
+    }
+}
+
+impl Importer for PackageSet {
+    fn import(&self, name: &str) -> Option<PolyType> {
+        match self.pkgs.get(name) {
+            Some(pkg) => Some(pkg.typ.clone()),
+            None => None,
+        }
     }
 }
 
@@ -590,17 +632,20 @@ pub extern "C" fn flux_semantic_pkgset_new() -> Box<PackageSet> {
 }
 
 #[no_mangle]
-pub extern "C" fn flux_semantic_pkgset_add(pkgset: &mut PackageSet, pkg: &Package) -> Option<Box<ErrorHandle>> {
-    if let Err(e) = pkgset.add(pkg) {
+pub extern "C" fn flux_semantic_pkgset_add(pkgset: &mut PackageSet, pkg: &PackageHandle) -> Option<Box<ErrorHandle>> {
+    if let Err(e) = match &pkg.pkg {
+        Ok(pkg) => pkgset.add(pkg),
+        Err(e) => Err(Rc::clone(e)),
+    } {
         return Some(Box::new(ErrorHandle {
             err: e,
-        }))
+        }));
     }
     None
 }
 
 #[no_mangle]
-pub extern "C" fn flux_semantic_pkgset_get(pkgset: &PackageSet, cpath: *const c_char) -> Option<Box<Package>> {
+pub extern "C" fn flux_semantic_pkgset_get(pkgset: &PackageSet, cpath: *const c_char) -> Option<Box<PackageHandle>> {
     let path = unsafe {
         String::from_utf8(CStr::from_ptr(cpath).to_bytes().to_vec()).unwrap()
     };
@@ -608,8 +653,7 @@ pub extern "C" fn flux_semantic_pkgset_get(pkgset: &PackageSet, cpath: *const c_
         Some(pkg) => Rc::clone(pkg),
         None => return None,
     };
-    Some(Box::new(Package {
-        path,
+    Some(Box::new(PackageHandle {
         pkg: Ok(pkg),
     }))
 }
