@@ -74,6 +74,63 @@ func Analyze(astPkg *ASTPkg) (*SemanticPkg, error) {
 	return p, nil
 }
 
+func AnalyzePackage(astPkg *ASTPkg) (*SemanticPkg, error) {
+	defer func() { astPkg.ptr = nil }()
+
+	semPkg := C.flux_analyze_package(astPkg.ptr)
+	if err := C.flux_semantic_pkg_get_error(semPkg); err != nil {
+		C.flux_free_semantic_pkg(semPkg)
+		defer C.flux_free_error(err)
+		cstr := C.flux_error_str(err)
+		defer C.flux_free_bytes(cstr)
+
+		str := C.GoString(cstr)
+		return nil, errors.New(codes.Invalid, str)
+	}
+	runtime.KeepAlive(astPkg)
+	p := &SemanticPkg{ptr: semPkg}
+	runtime.SetFinalizer(p, free)
+	return p, nil
+}
+
+type SemanticPkgSet struct {
+	ptr *C.struct_flux_semantic_pkgset_t
+}
+
+func NewSemanticPkgSet() *SemanticPkgSet {
+	ptr := C.flux_semantic_pkgset_new()
+	p := &SemanticPkgSet{ptr: ptr}
+	runtime.SetFinalizer(p, free)
+	return p
+}
+
+func (p *SemanticPkgSet) Add(pkg *SemanticPkg) error {
+	defer func() { pkg.ptr = nil }()
+
+	if err := C.flux_semantic_pkgset_add(p.ptr, pkg.ptr); err != nil {
+		defer C.flux_free_error(err)
+		cstr := C.flux_error_str(err)
+		defer C.flux_free_bytes(cstr)
+
+		str := C.GoString(cstr)
+		return errors.New(codes.Invalid, str)
+	}
+	runtime.KeepAlive(pkg)
+	runtime.KeepAlive(p)
+	return nil
+}
+
+func (p *SemanticPkgSet) Free() {
+	if p.ptr != nil {
+		C.flux_semantic_pkgset_free(p.ptr)
+	}
+	p.ptr = nil
+
+	// See the equivalent method in ASTPkg for why
+	// this is needed.
+	runtime.KeepAlive(p)
+}
+
 type Analyzer struct {
 	ptr *C.struct_flux_semantic_analyzer_t
 }
