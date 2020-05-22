@@ -66,7 +66,7 @@ func randInt() values.Function {
 			if min.Int() >= max.Int() {
 				return nil, fmt.Errorf("min must be below max")
 			}
-			rtn := (rand.Int63n(max.Int()-min.Int()) + min.Int())
+			rtn := min.Int() + rand.Int63()*(max.Int()-min.Int())
 			return values.NewInt(rtn), nil
 		}, false,
 	)
