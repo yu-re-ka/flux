@@ -51,7 +51,7 @@ func randInt() values.Function {
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			min, ok := args.Get("min")
 			if !ok {
-				min = values.NewInt(math.MinInt64)
+				min = values.NewInt(0)
 			}
 			max, ok := args.Get("max")
 			if !ok {
