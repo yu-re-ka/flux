@@ -22,6 +22,9 @@ pub use core::*;
 use std::error;
 use std::ffi::*;
 use std::os::raw::c_char;
+use std::rc::Rc;
+use std::collections::HashMap;
+use core::semantic::types::PolyType;
 
 pub fn prelude() -> Option<Environment> {
     let buf = include_bytes!(concat!(env!("OUT_DIR"), "/prelude.data"));
@@ -42,7 +45,7 @@ pub fn fresher() -> Fresher {
 /// consumers across language boundaries.
 pub struct ErrorHandle {
     /// A heap-allocated `Error`
-    pub err: Box<dyn error::Error>,
+    pub err: Rc<dyn error::Error>,
 }
 
 /// Frees a previously allocated error.
@@ -106,7 +109,7 @@ pub unsafe extern "C" fn flux_ast_get_error(
     let mut errs = ast::check::check(ast_pkg);
     if !errs.is_empty() {
         let err = Vec::remove(&mut errs, 0);
-        Some(Box::new(ErrorHandle { err: Box::new(err) }))
+        Some(Box::new(ErrorHandle { err: Rc::new(err) }))
     } else {
         None
     }
@@ -138,7 +141,7 @@ pub unsafe extern "C" fn flux_parse_json(
             None
         }
         Err(err) => {
-            let errh = ErrorHandle { err: Box::new(err) };
+            let errh = ErrorHandle { err: Rc::new(err) };
             Some(Box::new(errh))
         }
     }
@@ -158,7 +161,7 @@ pub unsafe extern "C" fn flux_ast_marshal_json(
     let data = match serde_json::to_vec(ast_pkg) {
         Ok(v) => v,
         Err(err) => {
-            let errh = ErrorHandle { err: Box::new(err) };
+            let errh = ErrorHandle { err: Rc::new(err) };
             return Some(Box::new(errh));
         }
     };
@@ -185,7 +188,7 @@ pub unsafe extern "C" fn flux_ast_marshal_fb(
         Ok(vec_offset) => vec_offset,
         Err(err) => {
             let errh = ErrorHandle {
-                err: Box::new(Error::from(err)),
+                err: Rc::new(Error::from(err)),
             };
             return Some(Box::new(errh));
         }
@@ -220,7 +223,7 @@ pub unsafe extern "C" fn flux_semantic_marshal_fb(
         Ok(vec_offset) => vec_offset,
         Err(err) => {
             let errh = ErrorHandle {
-                err: Box::new(Error::from(err)),
+                err: Rc::new(Error::from(err)),
             };
             return Some(Box::new(errh));
         }
@@ -240,8 +243,7 @@ pub unsafe extern "C" fn flux_semantic_marshal_fb(
 /// This function is unsafe because it dereferences a raw pointer passed as a
 /// parameter
 #[no_mangle]
-pub unsafe extern "C" fn flux_error_str(errh: *const ErrorHandle) -> CString {
-    let errh = &*errh;
+pub extern "C" fn flux_error_str(errh: &ErrorHandle) -> CString {
     CString::new(format!("{}", errh.err)).unwrap()
 }
 
@@ -264,7 +266,7 @@ pub unsafe extern "C" fn flux_merge_ast_pkgs(
     match merge_packages(out_pkg, in_pkg) {
         None => None,
         Some(err) => {
-            let err_handle = ErrorHandle { err: Box::new(err) };
+            let err_handle = ErrorHandle { err: Rc::new(err) };
             Some(Box::new(err_handle))
         }
     }
@@ -326,7 +328,7 @@ pub unsafe extern "C" fn flux_analyze(
             None
         }
         Err(err) => {
-            let errh = ErrorHandle { err: Box::new(err) };
+            let errh = ErrorHandle { err: Rc::new(err) };
             Some(Box::new(errh))
         }
     }
@@ -438,7 +440,7 @@ pub unsafe extern "C" fn flux_analyze_with(
         Ok(a) => a,
         Err(err) => {
             let errh = ErrorHandle {
-                err: Box::new(err.to_owned()),
+                err: Rc::new(err.to_owned()),
             };
             return Some(Box::new(errh));
         }
@@ -447,7 +449,7 @@ pub unsafe extern "C" fn flux_analyze_with(
     let sem_pkg = Box::new(match analyzer.analyze(ast_pkg) {
         Ok(sem_pkg) => sem_pkg,
         Err(err) => {
-            let errh = ErrorHandle { err: Box::new(err) };
+            let errh = ErrorHandle { err: Rc::new(err) };
             return Some(Box::new(errh));
         }
     });
@@ -504,6 +506,72 @@ pub unsafe extern "C" fn flux_get_env_stdlib(buf: *mut flux_buffer_t) {
     buf.len = data.len();
     buf.data = Box::into_raw(data.into_boxed_slice()) as *mut u8;
 }
+
+pub struct Package {
+    path: String,
+    pkg: Result<crate::semantic::nodes::Package, Rc<dyn error::Error>>,
+}
+
+#[no_mangle]
+pub extern "C" fn flux_analyze_package(pkg: &ast::Package) -> Box<Package> {
+    let ast_pkg = pkg.clone();
+    Box::new(Package {
+        path: pkg.path.clone(),
+        pkg: match analyze(ast_pkg) {
+            Ok(sem_pkg) => Ok(sem_pkg),
+            Err(e) => Err(Rc::new(e)),
+        }
+    })
+}
+
+#[no_mangle]
+pub extern "C" fn flux_semantic_pkg_get_error(pkg: &Package) -> Option<Box<ErrorHandle>> {
+    if let Err(ref e) = pkg.pkg {
+        let err = Rc::clone(e);
+        return Some(Box::new(ErrorHandle { err }))
+    }
+    None
+}
+
+pub struct PackageSet {
+    pkgs: HashMap<String, Rc<crate::semantic::nodes::Package>>,
+}
+
+impl PackageSet {
+    fn add(&mut self, pkg: Box<Package>) -> Result<(), Rc<dyn error::Error>> {
+        if self.pkgs.contains_key(&pkg.path) {
+            return Err(Rc::new(crate::Error::from(format!("conflicting import {}", pkg.path))));
+        }
+
+        let path = pkg.path.clone();
+        let pkg = match pkg.pkg {
+            Ok(pkg) => pkg,
+            Err(e) => return Err(e),
+        };
+        self.pkgs.insert(path, Rc::new(pkg));
+        Ok(())
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn flux_semantic_pkgset_new() -> Box<PackageSet> {
+    return Box::new(PackageSet {
+        pkgs: HashMap::new(),
+    });
+}
+
+#[no_mangle]
+pub extern "C" fn flux_semantic_pkgset_add(pkgset: &mut PackageSet, pkg: Box<Package>) -> Option<Box<ErrorHandle>> {
+    if let Err(e) = pkgset.add(pkg) {
+        return Some(Box::new(ErrorHandle {
+            err: e,
+        }))
+    }
+    None
+}
+
+#[no_mangle]
+pub extern "C" fn flux_semantic_pkgset_free(_: Option<Box<PackageSet>>) {}
 
 #[cfg(test)]
 mod tests {

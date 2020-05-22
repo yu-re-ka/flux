@@ -123,6 +123,27 @@ void flux_free_semantic_pkg(struct flux_semantic_pkg_t*);
 // using flux_free_error if it is non-null.
 struct flux_error_t *flux_semantic_marshal_fb(struct flux_semantic_pkg_t *, struct flux_buffer_t *);
 
+// flux_analyze_package will analyze the ast package and produce a semantic package.
+struct flux_semantic_pkg_t *flux_analyze_package(struct flux_ast_pkg_t *);
+
+// flux_semantic_pkg_get_error retrieves any errors that happened when
+// analyzing the semantic package.
+struct flux_error_t *flux_semantic_pkg_get_error(struct flux_semantic_pkg_t *);
+
+// flux_semantic_pkgset_t is a set of packages that may be used as imports.
+struct flux_semantic_pkgset_t;
+
+// flux_semantic_pkgset_new will construct a new flux_semantic_pkgset_t.
+struct flux_semantic_pkgset_t *flux_semantic_pkgset_new();
+
+// flux_semantic_pkgset_add will add a package to the package set.
+// This will maintain its own reference count to the package.
+struct flux_error_t *flux_semantic_pkgset_add(struct flux_semantic_pkgset_t *pkgset, struct flux_semantic_pkg_t *pkg);
+
+// flux_semantic_pkgset_free will free the memory associated with
+// this package set and any packages contained within.
+void flux_semantic_pkgset_free(struct flux_semantic_pkgset_t *);
+
 #ifdef __cplusplus
 }
 #endif
