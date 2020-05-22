@@ -66,7 +66,7 @@ func randInt() values.Function {
 			if min.Int() >= max.Int() {
 				return nil, fmt.Errorf("min must be below max")
 			}
-			rtn := min.Int() + rand.Int63()*(max.Int()-min.Int())
+			rtn := min.Int() + int64(rand.Float64()*float64(max.Int()-min.Int()))
 			return values.NewInt(rtn), nil
 		}, false,
 	)
@@ -95,7 +95,7 @@ func randUint() values.Function {
 				return nil, fmt.Errorf("min must be below max")
 			}
 
-			rtn := min.UInt() + rand.Uint64()*(max.UInt()-min.UInt())
+			rtn := min.UInt() + uint64(rand.Float64()*float64(max.UInt()-min.UInt()))
 			return values.NewUInt(rtn), nil
 		}, false,
 	)
