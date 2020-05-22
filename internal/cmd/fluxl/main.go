@@ -116,6 +116,22 @@ func (pl *packageLoader) LoadMainPackage(fname string) error {
 	return nil
 }
 
+func (pl *packageLoader) EvalImports() (*libflux.SemanticPkgSet, error) {
+	pkgset := libflux.NewSemanticPkgSet()
+	for i := len(pl.loadOrder) - 1; i >= 0; i-- {
+		path := pl.loadOrder[i]
+		pkg, err := libflux.AnalyzePackage(path, pl.imports[path])
+		if err != nil {
+			return nil, err
+		}
+
+		if err := pkgset.Add(pkg); err != nil {
+			return nil, err
+		}
+	}
+	return pkgset, nil
+}
+
 // func loadPackage(path string) error {
 // 	dirpath := filepath.Join("stdlib", path)
 // }
@@ -142,6 +158,12 @@ func runE(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	fmt.Println(pl.loadOrder)
+
+	imports, err := pl.EvalImports()
+	if err != nil {
+		return err
+	}
+	imports.Free()
 	return nil
 }
 

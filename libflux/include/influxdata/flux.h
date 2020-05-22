@@ -124,11 +124,13 @@ void flux_free_semantic_pkg(struct flux_semantic_pkg_t*);
 struct flux_error_t *flux_semantic_marshal_fb(struct flux_semantic_pkg_t *, struct flux_buffer_t *);
 
 // flux_analyze_package will analyze the ast package and produce a semantic package.
-struct flux_semantic_pkg_t *flux_analyze_package(struct flux_ast_pkg_t *);
+struct flux_semantic_pkg_t *flux_analyze_package(const char *, struct flux_ast_pkg_t *);
 
 // flux_semantic_pkg_get_error retrieves any errors that happened when
 // analyzing the semantic package.
 struct flux_error_t *flux_semantic_pkg_get_error(struct flux_semantic_pkg_t *);
+
+void flux_semantic_pkg_free(struct flux_semantic_pkg_t *);
 
 // flux_semantic_pkgset_t is a set of packages that may be used as imports.
 struct flux_semantic_pkgset_t;

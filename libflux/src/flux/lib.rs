@@ -25,6 +25,7 @@ use std::os::raw::c_char;
 use std::rc::Rc;
 use std::collections::HashMap;
 use core::semantic::types::PolyType;
+use std::str::from_utf8;
 
 pub fn prelude() -> Option<Environment> {
     let buf = include_bytes!(concat!(env!("OUT_DIR"), "/prelude.data"));
@@ -91,6 +92,23 @@ pub unsafe extern "C" fn flux_parse(
 ) -> Box<ast::Package> {
     let fname = String::from_utf8(CStr::from_ptr(cfname).to_bytes().to_vec()).unwrap();
     let src = String::from_utf8(CStr::from_ptr(csrc).to_bytes().to_vec()).unwrap();
+    let mut p = Parser::new(&src);
+    let pkg: ast::Package = p.parse_file(fname).into();
+    Box::new(pkg)
+}
+
+#[no_mangle]
+pub extern "C" fn flux_parse_file(
+    cpkgpath: *const c_char,
+    cfname: *const c_char,
+    csrc: *const c_char,
+) -> Box<ast::Package> {
+    let fname = unsafe {
+        String::from_utf8(CStr::from_ptr(cfname).to_bytes().to_vec()).unwrap()
+    };
+    let src = unsafe {
+        String::from_utf8(CStr::from_ptr(csrc).to_bytes().to_vec()).unwrap()
+    };
     let mut p = Parser::new(&src);
     let pkg: ast::Package = p.parse_file(fname).into();
     Box::new(pkg)
@@ -513,10 +531,14 @@ pub struct Package {
 }
 
 #[no_mangle]
-pub extern "C" fn flux_analyze_package(pkg: &ast::Package) -> Box<Package> {
-    let ast_pkg = pkg.clone();
+pub extern "C" fn flux_analyze_package(cpkgpath: *mut c_char, pkg: &ast::Package) -> Box<Package> {
+    let pkgpath = unsafe {
+        String::from_utf8(CStr::from_ptr(cpkgpath).to_bytes().to_vec()).unwrap()
+    };
+    let mut ast_pkg = pkg.clone();
+    ast_pkg.path = pkgpath.clone();
     Box::new(Package {
-        path: pkg.path.clone(),
+        path: pkgpath,
         pkg: match analyze(ast_pkg) {
             Ok(sem_pkg) => Ok(Rc::new(sem_pkg)),
             Err(e) => Err(Rc::new(e)),
@@ -533,12 +555,15 @@ pub extern "C" fn flux_semantic_pkg_get_error(pkg: &Package) -> Option<Box<Error
     None
 }
 
+#[no_mangle]
+pub extern "C" fn flux_semantic_pkg_free(_: Option<Box<Package>>) {}
+
 pub struct PackageSet {
     pkgs: HashMap<String, Rc<crate::semantic::nodes::Package>>,
 }
 
 impl PackageSet {
-    fn add(&mut self, pkg: &Box<Package>) -> Result<(), Rc<dyn error::Error>> {
+    fn add(&mut self, pkg: &Package) -> Result<(), Rc<dyn error::Error>> {
         if self.pkgs.contains_key(&pkg.path) {
             return Err(Rc::new(crate::Error::from(format!("conflicting import {}", pkg.path))));
         }
@@ -565,7 +590,7 @@ pub extern "C" fn flux_semantic_pkgset_new() -> Box<PackageSet> {
 }
 
 #[no_mangle]
-pub extern "C" fn flux_semantic_pkgset_add(pkgset: &mut PackageSet, pkg: &Box<Package>) -> Option<Box<ErrorHandle>> {
+pub extern "C" fn flux_semantic_pkgset_add(pkgset: &mut PackageSet, pkg: &Package) -> Option<Box<ErrorHandle>> {
     if let Err(e) = pkgset.add(pkg) {
         return Some(Box::new(ErrorHandle {
             err: e,

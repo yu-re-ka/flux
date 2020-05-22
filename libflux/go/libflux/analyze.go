@@ -5,6 +5,7 @@ package libflux
 import "C"
 
 import (
+	"fmt"
 	"runtime"
 	"unsafe"
 
@@ -74,12 +75,15 @@ func Analyze(astPkg *ASTPkg) (*SemanticPkg, error) {
 	return p, nil
 }
 
-func AnalyzePackage(astPkg *ASTPkg) (*SemanticPkg, error) {
+func AnalyzePackage(pkgpath string, astPkg *ASTPkg) (*SemanticPkg, error) {
 	defer func() { astPkg.ptr = nil }()
 
-	semPkg := C.flux_analyze_package(astPkg.ptr)
+	cpkgpath := C.CString(pkgpath)
+	defer C.free(unsafe.Pointer(cpkgpath))
+
+	semPkg := C.flux_analyze_package(cpkgpath, astPkg.ptr)
 	if err := C.flux_semantic_pkg_get_error(semPkg); err != nil {
-		C.flux_free_semantic_pkg(semPkg)
+		C.flux_semantic_pkg_free(semPkg)
 		defer C.flux_free_error(err)
 		cstr := C.flux_error_str(err)
 		defer C.flux_free_bytes(cstr)
@@ -107,6 +111,7 @@ func NewSemanticPkgSet() *SemanticPkgSet {
 func (p *SemanticPkgSet) Add(pkg *SemanticPkg) error {
 	defer func() { pkg.ptr = nil }()
 
+	fmt.Println(p.ptr, pkg.ptr)
 	if err := C.flux_semantic_pkgset_add(p.ptr, pkg.ptr); err != nil {
 		defer C.flux_free_error(err)
 		cstr := C.flux_error_str(err)
