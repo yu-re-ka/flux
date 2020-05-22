@@ -2,6 +2,7 @@ package stdin
 
 import (
 	"context"
+	"fmt"
 	"github.com/influxdata/flux/values"
 
 	"os"
@@ -94,24 +95,37 @@ func (s *StdinSource) AddTransformation(t execute.Transformation) {
 }
 
 func (s *StdinSource) Run(ctx context.Context) {
-	table, err := s.processResults()
+	var err error
+	var table flux.Table
+	for {
+		fmt.Println("hello friends!! LOOP!!")
 
-	err = s.ts.Process(s.id, table)
-	// end of stream
-	if err == lp.EOF {
-		s.ts.Finish(s.id, nil)
+		table, err = s.processResults()
+		// end of stream
+		if err == lp.EOF {
+			err = nil
+			s.ts.Finish(s.id, err)
+			break
+		}
+		if err != nil {
+			fmt.Println(err)
+			break
+		}
+
+		err = s.ts.Process(s.id, table)
+		if err != nil {
+			fmt.Println(err)
+			break
+		}
 	}
-	if err != nil {
-		s.ts.Finish(s.id, err)
-	}
-	s.ts.Finish(s.id, nil)
+	s.ts.Finish(s.id, err)
 }
 
 func (s *StdinSource) processResults() (table flux.Table, err error) {
 	met, err := s.par.Next()
 
 	if err == lp.EOF {
-		// return
+		return nil, nil
 	}
 
 	if err != nil {
@@ -120,7 +134,6 @@ func (s *StdinSource) processResults() (table flux.Table, err error) {
 
 	groupKey := execute.NewGroupKeyBuilder(nil)
 	groupKey.AddKeyValue("_measurement", values.New(met.Name()))
-	//groupKey.AddKeyValue("_field", values.New(met.Field))
 
 	gk, err := groupKey.Build()
 	if err != nil {
@@ -179,20 +192,16 @@ func (s *StdinSource) processResults() (table flux.Table, err error) {
 		})
 	}
 
-	//time
 	builder.AppendTime(0, values.ConvertTime(met.Time()))
 
-	//name
 	builder.AppendValue(1, values.New(met.Name()))
-
 
 	for i, tag := range tagList {
 		if tag == nil {
 			continue
 		}
-		builder.AppendValue(i+2, values.New(tag.Value))
+		builder.AppendValue(i + 2, values.New(tag.Value))
 	}
-
 
 	for i, field := range fieldList {
 		if field == nil {
