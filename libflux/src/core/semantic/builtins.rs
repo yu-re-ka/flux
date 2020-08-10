@@ -33,10 +33,10 @@ pub fn builtins() -> Builtins<'static> {
             "csv" => semantic_map! {
                 // This is a "provide exactly one argument" function
                 // https://github.com/influxdata/flux/issues/2249
-                "from" => "forall [t0] where t0: Row (?csv: string, ?file: string) -> [t0]",
+                "from" => "forall [A] where t0: Row (?csv: string, ?file: string) -> [t0]",
             },
             "date" => semantic_map! {
-                 "second" => "forall [t0] where t0 : Timeable (t: t0) -> int",
+                 "second" => "(t: T) => int where T: Timeable",
                  "minute" => "forall [t0] where t0 : Timeable (t: t0) -> int",
                  "hour" => "forall [t0] where t0 : Timeable (t: t0) -> int",
                  "weekDay" => "forall [t0] where t0 : Timeable (t: t0) -> int",
