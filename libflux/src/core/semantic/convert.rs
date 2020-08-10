@@ -235,7 +235,7 @@ fn convert_monotype(
 }
 
 #[allow(unused)]
-fn convert_polytype(
+pub fn convert_polytype(
     type_expression: ast::TypeExpression,
     f: &mut Fresher,
 ) -> Result<types::PolyType> {

@@ -33,7 +33,7 @@ pub fn builtins() -> Builtins<'static> {
             "csv" => semantic_map! {
                 // This is a "provide exactly one argument" function
                 // https://github.com/influxdata/flux/issues/2249
-                "from" => "forall [A] where t0: Row (?csv: string, ?file: string) -> [t0]",
+                "from" => "(?csv: string, ?file: string) => [A] where A: Row",
             },
             "date" => semantic_map! {
                  "second" => "(t: T) => int where T: Timeable",
@@ -442,12 +442,12 @@ pub fn builtins() -> Builtins<'static> {
                     ) -> [t1]
                 "#,
                 "difference" => r#"
-                    forall [t0, t1] where t0: Row, t1: Row (
-                        <-tables: [t0],
+                   (
+                        <-tables: [T],
                         ?nonNegative: bool,
                         ?columns: [string],
                         ?keepFirst: bool
-                    ) -> [t1]
+                    ) -> [R] where T: Row, R: Row
                 "#,
                 "distinct" => r#"
                     forall [t0, t1] where t0: Row, t1: Row (
@@ -462,6 +462,7 @@ pub fn builtins() -> Builtins<'static> {
                         ?columns: [string]
                     ) -> [t1]
                 "#,
+                // BREAK
                 "duplicate" => r#"
                     forall [t0, t1] where t0: Row, t1: Row (
                         <-tables: [t0],
@@ -898,13 +899,16 @@ pub fn builtins() -> Builtins<'static> {
 #[cfg(test)]
 mod test {
     use crate::semantic::builtins::builtins;
-    use crate::semantic::parser as type_parser;
-
+    use crate::parser;
+    use crate::semantic::convert::convert_polytype;
+    use crate::semantic::fresh::Fresher;
     #[test]
     fn parse_builtin_types() {
         for (path, values) in builtins().iter() {
             for (name, expr) in values {
-                match type_parser::parse(expr) {
+                let mut p = parser::Parser::new(expr);
+                let expr = convert_polytype(p.parse_type_expression(), &mut Fresher::default());
+                match expr {
                     Ok(_) => {}
                     Err(s) => {
                         let msg = format!("{}.{} type failed to parse: {}", path, name, s);
