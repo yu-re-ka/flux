@@ -1,0 +1,18 @@
+include 'flux.lm'
+
+parse Flux: file [stdin]
+if !Flux {
+	print "[error]
+	exit(1)
+}
+
+
+for SL: statement* in Flux {
+	if match SL ["inData = " string_lit Rest: statement*]
+		SL = Rest
+
+	if match SL ["outData = " string_lit Rest: statement*]
+		SL = Rest
+}
+
+print [Flux.statement_list]

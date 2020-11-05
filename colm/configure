@@ -89,7 +89,7 @@ MAKEFILES="
 	Makefile.in
 	parseflux/Makefile.in
 	influxql/Makefile.in
-	tableflux/Makefile.in
+	everything/Makefile.in
 "
 
 #
