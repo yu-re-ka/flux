@@ -23,8 +23,9 @@ import (
 )
 
 const (
-	FluxCompilerType = "flux"
-	ASTCompilerType  = "ast"
+	FluxCompilerType   = "flux"
+	ASTCompilerType    = "ast"
+	ToBytecodeCompilerType = "tobc"
 )
 
 // AddCompilerMappings adds the Flux specific compiler mappings.
@@ -37,6 +38,12 @@ func AddCompilerMappings(mappings flux.CompilerMappings) error {
 	}
 	if err := mappings.Add(ASTCompilerType, func() flux.Compiler {
 		return new(ASTCompiler)
+
+	}); err != nil {
+		return err
+	}
+	if err := mappings.Add(ToBytecodeCompilerType, func() flux.Compiler {
+		return new(ToBytecodeCompiler)
 
 	}); err != nil {
 		return err
@@ -579,3 +586,180 @@ func getOptionValues(pkg values.Object, optionName string) ([]string, error) {
 	})
 	return rs, nil
 }
+
+type ToBytecodeCompiler struct {
+	Now    time.Time
+	Extern json.RawMessage `json:"extern,omitempty"`
+	Query  string          `json:"query"`
+}
+
+// func Compile(q string, runtime flux.Runtime, now time.Time, opts ...CompileOption) (*AstProgram, error) {
+// func CompileAST(astPkg flux.ASTHandle, runtime flux.Runtime, now time.Time, opts ...CompileOption) *AstProgram {
+
+func (c ToBytecodeCompiler) Compile(ctx context.Context, runtime flux.Runtime) (flux.Program, error) {
+	println("-> to bytecode compiler Compile()")
+	query := c.Query
+
+	q := query
+	now := c.Now
+
+	astPkg, err := runtime.Parse(q)
+	if err != nil {
+		return nil, err
+	}
+
+	return &BytecodeAstProgram{
+		Program: &Program{
+			Runtime: runtime,
+			opts:    nil, // applyOptions(opts...),
+		},
+		Ast: astPkg,
+		Now: now,
+	}, nil
+}
+
+func (c ToBytecodeCompiler) CompilerType() flux.CompilerType {
+	return ToBytecodeCompilerType
+}
+
+type BytecodeAstProgram struct {
+	*Program
+
+	Ast flux.ASTHandle
+	Now time.Time
+	// A list of profilers that are profiling this query
+	Profilers []execute.Profiler
+	// The operator profiler that is profiling this query, if any.
+	// Note this operator profiler is also cached in the Profilers array.
+	tfProfiler *execute.OperatorProfiler
+}
+
+func (p *BytecodeAstProgram) Start(ctx context.Context, alloc *memory.Allocator) (flux.Query, error) {
+	// The program must inject execution dependencies to make it available to
+	// function calls during the evaluation phase (see `tableFind`).
+	deps := execute.NewExecutionDependencies(alloc, &p.Now, p.Logger)
+	ctx = deps.Inject(ctx)
+	nextPlanNodeID := new(int)
+	ctx = context.WithValue(ctx, plan.NextPlanNodeIDKey, nextPlanNodeID)
+
+	// Evaluation.
+	sp, scope, err := p.getSpec(ctx, alloc)
+	if err != nil {
+		return nil, err
+	}
+
+	// Planning.
+	s, cctx := opentracing.StartSpanFromContext(ctx, "plan")
+	if p.opts.verbose {
+		log.Println("Query Spec: ", flux.Formatted(sp, flux.FmtJSON))
+	}
+	if err := p.updateOpts(scope); err != nil {
+		return nil, errors.Wrap(err, codes.Inherit, "error in reading options while starting program")
+	}
+	if err := p.updateProfilers(ctx, scope); err != nil {
+		return nil, errors.Wrap(err, codes.Inherit, "error in reading profiler settings while starting program")
+	}
+	ps, err := buildPlan(cctx, sp, p.opts)
+	if err != nil {
+		return nil, errors.Wrap(err, codes.Inherit, "error in building plan while starting program")
+	}
+	p.PlanSpec = ps
+	s.Finish()
+
+	// Execution.
+	s, cctx = opentracing.StartSpanFromContext(ctx, "start-program")
+	defer s.Finish()
+	return p.Program.Start(cctx, alloc)
+}
+
+func (p *BytecodeAstProgram) getSpec(ctx context.Context, alloc *memory.Allocator) (*flux.Spec, values.Scope, error) {
+	ast, astErr := p.GetAst()
+	if astErr != nil {
+		return nil, nil, astErr
+	}
+
+	s, cctx := opentracing.StartSpanFromContext(ctx, "eval")
+
+	// Set the now option to our own default and capture the option itself
+	// to allow us to find it after the run. A user might overwrite the
+	// now parameter with their own thing so we don't want to allow for
+	// that interference. If `option now` is used to overwrite this,
+	// the inner value pointed to by the option will be modified.
+	// TODO(jsternberg): Personal note, I don't like how now interacts with
+	// the runtime and flux code in so many places. We should evaluate how
+	// now is used and see if we can improve how now interacts with the system.
+	var nowOpt values.Value
+	sideEffects, scope, err := p.Runtime.Eval(cctx, ast, &ExecOptsConfig{},
+		flux.SetNowOption(p.Now),
+		func(r flux.Runtime, scope values.Scope) {
+			nowOpt, _ = scope.Lookup(interpreter.NowOption)
+			if _, ok := nowOpt.(*values.Option); !ok {
+				panic("now must be an option")
+			}
+		},
+	)
+	if err != nil {
+		return nil, nil, err
+	}
+	s.Finish()
+
+	s, cctx = opentracing.StartSpanFromContext(ctx, "compile")
+	defer s.Finish()
+	nowTime, err := nowOpt.Function().Call(ctx, nil)
+	if err != nil {
+		return nil, nil, errors.Wrap(err, codes.Inherit, "error in evaluating AST while starting program")
+	}
+	p.Now = nowTime.Time().Time()
+	sp, err := spec.FromEvaluation(cctx, sideEffects, p.Now)
+	if err != nil {
+		return nil, nil, errors.Wrap(err, codes.Inherit, "error in query specification while starting program")
+	}
+	return sp, scope, nil
+}
+
+func (p *BytecodeAstProgram) updateOpts(scope values.Scope) error {
+	pkg, ok := getPackageFromScope("planner", scope)
+	if !ok {
+		return nil
+	}
+	lo, po, err := getPlanOptions(pkg)
+	if err != nil {
+		return err
+	}
+	if lo != nil {
+		p.opts.planOptions.logical = append(p.opts.planOptions.logical, lo)
+	}
+	if po != nil {
+		p.opts.planOptions.physical = append(p.opts.planOptions.physical, po)
+	}
+	return nil
+}
+
+func (p *BytecodeAstProgram) updateProfilers(ctx context.Context, scope values.Scope) error {
+	if execute.HaveExecutionDependencies(ctx) {
+		deps := execute.GetExecutionDependencies(ctx)
+		p.tfProfiler = deps.ExecutionOptions.OperatorProfiler
+		p.Profilers = deps.ExecutionOptions.Profilers
+	}
+	return nil
+}
+
+// Prepare the Ast for semantic analysis
+func (p *BytecodeAstProgram) GetAst() (flux.ASTHandle, error) {
+	if p.Now.IsZero() {
+		p.Now = time.Now()
+	}
+	if p.opts == nil {
+		p.opts = defaultOptions()
+	}
+	if p.opts.extern != nil {
+		extern := p.opts.extern
+		if err := p.Runtime.MergePackages(extern, p.Ast); err != nil {
+			return nil, err
+		}
+		p.Ast = extern
+		p.opts.extern = nil
+	}
+	return p.Ast, nil
+}
+
