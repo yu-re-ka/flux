@@ -251,6 +251,15 @@ func processMessage(ctx context.Context, t Transformation, m Message) (finished 
 	case FinishMsg:
 		t.Finish(m.SrcDatasetID(), m.Error())
 		finished = true
+	default:
+		// If the message type is one defined by an extension,
+		// pass it directly to the ProcessMessage method
+		// if that is defined on the transformation.
+		if t, ok := t.(interface {
+			ProcessMessage(m Message) error
+		}); ok {
+			err = t.ProcessMessage(m)
+		}
 	}
 	return
 }
