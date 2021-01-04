@@ -625,6 +625,13 @@ type BytecodeProgram struct {
 	opts *compileOptions
 }
 
+// Program implements the flux.Program interface.
+// It will execute a compiled plan using an executor.
+type BytecodeTableObjectProgram struct {
+	Tables *flux.TableObject
+	Now    time.Time
+}
+
 func (c ToBytecodeCompiler) Compile(ctx context.Context, runtime flux.Runtime) (flux.Program, error) {
 	println("-> to bytecode compiler Compile()")
 	query := c.Query
@@ -652,30 +659,15 @@ func (c ToBytecodeCompiler) CompilerType() flux.CompilerType {
 }
 
 func (c *BytecodeTableObjectCompiler) Compile(ctx context.Context) (flux.Program, error) {
-	to := c.Tables
-	now := c.Now
-
-	o := applyOptions()
-	s, err := spec.FromTableObject(ctx, to, now)
-	if err != nil {
-		return nil, err
-	}
-	if o.verbose {
-		log.Println("Query Spec: ", flux.Formatted(s, flux.FmtJSON))
-	}
-	ps, err := buildPlan(ctx, s, o)
-	if err != nil {
-		return nil, err
-	}
-	return &Program{
-		PlanSpec: ps,
+	return &BytecodeTableObjectProgram{
+		Tables: c.Tables,
+		Now: c.Now,
 	}, nil
 }
 
 func (*BytecodeTableObjectCompiler) CompilerType() flux.CompilerType {
 	panic("TableObjectCompiler is not associated with a CompilerType")
 }
-
 
 func (p *BytecodeAstProgram) Start(ctx context.Context, alloc *memory.Allocator) (flux.Query, error) {
 	// The program must inject execution dependencies to make it available to
@@ -919,3 +911,29 @@ func (p *BytecodeProgram) readMetadata(q *query, metaCh <-chan metadata.Metadata
 		q.stats.Metadata.AddAll(md)
 	}
 }
+
+func (c *BytecodeTableObjectProgram) Start(ctx context.Context, alloc *memory.Allocator) (flux.Query, error) {
+	to := c.Tables
+	now := c.Now
+
+	o := applyOptions()
+	s, err := spec.FromTableObject(ctx, to, now)
+	if err != nil {
+		return nil, err
+	}
+	if o.verbose {
+		log.Println("Query Spec: ", flux.Formatted(s, flux.FmtJSON))
+	}
+	ps, err := buildPlan(ctx, s, o)
+	if err != nil {
+		return nil, err
+	}
+
+
+	np := &Program{
+		PlanSpec: ps,
+	}
+
+	return np.Start(ctx, alloc)
+}
+
