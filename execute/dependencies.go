@@ -33,6 +33,9 @@ type ExecutionDependencies struct {
 	Metadata metadata.Metadata
 
 	ExecutionOptions *ExecutionOptions
+
+	// Bytecode based execution
+	BytecodeExecution bool
 }
 
 func (d ExecutionDependencies) Inject(ctx context.Context) context.Context {

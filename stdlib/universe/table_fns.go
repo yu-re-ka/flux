@@ -84,6 +84,10 @@ func tableFind(ctx context.Context, to *flux.TableObject, fn *execute.TablePredi
 
 	deps := execute.GetExecutionDependencies(ctx)
 
+	if deps.BytecodeExecution {
+		return tableFindBytecode(ctx, to, fn)
+	}
+
 	c := lang.TableObjectCompiler{
 		Tables: to,
 		Now:    *deps.Now,
@@ -444,4 +448,76 @@ func findRecordCall(ctx context.Context, args values.Object) (values.Value, erro
 func emptyObject() values.Object {
 	vsMap := make(map[string]values.Value)
 	return values.NewObjectWithValues(vsMap)
+}
+
+func tableFindBytecode(ctx context.Context, to *flux.TableObject, fn *execute.TablePredicateFn) (*objects.Table, error) {
+	println("-> tableFind bytecode based execution")
+	if !execute.HaveExecutionDependencies(ctx) {
+		return nil, errors.New(codes.Internal, "no execution context for tableFind to use")
+	}
+
+	deps := execute.GetExecutionDependencies(ctx)
+
+	c := lang.BytecodeTableObjectCompiler{
+		Tables: to,
+		Now:    *deps.Now,
+	}
+
+	p, err := c.Compile(ctx)
+	if err != nil {
+		return nil, errors.Wrap(err, codes.Inherit, "error in table object compilation")
+	}
+
+	if p, ok := p.(lang.LoggingProgram); ok {
+		p.SetLogger(deps.Logger)
+	}
+
+	q, err := p.Start(ctx, deps.Allocator)
+	if err != nil {
+		return nil, errors.Wrap(err, codes.Inherit, "error in table object start")
+	}
+
+	var t *objects.Table
+	var found bool
+	for res := range q.Results() {
+		if err := res.Tables().Do(func(tbl flux.Table) error {
+			defer tbl.Done()
+			if found {
+				// the result is filled, you can skip other tables
+				return nil
+			}
+
+			preparedFn, err := fn.Prepare(tbl)
+			if err != nil {
+				return err
+			}
+
+			found, err = preparedFn.Eval(ctx, tbl)
+			if err != nil {
+				return errors.Wrap(err, codes.Inherit, "failed to evaluate group key predicate function")
+			}
+
+			if found {
+				t, err = objects.NewTable(tbl)
+				if err != nil {
+					return err
+				}
+			} else {
+				// TODO(jsternberg): Remove the Do call when Done
+				// is implemented for all table types.
+				_ = tbl.Do(func(flux.ColReader) error { return nil })
+			}
+			return nil
+		}); err != nil {
+			return nil, err
+		}
+	}
+
+	deps.Metadata.Add("flux/query-plan",
+		fmt.Sprintf("%v", plan.Formatted(p.(*lang.Program).PlanSpec, plan.WithDetails())))
+
+	if !found {
+		return nil, nil
+	}
+	return t, err
 }

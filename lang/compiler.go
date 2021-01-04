@@ -464,6 +464,8 @@ func (p *AstProgram) getSpec(ctx context.Context, alloc *memory.Allocator) (*flu
 	if err != nil {
 		return nil, nil, errors.Wrap(err, codes.Inherit, "error in evaluating AST while starting program")
 	}
+
+	// Side Effects to a Spec
 	p.Now = nowTime.Time().Time()
 	sp, err := spec.FromEvaluation(cctx, sideEffects, p.Now)
 	if err != nil {
@@ -593,8 +595,35 @@ type ToBytecodeCompiler struct {
 	Query  string          `json:"query"`
 }
 
-// func Compile(q string, runtime flux.Runtime, now time.Time, opts ...CompileOption) (*AstProgram, error) {
-// func CompileAST(astPkg flux.ASTHandle, runtime flux.Runtime, now time.Time, opts ...CompileOption) *AstProgram {
+// TableObjectCompiler compiles a TableObject into an executable flux.Program.
+// It is not added to CompilerMappings and it is not serializable, because
+// it is impossible to use it outside of the context of an ongoing execution.
+type BytecodeTableObjectCompiler struct {
+	Tables *flux.TableObject
+	Now    time.Time
+}
+
+type BytecodeAstProgram struct {
+	*BytecodeProgram
+
+	Ast flux.ASTHandle
+	Now time.Time
+	// A list of profilers that are profiling this query
+	Profilers []execute.Profiler
+	// The operator profiler that is profiling this query, if any.
+	// Note this operator profiler is also cached in the Profilers array.
+	tfProfiler *execute.OperatorProfiler
+}
+
+// Program implements the flux.Program interface.
+// It will execute a compiled plan using an executor.
+type BytecodeProgram struct {
+	Logger   *zap.Logger
+	PlanSpec *plan.Spec
+	Runtime  flux.Runtime
+
+	opts *compileOptions
+}
 
 func (c ToBytecodeCompiler) Compile(ctx context.Context, runtime flux.Runtime) (flux.Program, error) {
 	println("-> to bytecode compiler Compile()")
@@ -609,7 +638,7 @@ func (c ToBytecodeCompiler) Compile(ctx context.Context, runtime flux.Runtime) (
 	}
 
 	return &BytecodeAstProgram{
-		Program: &Program{
+		BytecodeProgram: &BytecodeProgram{
 			Runtime: runtime,
 			opts:    nil, // applyOptions(opts...),
 		},
@@ -622,34 +651,85 @@ func (c ToBytecodeCompiler) CompilerType() flux.CompilerType {
 	return ToBytecodeCompilerType
 }
 
-type BytecodeAstProgram struct {
-	*Program
+func (c *BytecodeTableObjectCompiler) Compile(ctx context.Context) (flux.Program, error) {
+	to := c.Tables
+	now := c.Now
 
-	Ast flux.ASTHandle
-	Now time.Time
-	// A list of profilers that are profiling this query
-	Profilers []execute.Profiler
-	// The operator profiler that is profiling this query, if any.
-	// Note this operator profiler is also cached in the Profilers array.
-	tfProfiler *execute.OperatorProfiler
+	o := applyOptions()
+	s, err := spec.FromTableObject(ctx, to, now)
+	if err != nil {
+		return nil, err
+	}
+	if o.verbose {
+		log.Println("Query Spec: ", flux.Formatted(s, flux.FmtJSON))
+	}
+	ps, err := buildPlan(ctx, s, o)
+	if err != nil {
+		return nil, err
+	}
+	return &Program{
+		PlanSpec: ps,
+	}, nil
 }
+
+func (*BytecodeTableObjectCompiler) CompilerType() flux.CompilerType {
+	panic("TableObjectCompiler is not associated with a CompilerType")
+}
+
 
 func (p *BytecodeAstProgram) Start(ctx context.Context, alloc *memory.Allocator) (flux.Query, error) {
 	// The program must inject execution dependencies to make it available to
 	// function calls during the evaluation phase (see `tableFind`).
 	deps := execute.NewExecutionDependencies(alloc, &p.Now, p.Logger)
+	deps.BytecodeExecution = true
 	ctx = deps.Inject(ctx)
+
 	nextPlanNodeID := new(int)
 	ctx = context.WithValue(ctx, plan.NextPlanNodeIDKey, nextPlanNodeID)
 
-	// Evaluation.
-	sp, scope, err := p.getSpec(ctx, alloc)
+	ast, astErr := p.GetAst()
+	if astErr != nil {
+		return nil, astErr
+	}
+
+	// Runtime evaluation: AST -> side effects
+	var sideEffects []interpreter.SideEffect
+	var scope values.Scope
+	var nowOpt values.Value
+	var err error
+
+	// Set the now option to our own default and capture the option itself
+	// to allow us to find it after the run.
+	sideEffects, scope, err = p.Runtime.Eval(ctx, ast, &ExecOptsConfig{},
+		flux.SetNowOption(p.Now),
+		func(r flux.Runtime, scope values.Scope) {
+			nowOpt, _ = scope.Lookup(interpreter.NowOption)
+			if _, ok := nowOpt.(*values.Option); !ok {
+				panic("now must be an option")
+			}
+		},
+	)
 	if err != nil {
 		return nil, err
 	}
 
-	// Planning.
-	s, cctx := opentracing.StartSpanFromContext(ctx, "plan")
+	nowTime, err := nowOpt.Function().Call(ctx, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, codes.Inherit, "error in evaluating AST while starting program")
+	}
+
+	// Producing flux spec: side effects -> *flux.Spec
+	var sp *flux.Spec
+
+	p.Now = nowTime.Time().Time()
+	sp, err = spec.FromEvaluation(ctx, sideEffects, p.Now)
+	if err != nil {
+		return nil, errors.Wrap(err, codes.Inherit, "error in query specification while starting program")
+	}
+
+	// Planning: *flux.Spec -> plan.Spec
+	var ps *plan.Spec
+
 	if p.opts.verbose {
 		log.Println("Query Spec: ", flux.Formatted(sp, flux.FmtJSON))
 	}
@@ -659,17 +739,26 @@ func (p *BytecodeAstProgram) Start(ctx context.Context, alloc *memory.Allocator)
 	if err := p.updateProfilers(ctx, scope); err != nil {
 		return nil, errors.Wrap(err, codes.Inherit, "error in reading profiler settings while starting program")
 	}
-	ps, err := buildPlan(cctx, sp, p.opts)
+
+	pb := plan.PlannerBuilder{}
+	planOptions := p.opts.planOptions
+	lopts := planOptions.logical
+	popts := planOptions.physical
+
+	pb.AddLogicalOptions(lopts...)
+	pb.AddPhysicalOptions(popts...)
+
+	ps, err = pb.Build().Plan(ctx, sp)
 	if err != nil {
 		return nil, errors.Wrap(err, codes.Inherit, "error in building plan while starting program")
 	}
-	p.PlanSpec = ps
-	s.Finish()
 
-	// Execution.
-	s, cctx = opentracing.StartSpanFromContext(ctx, "start-program")
-	defer s.Finish()
-	return p.Program.Start(cctx, alloc)
+	p.PlanSpec = ps
+
+	// Execution: planned spec -> results
+	res, err := p.BytecodeProgram.Start(ctx, alloc)
+
+	return res, err
 }
 
 func (p *BytecodeAstProgram) getSpec(ctx context.Context, alloc *memory.Allocator) (*flux.Spec, values.Scope, error) {
@@ -763,3 +852,70 @@ func (p *BytecodeAstProgram) GetAst() (flux.ASTHandle, error) {
 	return p.Ast, nil
 }
 
+func (p *BytecodeProgram) SetLogger(logger *zap.Logger) {
+	p.Logger = logger
+}
+
+func (p *BytecodeProgram) Start(ctx context.Context, alloc *memory.Allocator) (flux.Query, error) {
+	ctx, cancel := context.WithCancel(ctx)
+
+	// This span gets closed by the query when it is done.
+	s, cctx := opentracing.StartSpanFromContext(ctx, "execute")
+	results := make(chan flux.Result)
+	q := &query{
+		results: results,
+		alloc:   alloc,
+		span:    s,
+		cancel:  cancel,
+		stats: flux.Statistics{
+			Metadata: make(metadata.Metadata),
+		},
+	}
+
+	if execute.HaveExecutionDependencies(ctx) {
+		deps := execute.GetExecutionDependencies(ctx)
+		q.stats.Metadata.AddAll(deps.Metadata)
+	}
+
+	q.stats.Metadata.Add("flux/query-plan",
+		fmt.Sprintf("%v", plan.Formatted(p.PlanSpec, plan.WithDetails())))
+
+	// Execute
+	e := execute.NewExecutor(p.Logger)
+	resultMap, md, err := e.Execute(cctx, p.PlanSpec, q.alloc)
+	if err != nil {
+		s.Finish()
+		return nil, err
+	}
+
+	// There was no error so send the results downstream.
+	q.wg.Add(1)
+	go p.processResults(cctx, q, resultMap)
+
+	// Begin reading from the metadata channel.
+	q.wg.Add(1)
+	go p.readMetadata(q, md)
+
+	return q, nil
+}
+
+func (p *BytecodeProgram) processResults(ctx context.Context, q *query, resultMap map[string]flux.Result) {
+	defer q.wg.Done()
+	defer close(q.results)
+
+	for _, res := range resultMap {
+		select {
+		case q.results <- res:
+		case <-ctx.Done():
+			q.err = ctx.Err()
+			return
+		}
+	}
+}
+
+func (p *BytecodeProgram) readMetadata(q *query, metaCh <-chan metadata.Metadata) {
+	defer q.wg.Done()
+	for md := range metaCh {
+		q.stats.Metadata.AddAll(md)
+	}
+}
