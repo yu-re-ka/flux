@@ -258,9 +258,25 @@ func (t *consecutiveTransport) processMessage(ctx context.Context, m Message) (f
 	return finished, nil
 }
 
+// Message is a message sent from one Dataset to another.
 type Message interface {
+	// Type returns the MessageType for this Message.
 	Type() MessageType
+
+	// SrcDatasetID is the DatasetID that produced this Message.
 	SrcDatasetID() DatasetID
+
+	// Ack is used to acknowledge that the Message was received
+	// and terminated. A Message may be passed between various
+	// Transport implementations. When the Ack is received,
+	// this signals to the Message to release any memory it may
+	// have retained.
+	Ack()
+
+	// Dup is used to duplicate the Message.
+	// This is useful when the Message has to be sent to multiple
+	// receivers from a single sender.
+	Dup() Message
 }
 
 type MessageType int
@@ -296,6 +312,7 @@ type srcMessage DatasetID
 func (m srcMessage) SrcDatasetID() DatasetID {
 	return DatasetID(m)
 }
+func (m srcMessage) Ack() {}
 
 type RetractTableMsg interface {
 	Message
@@ -312,6 +329,9 @@ func (m *retractTableMsg) Type() MessageType {
 }
 func (m *retractTableMsg) Key() flux.GroupKey {
 	return m.key
+}
+func (m *retractTableMsg) Dup() Message {
+	return m
 }
 
 type ProcessMsg interface {
@@ -330,6 +350,17 @@ func (m *processMsg) Type() MessageType {
 func (m *processMsg) Table() flux.Table {
 	return m.table
 }
+func (m *processMsg) Ack() {
+	m.table.Done()
+}
+func (m *processMsg) Dup() Message {
+	cpy, _ := table.Copy(m.table)
+	m.table = cpy.Copy()
+
+	dup := *m
+	dup.table = cpy
+	return &dup
+}
 
 type UpdateWatermarkMsg interface {
 	Message
@@ -346,6 +377,9 @@ func (m *updateWatermarkMsg) Type() MessageType {
 }
 func (m *updateWatermarkMsg) WatermarkTime() Time {
 	return m.time
+}
+func (m *updateWatermarkMsg) Dup() Message {
+	return m
 }
 
 type UpdateProcessingTimeMsg interface {
@@ -364,6 +398,9 @@ func (m *updateProcessingTimeMsg) Type() MessageType {
 func (m *updateProcessingTimeMsg) ProcessingTime() Time {
 	return m.time
 }
+func (m *updateProcessingTimeMsg) Dup() Message {
+	return m
+}
 
 type FinishMsg interface {
 	Message
@@ -380,6 +417,9 @@ func (m *finishMsg) Type() MessageType {
 }
 func (m *finishMsg) Error() error {
 	return m.err
+}
+func (m *finishMsg) Dup() Message {
+	return m
 }
 
 type ProcessViewMsg interface {
@@ -429,16 +469,28 @@ func (t *transformationTransportAdapter) ProcessMessage(m Message) error {
 	case RetractTableMsg:
 		return t.t.RetractTable(m.SrcDatasetID(), m.Key())
 	case ProcessMsg:
-		b := m.Table()
-		return t.t.Process(m.SrcDatasetID(), b)
+		return t.t.Process(m.SrcDatasetID(), m.Table())
 	case UpdateWatermarkMsg:
 		return t.t.UpdateWatermark(m.SrcDatasetID(), m.WatermarkTime())
 	case UpdateProcessingTimeMsg:
 		return t.t.UpdateProcessingTime(m.SrcDatasetID(), m.ProcessingTime())
 	case FinishMsg:
+		// If there are pending buffers that were never flushed,
+		// do that here.
+		if err := t.cache.ForEach(func(key flux.GroupKey, builder table.Builder) error {
+			table, err := builder.Table()
+			if err != nil {
+				return err
+			}
+			return t.t.Process(m.SrcDatasetID(), table)
+		}); err != nil {
+			return err
+		}
 		t.t.Finish(m.SrcDatasetID(), m.Error())
 		return nil
 	case ProcessViewMsg:
+		defer m.Ack()
+
 		// Retrieve the buffered builder and append the
 		// table view to it. The view is implemented using
 		// arrow.TableBuffer which is compatible with
@@ -447,6 +499,8 @@ func (t *transformationTransportAdapter) ProcessMessage(m Message) error {
 		buffer := m.View().Buffer()
 		return b.AppendBuffer(&buffer)
 	case FlushKeyMsg:
+		defer m.Ack()
+
 		// Retrieve the buffered builder for the given key
 		// and send the data to the next transformation.
 		tbl, err := t.cache.Table(m.Key())
@@ -457,6 +511,7 @@ func (t *transformationTransportAdapter) ProcessMessage(m Message) error {
 		return t.t.Process(m.SrcDatasetID(), tbl)
 	default:
 		// Message is not handled by older Transformation implementations.
+		m.Ack()
 		return nil
 	}
 }

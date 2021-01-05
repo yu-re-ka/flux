@@ -15,6 +15,24 @@ type View struct {
 	buf arrow.TableBuffer
 }
 
+// ViewFromBuffer will create a View from the TableBuffer.
+func ViewFromBuffer(buf arrow.TableBuffer) View {
+	return View{buf: buf}
+}
+
+// ViewFromReader will create a View from the ColReader.
+func ViewFromReader(cr flux.ColReader) View {
+	buf := arrow.TableBuffer{
+		GroupKey: cr.Key(),
+		Columns:  cr.Cols(),
+		Values:   make([]array.Interface, len(cr.Cols())),
+	}
+	for j := range buf.Values {
+		buf.Values[j] = Values(cr, j)
+	}
+	return ViewFromBuffer(buf)
+}
+
 // Key returns the columns which are common for each row this view.
 func (v View) Key() flux.GroupKey {
 	return v.buf.Key()
@@ -37,9 +55,29 @@ func (v View) Len() int {
 	return v.buf.Len()
 }
 
+// Cols returns the columns as a slice.
+func (v View) Cols() []flux.ColMeta {
+	return v.buf.Columns
+}
+
 // Col returns the metadata associated with the column.
 func (v View) Col(j int) flux.ColMeta {
 	return v.buf.Columns[j]
+}
+
+// Index returns the index of the column with the given name.
+func (v View) Index(label string) int {
+	for j, c := range v.buf.Columns {
+		if c.Label == label {
+			return j
+		}
+	}
+	return -1
+}
+
+// HasCol returns whether a column with the given name exists.
+func (v View) HasCol(label string) bool {
+	return v.Index(label) >= 0
 }
 
 // Values returns the array of values in this View.
@@ -49,6 +87,12 @@ func (v View) Values(j int) array.Interface {
 	values := v.buf.Values[j]
 	values.Retain()
 	return values
+}
+
+// Borrow returns the array of values in this View.
+// It will not increase the reference count of the array.
+func (v View) Borrow(j int) array.Interface {
+	return v.buf.Values[j]
 }
 
 // Retain will retain a reference to this View.
@@ -80,5 +124,11 @@ func (v *View) AddColumn(label string, typ flux.ColType, values array.Interface)
 		Label: label,
 		Type:  typ,
 	})
+
+	// If we were given a nil set for values, create a builder
+	// and a default column for this row.
+	if values == nil {
+		values = arrow.Empty(typ)
+	}
 	v.buf.Values = append(v.buf.Values, values)
 }

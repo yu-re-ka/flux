@@ -11,6 +11,7 @@ type srcMessage execute.DatasetID
 func (m srcMessage) SrcDatasetID() DatasetID {
 	return DatasetID(m)
 }
+func (m srcMessage) Ack() {}
 
 type finishMsg struct {
 	srcMessage
@@ -22,6 +23,9 @@ func (m *finishMsg) Type() execute.MessageType {
 }
 func (m *finishMsg) Error() error {
 	return m.err
+}
+func (m *finishMsg) Dup() execute.Message {
+	return m
 }
 
 type processViewMsg struct {
@@ -35,6 +39,13 @@ func (m *processViewMsg) Type() execute.MessageType {
 func (m *processViewMsg) View() table.View {
 	return m.view
 }
+func (m *processViewMsg) Ack() {
+	m.view.Release()
+}
+func (m *processViewMsg) Dup() execute.Message {
+	m.view.Retain()
+	return m
+}
 
 type flushKeyMsg struct {
 	srcMessage
@@ -46,6 +57,9 @@ func (m *flushKeyMsg) Type() execute.MessageType {
 }
 func (m *flushKeyMsg) Key() flux.GroupKey {
 	return m.key
+}
+func (m *flushKeyMsg) Dup() execute.Message {
+	return m
 }
 
 type watermarkKeyMsg struct {
@@ -66,4 +80,7 @@ func (m *watermarkKeyMsg) Time() int64 {
 }
 func (m *watermarkKeyMsg) Key() flux.GroupKey {
 	return m.key
+}
+func (m *watermarkKeyMsg) Dup() execute.Message {
+	return m
 }

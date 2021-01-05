@@ -15,9 +15,8 @@ type NarrowTransformation interface {
 }
 
 type narrowTransformation struct {
-	t     NarrowTransformation
-	d     *Dataset
-	label string
+	t NarrowTransformation
+	d *Dataset
 }
 
 // NewNarrowTransformation constructs a Transformation and Dataset
@@ -32,6 +31,8 @@ func NewNarrowTransformation(id DatasetID, t NarrowTransformation, mem memory.Al
 
 // ProcessMessage will process the incoming message.
 func (n *narrowTransformation) ProcessMessage(m execute.Message) error {
+	defer m.Ack()
+
 	switch m := m.(type) {
 	case execute.FinishMsg:
 		n.Finish(m.SrcDatasetID(), m.Error())
@@ -51,7 +52,23 @@ func (n *narrowTransformation) ProcessMessage(m execute.Message) error {
 // Process is implemented to remain compatible with legacy upstreams.
 // It converts the incoming stream into a set of appropriate messages.
 func (n *narrowTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
-	panic("implement me")
+	if err := tbl.Do(func(cr flux.ColReader) error {
+		view := table.ViewFromReader(cr)
+		view.Retain()
+		m := processViewMsg{
+			srcMessage: srcMessage(id),
+			view:       view,
+		}
+		return n.ProcessMessage(&m)
+	}); err != nil {
+		return err
+	}
+
+	m := flushKeyMsg{
+		srcMessage: srcMessage(id),
+		key:        tbl.Key(),
+	}
+	return n.ProcessMessage(&m)
 }
 
 // Finish is implemented to remain compatible with legacy upstreams.
@@ -71,10 +88,4 @@ func (n *narrowTransformation) UpdateWatermark(id execute.DatasetID, t execute.T
 }
 func (n *narrowTransformation) UpdateProcessingTime(id execute.DatasetID, t execute.Time) error {
 	return nil
-}
-func (n *narrowTransformation) SetLabel(label string) {
-	n.label = label
-}
-func (n *narrowTransformation) Label() string {
-	return n.label
 }

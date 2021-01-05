@@ -45,8 +45,13 @@ func (d *Dataset) AddTransformation(t execute.Transformation) {
 }
 
 func (d *Dataset) sendMessage(m execute.Message) error {
+	if len(d.ts) == 1 {
+		return d.ts[0].ProcessMessage(m)
+	}
+
+	defer m.Ack()
 	for _, t := range d.ts {
-		if err := t.ProcessMessage(m); err != nil {
+		if err := t.ProcessMessage(m.Dup()); err != nil {
 			return err
 		}
 	}
@@ -89,5 +94,10 @@ func (d *Dataset) UpdateWatermarkForKey(key flux.GroupKey, column string, t exec
 func (d *Dataset) RetractTable(key flux.GroupKey) error      { return nil }
 func (d *Dataset) UpdateProcessingTime(t execute.Time) error { return nil }
 func (d *Dataset) UpdateWatermark(mark execute.Time) error   { return nil }
-func (d *Dataset) Finish(err error)                          {}
-func (d *Dataset) SetTriggerSpec(t plan.TriggerSpec)         {}
+func (d *Dataset) Finish(err error) {
+	if err != nil {
+		_ = d.Abort(err)
+	}
+	_ = d.Close()
+}
+func (d *Dataset) SetTriggerSpec(t plan.TriggerSpec) {}
