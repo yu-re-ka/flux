@@ -340,7 +340,7 @@ func TestMergeRemoteFilterRule(t *testing.T) {
 					Bounds: rangeSpec.Bounds,
 					PredicateSet: influxdb.PredicateSet{{
 						ResolvedFunction: filterSpec.Fn,
-						KeepEmpty:        filterSpec.KeepEmptyTables,
+						KeepEmpty:        filterSpec.OnEmptyMode,
 					}},
 				}),
 			},

@@ -816,7 +816,7 @@ func TestFilter_MergeFilterRule(t *testing.T) {
 		}
 		filterDrop = func() *universe.FilterProcedureSpec {
 			return &universe.FilterProcedureSpec{
-				KeepEmptyTables: false,
+				OnEmptyMode: false,
 				Fn: interpreter.ResolvedFunction{
 					Fn: executetest.FunctionExpression(t, `(r) => r._field == "usage_idle"`),
 				},
@@ -824,7 +824,7 @@ func TestFilter_MergeFilterRule(t *testing.T) {
 		}
 		filterKeep = func() *universe.FilterProcedureSpec {
 			return &universe.FilterProcedureSpec{
-				KeepEmptyTables: true,
+				OnEmptyMode: true,
 				Fn: interpreter.ResolvedFunction{
 					Fn: executetest.FunctionExpression(t, `(r) => r._measurement == "cpu"`),
 				},
@@ -832,7 +832,7 @@ func TestFilter_MergeFilterRule(t *testing.T) {
 		}
 		filterEmptyMerge = func() *universe.FilterProcedureSpec {
 			return &universe.FilterProcedureSpec{
-				KeepEmptyTables: true,
+				OnEmptyMode: true,
 				Fn: interpreter.ResolvedFunction{
 					Fn: executetest.FunctionExpression(t, `(r) => r._field == "usage_idle" and r._measurement == "cpu"`),
 				},

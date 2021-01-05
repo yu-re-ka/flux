@@ -80,35 +80,36 @@ func (p MergeRemoteFilterRule) Pattern() plan.Pattern {
 }
 
 func (p MergeRemoteFilterRule) Rewrite(ctx context.Context, node plan.Node) (plan.Node, bool, error) {
-	fromNode := node.Predecessors()[0]
-	fromSpec := fromNode.ProcedureSpec().(*FromRemoteProcedureSpec)
-	if fromSpec.Bounds.IsEmpty() {
-		return node, false, nil
-	}
-	filterSpec := node.ProcedureSpec().(*universe.FilterProcedureSpec)
-
-	// Attempt to construct the new from procedure spec and see
-	// it we can create a reader using it.
-	fromSpec = fromSpec.Copy().(*FromRemoteProcedureSpec)
-	fromSpec.PredicateSet = append(fromSpec.PredicateSet, influxdb.Predicate{
-		ResolvedFunction: filterSpec.Fn,
-		KeepEmpty:        filterSpec.KeepEmptyTables,
-	})
-
-	provider := influxdb.GetProvider(ctx)
-	if _, err := provider.ReaderFor(ctx, fromSpec.Config, fromSpec.Bounds, fromSpec.PredicateSet); err != nil {
-		// TODO(jsternberg): It might be possible to push part of
-		// a predicate and this is done in influxdb. Update this section
-		// to also try and split the predicate into multiple sets
-		// so we can partially push down a filter.
-		return node, false, nil
-	}
-
-	n, err := plan.MergeToPhysicalNode(node, fromNode, fromSpec)
-	if err != nil {
-		return nil, false, err
-	}
-	return n, true, nil
+	return node, false, nil
+	// fromNode := node.Predecessors()[0]
+	// fromSpec := fromNode.ProcedureSpec().(*FromRemoteProcedureSpec)
+	// if fromSpec.Bounds.IsEmpty() {
+	// 	return node, false, nil
+	// }
+	// filterSpec := node.ProcedureSpec().(*universe.FilterProcedureSpec)
+	//
+	// // Attempt to construct the new from procedure spec and see
+	// // it we can create a reader using it.
+	// fromSpec = fromSpec.Copy().(*FromRemoteProcedureSpec)
+	// fromSpec.PredicateSet = append(fromSpec.PredicateSet, influxdb.Predicate{
+	// 	ResolvedFunction: filterSpec.Fn,
+	// 	KeepEmpty:        filterSpec.OnEmptyMode,
+	// })
+	//
+	// provider := influxdb.GetProvider(ctx)
+	// if _, err := provider.ReaderFor(ctx, fromSpec.Config, fromSpec.Bounds, fromSpec.PredicateSet); err != nil {
+	// 	// TODO(jsternberg): It might be possible to push part of
+	// 	// a predicate and this is done in influxdb. Update this section
+	// 	// to also try and split the predicate into multiple sets
+	// 	// so we can partially push down a filter.
+	// 	return node, false, nil
+	// }
+	//
+	// n, err := plan.MergeToPhysicalNode(node, fromNode, fromSpec)
+	// if err != nil {
+	// 	return nil, false, err
+	// }
+	// return n, true, nil
 }
 
 type BucketsRemoteRule struct{}

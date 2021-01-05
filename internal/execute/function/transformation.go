@@ -85,6 +85,9 @@ func createTransformation(id execute.DatasetID, mode execute.AccumulationMode, s
 // the pkgpath and name separated by a dot.
 func RegisterTransformation(pkgpath, name string, spec TransformationSpec, signature semantic.MonoType) {
 	kind := plan.ProcedureKind(fmt.Sprintf("%s.%s", pkgpath, name))
+	if pkgpath == "universe" {
+		kind = plan.ProcedureKind(name)
+	}
 	factory := &specFactory{
 		t:    reflect.TypeOf(spec).Elem(),
 		kind: kind,

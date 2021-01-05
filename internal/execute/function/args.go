@@ -135,7 +135,7 @@ func readArg(fv reflect.Value, args Arguments, name string, required bool, a *fl
 }
 
 func readArgValue(fv reflect.Value, arg values.Value, name string, a *flux.Administration) error {
-	// If the field is implements the Argument interface,
+	// If the field implements the Argument interface,
 	// always use that.
 	if fv.CanAddr() {
 		iv := fv.Addr().Interface()
@@ -279,5 +279,19 @@ func (t *TableObject) ReadArg(name string, arg values.Value, a *flux.Administrat
 	}
 	t.TableObject = o
 	a.AddParent(o)
+	return nil
+}
+
+// Function is an interpreter.ResolvedFunction that implements the Argument interface.
+type Function struct {
+	interpreter.ResolvedFunction
+}
+
+func (f *Function) ReadArg(name string, arg values.Value, a *flux.Administration) error {
+	fn, err := interpreter.ResolveFunction(arg.Function())
+	if err != nil {
+		return err
+	}
+	f.ResolvedFunction = fn
 	return nil
 }

@@ -9,17 +9,15 @@ import (
 	arrowmem "github.com/apache/arrow/go/arrow/memory"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/arrow"
-	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/compiler"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/arrowutil"
 	"github.com/influxdata/flux/internal/errors"
 	executeutil "github.com/influxdata/flux/internal/execute"
+	"github.com/influxdata/flux/internal/execute/function"
 	"github.com/influxdata/flux/internal/execute/table"
-	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/memory"
-	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
@@ -27,109 +25,47 @@ import (
 
 const FilterKind = "filter"
 
-type FilterOpSpec struct {
-	Fn      interpreter.ResolvedFunction `json:"fn"`
-	OnEmpty string                       `json:"onEmpty,omitempty"`
-}
-
 func init() {
 	filterSignature := runtime.MustLookupBuiltinType("universe", "filter")
-
-	runtime.RegisterPackageValue("universe", FilterKind, flux.MustValue(flux.FunctionValue(FilterKind, createFilterOpSpec, filterSignature)))
-	flux.RegisterOpSpec(FilterKind, newFilterOp)
-	plan.RegisterProcedureSpec(FilterKind, newFilterProcedure, FilterKind)
-	execute.RegisterTransformation(FilterKind, createFilterTransformation)
-	plan.RegisterPhysicalRules(
-		RemoveTrivialFilterRule{},
-	)
+	function.RegisterTransformation("universe", FilterKind, &FilterProcedureSpec{}, filterSignature)
+	// plan.RegisterPhysicalRules(
+	// 	RemoveTrivialFilterRule{},
+	// )
 }
 
-func createFilterOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
-	if err := a.AddParentFromArgs(args); err != nil {
-		return nil, err
-	}
-	f, err := args.GetRequiredFunction("fn")
-	if err != nil {
-		return nil, err
-	}
+type OnEmptyMode int
 
-	onEmpty, ok, err := args.GetString("onEmpty")
-	if err != nil {
-		return nil, err
-	} else if ok {
-		// Check that the string is ok.
-		switch onEmpty {
-		case "keep", "drop":
-		default:
-			return nil, errors.Newf(codes.Invalid, "onEmpty must be keep or drop, was %q", onEmpty)
-		}
+const (
+	DropEmptyTables OnEmptyMode = iota
+	KeepEmptyTables
+)
+
+func (m *OnEmptyMode) ReadArg(name string, arg values.Value, a *flux.Administration) error {
+	switch mode := arg.Str(); mode {
+	case "keep":
+		*m = KeepEmptyTables
+		return nil
+	case "drop", "":
+		*m = DropEmptyTables
+		return nil
+	default:
+		return errors.Newf(codes.Invalid, "onEmpty must be keep or drop, was %q", mode)
 	}
-
-	fn, err := interpreter.ResolveFunction(f)
-	if err != nil {
-		return nil, err
-	}
-
-	return &FilterOpSpec{
-		Fn:      fn,
-		OnEmpty: onEmpty,
-	}, nil
-}
-func newFilterOp() flux.OperationSpec {
-	return new(FilterOpSpec)
-}
-
-func (s *FilterOpSpec) Kind() flux.OperationKind {
-	return FilterKind
 }
 
 type FilterProcedureSpec struct {
-	plan.DefaultCost
-	Fn              interpreter.ResolvedFunction
-	KeepEmptyTables bool
+	Tables      *function.TableObject `flux:"tables,required"`
+	Fn          function.Function     `flux:"fn,required"`
+	OnEmptyMode OnEmptyMode           `flux:"onEmpty"`
 }
 
-func newFilterProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
-	spec, ok := qs.(*FilterOpSpec)
-	if !ok {
-		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
-	}
-
-	onEmpty := spec.OnEmpty
-	if onEmpty == "" {
-		onEmpty = "drop"
-	}
-
-	return &FilterProcedureSpec{
-		Fn:              spec.Fn,
-		KeepEmptyTables: onEmpty == "keep",
-	}, nil
-}
-
-func (s *FilterProcedureSpec) Kind() plan.ProcedureKind {
-	return FilterKind
-}
-func (s *FilterProcedureSpec) Copy() plan.ProcedureSpec {
-	ns := new(FilterProcedureSpec)
-	ns.Fn = s.Fn.Copy()
-	ns.KeepEmptyTables = s.KeepEmptyTables
-	return ns
-}
-
-// TriggerSpec implements plan.TriggerAwareProcedureSpec
-func (s *FilterProcedureSpec) TriggerSpec() plan.TriggerSpec {
-	return plan.NarrowTransformationTriggerSpec{}
-}
-
-func createFilterTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
-	s, ok := spec.(*FilterProcedureSpec)
-	if !ok {
-		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
-	}
-	t, d, err := NewFilterTransformation(a.Context(), s, id, a.Allocator())
-	if err != nil {
-		return nil, nil, err
-	}
+func (s *FilterProcedureSpec) CreateTransformation(id execute.DatasetID, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
+	fn := execute.NewRowPredicateFn(s.Fn.Fn, compiler.ToScope(s.Fn.Scope))
+	t, d := executeutil.NewNarrowTransformation(id, &filterTransformation{
+		fn:              fn,
+		ctx:             a.Context(),
+		keepEmptyTables: s.OnEmptyMode == KeepEmptyTables,
+	}, a.Allocator())
 	return t, d, nil
 }
 
@@ -152,7 +88,7 @@ func NewFilterTransformation(ctx context.Context, spec *FilterProcedureSpec, id 
 	t, d := executeutil.NewNarrowTransformation(id, &filterTransformation{
 		fn:              fn,
 		ctx:             ctx,
-		keepEmptyTables: spec.KeepEmptyTables,
+		keepEmptyTables: spec.OnEmptyMode == KeepEmptyTables,
 	}, alloc)
 	return t, d, nil
 }
@@ -315,72 +251,72 @@ func (t *filterTransformation) filter(fn *execute.RowPredicatePreparedFn, cr flu
 }
 
 // RemoveTrivialFilterRule removes Filter nodes whose predicate always evaluates to true.
-type RemoveTrivialFilterRule struct{}
-
-func (RemoveTrivialFilterRule) Name() string {
-	return "RemoveTrivialFilterRule"
-}
-
-func (RemoveTrivialFilterRule) Pattern() plan.Pattern {
-	return plan.Pat(FilterKind, plan.Any())
-}
-
-func (RemoveTrivialFilterRule) Rewrite(ctx context.Context, filterNode plan.Node) (plan.Node, bool, error) {
-	filterSpec := filterNode.ProcedureSpec().(*FilterProcedureSpec)
-	if filterSpec.Fn.Fn == nil ||
-		filterSpec.Fn.Fn.Block == nil ||
-		filterSpec.Fn.Fn.Block.Body == nil {
-		return filterNode, false, nil
-	}
-
-	if bodyExpr, ok := filterSpec.Fn.Fn.GetFunctionBodyExpression(); !ok {
-		// Not an expression.
-		return filterNode, false, nil
-	} else if expr, ok := bodyExpr.(*semantic.BooleanLiteral); !ok || !expr.Value {
-		// Either not a boolean at all, or evaluates to false.
-		return filterNode, false, nil
-	}
-
-	anyNode := filterNode.Predecessors()[0]
-	return anyNode, true, nil
-}
+// type RemoveTrivialFilterRule struct{}
+//
+// func (RemoveTrivialFilterRule) Name() string {
+// 	return "RemoveTrivialFilterRule"
+// }
+//
+// func (RemoveTrivialFilterRule) Pattern() plan.Pattern {
+// 	return plan.Pat(FilterKind, plan.Any())
+// }
+//
+// func (RemoveTrivialFilterRule) Rewrite(ctx context.Context, filterNode plan.Node) (plan.Node, bool, error) {
+// 	filterSpec := filterNode.ProcedureSpec().(*FilterProcedureSpec)
+// 	if filterSpec.Fn.Fn == nil ||
+// 		filterSpec.Fn.Fn.Block == nil ||
+// 		filterSpec.Fn.Fn.Block.Body == nil {
+// 		return filterNode, false, nil
+// 	}
+//
+// 	if bodyExpr, ok := filterSpec.Fn.Fn.GetFunctionBodyExpression(); !ok {
+// 		// Not an expression.
+// 		return filterNode, false, nil
+// 	} else if expr, ok := bodyExpr.(*semantic.BooleanLiteral); !ok || !expr.Value {
+// 		// Either not a boolean at all, or evaluates to false.
+// 		return filterNode, false, nil
+// 	}
+//
+// 	anyNode := filterNode.Predecessors()[0]
+// 	return anyNode, true, nil
+// }
 
 // MergeFiltersRule merges Filter nodes whose body is a single return to create one Filter node.
-type MergeFiltersRule struct{}
-
-func (MergeFiltersRule) Name() string {
-	return "MergeFiltersRule"
-}
-
-func (MergeFiltersRule) Pattern() plan.Pattern {
-	return plan.Pat(FilterKind, plan.Pat(FilterKind, plan.Any()))
-}
-
-func (MergeFiltersRule) Rewrite(ctx context.Context, filterNode plan.Node) (plan.Node, bool, error) {
-	// conditions
-	filterSpec1 := filterNode.ProcedureSpec().(*FilterProcedureSpec)
-	bodyExpr1, ok := filterSpec1.Fn.Fn.GetFunctionBodyExpression()
-	if !ok {
-		// Not an expression.
-		return filterNode, false, nil
-	}
-	filterSpec2 := filterNode.Predecessors()[0].ProcedureSpec().(*FilterProcedureSpec)
-	bodyExpr2, ok := filterSpec2.Fn.Fn.GetFunctionBodyExpression()
-	if !ok {
-		// Not an expression.
-		return filterNode, false, nil
-	}
-	//checks if the fields of KeepEmptyTables are different and only allows merge if 1) they are the same 2) keep is the Predecessors field
-	if filterSpec1.KeepEmptyTables != filterSpec2.KeepEmptyTables && !filterSpec2.KeepEmptyTables {
-		return filterNode, false, nil
-	}
-
-	// created an instance of LogicalExpression to 'and' two different arguments
-	expr := &semantic.LogicalExpression{Left: bodyExpr1, Operator: ast.AndOperator, Right: bodyExpr2}
-	// set a new variables that converted the single body statement to a return type that can used with expr
-	ret := filterSpec2.Fn.Fn.Block.Body[0].(*semantic.ReturnStatement)
-	ret.Argument = expr
-	// return the pred node
-	anyNode := filterNode.Predecessors()[0]
-	return anyNode, true, nil
-}
+// type MergeFiltersRule struct{}
+//
+// func (MergeFiltersRule) Name() string {
+// 	return "MergeFiltersRule"
+// }
+//
+// func (MergeFiltersRule) Pattern() plan.Pattern {
+// 	return plan.Pat(FilterKind, plan.Pat(FilterKind, plan.Any()))
+// }
+//
+// func (MergeFiltersRule) Rewrite(ctx context.Context, filterNode plan.Node) (plan.Node, bool, error) {
+// 	// conditions
+// 	filterSpec1 := filterNode.ProcedureSpec().(*FilterProcedureSpec)
+// 	bodyExpr1, ok := filterSpec1.Fn.Fn.GetFunctionBodyExpression()
+// 	if !ok {
+// 		// Not an expression.
+// 		return filterNode, false, nil
+// 	}
+// 	filterSpec2 := filterNode.Predecessors()[0].ProcedureSpec().(*FilterProcedureSpec)
+// 	bodyExpr2, ok := filterSpec2.Fn.Fn.GetFunctionBodyExpression()
+// 	if !ok {
+// 		// Not an expression.
+// 		return filterNode, false, nil
+// 	}
+// 	//checks if the fields of OnEmptyMode are different and only allows merge if 1) they are the same 2) keep is the Predecessors field
+// 	if filterSpec1.OnEmptyMode != filterSpec2.OnEmptyMode && !filterSpec2.OnEmptyMode {
+// 		return filterNode, false, nil
+// 	}
+//
+// 	// created an instance of LogicalExpression to 'and' two different arguments
+// 	expr := &semantic.LogicalExpression{Left: bodyExpr1, Operator: ast.AndOperator, Right: bodyExpr2}
+// 	// set a new variables that converted the single body statement to a return type that can used with expr
+// 	ret := filterSpec2.Fn.Fn.Block.Body[0].(*semantic.ReturnStatement)
+// 	ret.Argument = expr
+// 	// return the pred node
+// 	anyNode := filterNode.Predecessors()[0]
+// 	return anyNode, true, nil
+// }

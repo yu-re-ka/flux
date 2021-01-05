@@ -11,76 +11,77 @@ import (
 )
 
 func AddFilterToNode(queryNode plan.Node, filterNode plan.Node) (plan.Node, bool) {
-	querySpec := queryNode.ProcedureSpec().(*FromBigtableProcedureSpec)
-	filterSpec := filterNode.ProcedureSpec().(*universe.FilterProcedureSpec)
-
-	body, ok := filterSpec.Fn.Fn.GetFunctionBodyExpression()
-	if !ok {
-		return filterNode, false
-	}
-
-	switch body := body.(type) {
-	case *semantic.BinaryExpression:
-		switch body.Operator {
-		case ast.EqualOperator:
-			// Look for a Single Row filter
-			if isRRowKey(body.Left) {
-				if name, ok := body.Right.(*semantic.StringLiteral); ok {
-					querySpec.RowSet = bigtable.SingleRow(name.Value)
-					return queryNode, true
-				}
-			}
-			// Look for a Family filter
-			if isRFamily(body.Left) {
-				if family, ok := body.Right.(*semantic.StringLiteral); ok {
-					querySpec.Filter = bigtable.ChainFilters(querySpec.Filter, bigtable.FamilyFilter(family.Value))
-					return queryNode, true
-				}
-			}
-		case ast.GreaterThanEqualOperator:
-			// Look for an Infinite Range filter (>=)
-			if isRRowKey(body.Left) {
-				if name, ok := body.Right.(*semantic.StringLiteral); ok {
-					querySpec.RowSet = bigtable.InfiniteRange(name.Value)
-					return queryNode, true
-				}
-			}
-			// Filter from startTime with no upper bound
-			if isRTime(body.Left) {
-				if startTime, ok := body.Right.(*semantic.DateTimeLiteral); ok {
-					querySpec.Filter = bigtable.ChainFilters(querySpec.Filter, bigtable.TimestampRangeFilter(startTime.Value, time.Time{}))
-					return queryNode, true
-				}
-			}
-		case ast.LessThanOperator:
-			// Filter to endTime with no lower bound
-			if isRTime(body.Left) {
-				if endTime, ok := body.Right.(*semantic.DateTimeLiteral); ok {
-					querySpec.Filter = bigtable.ChainFilters(querySpec.Filter, bigtable.TimestampRangeFilter(time.Time{}, endTime.Value))
-					return queryNode, true
-				}
-			}
-		}
-	case *semantic.LogicalExpression:
-		// Look for a Range filter
-		if begin, end, ok := getRange(body); ok {
-			querySpec.RowSet = bigtable.NewRange(begin, end)
-			return queryNode, true
-		}
-		// Look for Timestamp Range filter
-		if startTime, endTime, ok := getTimeRange(body); ok {
-			querySpec.Filter = bigtable.ChainFilters(querySpec.Filter, bigtable.TimestampRangeFilter(startTime, endTime))
-			return queryNode, true
-		}
-	// Look for a Prefix filter
-	case *semantic.CallExpression:
-		if prefix, ok := getPrefix(body); ok {
-			querySpec.RowSet = bigtable.PrefixRange(prefix)
-			return queryNode, true
-		}
-	}
-
 	return filterNode, false
+	// querySpec := queryNode.ProcedureSpec().(*FromBigtableProcedureSpec)
+	// filterSpec := filterNode.ProcedureSpec().(*universe.FilterProcedureSpec)
+	//
+	// body, ok := filterSpec.Fn.Fn.GetFunctionBodyExpression()
+	// if !ok {
+	// 	return filterNode, false
+	// }
+	//
+	// switch body := body.(type) {
+	// case *semantic.BinaryExpression:
+	// 	switch body.Operator {
+	// 	case ast.EqualOperator:
+	// 		// Look for a Single Row filter
+	// 		if isRRowKey(body.Left) {
+	// 			if name, ok := body.Right.(*semantic.StringLiteral); ok {
+	// 				querySpec.RowSet = bigtable.SingleRow(name.Value)
+	// 				return queryNode, true
+	// 			}
+	// 		}
+	// 		// Look for a Family filter
+	// 		if isRFamily(body.Left) {
+	// 			if family, ok := body.Right.(*semantic.StringLiteral); ok {
+	// 				querySpec.Filter = bigtable.ChainFilters(querySpec.Filter, bigtable.FamilyFilter(family.Value))
+	// 				return queryNode, true
+	// 			}
+	// 		}
+	// 	case ast.GreaterThanEqualOperator:
+	// 		// Look for an Infinite Range filter (>=)
+	// 		if isRRowKey(body.Left) {
+	// 			if name, ok := body.Right.(*semantic.StringLiteral); ok {
+	// 				querySpec.RowSet = bigtable.InfiniteRange(name.Value)
+	// 				return queryNode, true
+	// 			}
+	// 		}
+	// 		// Filter from startTime with no upper bound
+	// 		if isRTime(body.Left) {
+	// 			if startTime, ok := body.Right.(*semantic.DateTimeLiteral); ok {
+	// 				querySpec.Filter = bigtable.ChainFilters(querySpec.Filter, bigtable.TimestampRangeFilter(startTime.Value, time.Time{}))
+	// 				return queryNode, true
+	// 			}
+	// 		}
+	// 	case ast.LessThanOperator:
+	// 		// Filter to endTime with no lower bound
+	// 		if isRTime(body.Left) {
+	// 			if endTime, ok := body.Right.(*semantic.DateTimeLiteral); ok {
+	// 				querySpec.Filter = bigtable.ChainFilters(querySpec.Filter, bigtable.TimestampRangeFilter(time.Time{}, endTime.Value))
+	// 				return queryNode, true
+	// 			}
+	// 		}
+	// 	}
+	// case *semantic.LogicalExpression:
+	// 	// Look for a Range filter
+	// 	if begin, end, ok := getRange(body); ok {
+	// 		querySpec.RowSet = bigtable.NewRange(begin, end)
+	// 		return queryNode, true
+	// 	}
+	// 	// Look for Timestamp Range filter
+	// 	if startTime, endTime, ok := getTimeRange(body); ok {
+	// 		querySpec.Filter = bigtable.ChainFilters(querySpec.Filter, bigtable.TimestampRangeFilter(startTime, endTime))
+	// 		return queryNode, true
+	// 	}
+	// // Look for a Prefix filter
+	// case *semantic.CallExpression:
+	// 	if prefix, ok := getPrefix(body); ok {
+	// 		querySpec.RowSet = bigtable.PrefixRange(prefix)
+	// 		return queryNode, true
+	// 	}
+	// }
+	//
+	// return filterNode, false
 }
 
 func AddLimitToNode(queryNode plan.Node, limitNode plan.Node) (plan.Node, bool) {
