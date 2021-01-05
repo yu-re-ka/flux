@@ -760,21 +760,8 @@ func (p *BytecodeAstProgram) Start(ctx context.Context, alloc *memory.Allocator)
 		return nil, errors.Wrap(err, codes.Inherit, "error in evaluating AST while starting program")
 	}
 
-	// Producing flux spec: side effects -> *flux.Spec
-	var sp *flux.Spec
-
 	p.Now = nowTime.Time().Time()
-	sp, err = spec.FromEvaluation(ctx, sideEffects, p.Now)
-	if err != nil {
-		return nil, errors.Wrap(err, codes.Inherit, "error in query specification while starting program")
-	}
 
-	// Planning: *flux.Spec -> plan.Spec
-	var ps *plan.Spec
-
-	if p.opts.verbose {
-		log.Println("Query Spec: ", flux.Formatted(sp, flux.FmtJSON))
-	}
 	if err := p.updateOpts(scope); err != nil {
 		return nil, errors.Wrap(err, codes.Inherit, "error in reading options while starting program")
 	}
@@ -782,8 +769,51 @@ func (p *BytecodeAstProgram) Start(ctx context.Context, alloc *memory.Allocator)
 		return nil, errors.Wrap(err, codes.Inherit, "error in reading profiler settings while starting program")
 	}
 
+	now := p.Now
+	o := p.opts
+
+	// Execution: planned spec -> results
+	res, err := p.BytecodeProgram.Start(ctx, alloc, sideEffects, o, now)
+
+	return res, err
+}
+
+func (p *BytecodeTableObjectProgram) Start(ctx context.Context, alloc *memory.Allocator) (flux.Query, error) {
+	to := p.Tables
+	now := p.Now
+
+	o := applyOptions()
+
+	sideEffects := []interpreter.SideEffect{{Value: to}}
+
+	// Execution: planned spec -> results
+	res, err := p.BytecodeProgram.Start(ctx, alloc, sideEffects, o, now)
+
+	return res, err
+}
+
+func (p *BytecodeProgram) SetLogger(logger *zap.Logger) {
+	p.Logger = logger
+}
+
+func (p *BytecodeProgram) Start(ctx context.Context, alloc *memory.Allocator,
+		sideEffects []interpreter.SideEffect, o *compileOptions, now time.Time) (flux.Query, error) {
+	// Producing flux spec: side effects -> *flux.Spec
+	var sp *flux.Spec
+	var err error
+
+	sp, err = spec.FromEvaluation(ctx, sideEffects, now)
+	if err != nil {
+		return nil, errors.Wrap(err, codes.Inherit, "error in query specification while starting program")
+	}
+
+	// Planning: *flux.Spec -> plan.Spec
+	var ps *plan.Spec
+
 	pb := plan.PlannerBuilder{}
-	planOptions := p.opts.planOptions
+
+	planOptions := o.planOptions
+
 	lopts := planOptions.logical
 	popts := planOptions.physical
 
@@ -797,57 +827,6 @@ func (p *BytecodeAstProgram) Start(ctx context.Context, alloc *memory.Allocator)
 
 	p.PlanSpec = ps
 
-	// Execution: planned spec -> results
-	res, err := p.BytecodeProgram.Start(ctx, alloc)
-
-	return res, err
-}
-func (p *BytecodeTableObjectProgram) Start(ctx context.Context, alloc *memory.Allocator) (flux.Query, error) {
-	to := p.Tables
-	now := p.Now
-
-	o := applyOptions()
-
-	sideEffects := []interpreter.SideEffect{{Value: to}}
-
-	sp, err := spec.FromEvaluation(ctx, sideEffects, now)
-	if err != nil {
-		return nil, err
-	}
-	if o.verbose {
-		log.Println("Query Spec: ", flux.Formatted(sp, flux.FmtJSON))
-	}
-
-	// Planning: *flux.Spec -> plan.Spec
-	var ps *plan.Spec
-
-	s, _ := opentracing.StartSpanFromContext(ctx, "plan")
-	defer s.Finish()
-	pb := plan.PlannerBuilder{}
-
-	planOptions := o.planOptions
-
-	lopts := planOptions.logical
-	popts := planOptions.physical
-
-	pb.AddLogicalOptions(lopts...)
-	pb.AddPhysicalOptions(popts...)
-
-	ps, err = pb.Build().Plan(ctx, sp)
-	if err != nil {
-		return nil, err
-	}
-
-	p.PlanSpec = ps
-
-	return p.BytecodeProgram.Start(ctx, alloc)
-}
-
-func (p *BytecodeProgram) SetLogger(logger *zap.Logger) {
-	p.Logger = logger
-}
-
-func (p *BytecodeProgram) Start(ctx context.Context, alloc *memory.Allocator) (flux.Query, error) {
 	ctx, cancel := context.WithCancel(ctx)
 
 	// This span gets closed by the query when it is done.
