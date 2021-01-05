@@ -12,6 +12,7 @@ import (
 	"github.com/influxdata/flux/libflux/go/libflux"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
+	bctypes "github.com/influxdata/flux/bytecode/types"
 )
 
 // Default contains the preregistered packages and builtin values
@@ -142,6 +143,34 @@ func (r *runtime) Eval(ctx context.Context, astPkg flux.ASTHandle, es interprete
 		return nil, nil, err
 	}
 	return sideEffects, scope, nil
+}
+
+func (r *runtime) Synthesis(ctx context.Context, astPkg flux.ASTHandle, es interpreter.ExecOptsConfig, opts ...flux.ScopeMutator) ([]bctypes.OpCode, values.Scope, error) {
+	semPkg, err := AnalyzePackage(astPkg)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// Construct the initial scope for this package.
+	importer := &importer{r: r}
+	scope, err := r.newScopeFor("main", importer)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// Mutate the scope with any additional options.
+	for _, opt := range opts {
+		opt(r, scope)
+	}
+
+	// Execute the interpreter over the package.
+	itrp := interpreter.NewInterpreter(nil, es)
+	err = itrp.Synthesis(ctx, semPkg, scope, importer)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return itrp.Code(), scope, nil
 }
 
 // newScopeFor constructs a new scope for the given package using the

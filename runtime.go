@@ -7,6 +7,7 @@ import (
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
+	bctypes "github.com/influxdata/flux/bytecode/types"
 )
 
 // Runtime encapsulates the operations supported by the flux runtime.
@@ -23,6 +24,8 @@ type Runtime interface {
 
 	// Eval accepts a Flux AST and evaluates it to produce a set of side effects (as a slice of values) and a scope.
 	Eval(ctx context.Context, astPkg ASTHandle, es interpreter.ExecOptsConfig, opts ...ScopeMutator) ([]interpreter.SideEffect, values.Scope, error)
+
+	Synthesis(ctx context.Context, astPkg ASTHandle, es interpreter.ExecOptsConfig, opts ...ScopeMutator) ([]bctypes.OpCode, values.Scope, error)
 
 	// IsPreludePackage will return if the named package is part
 	// of the prelude for this runtime.

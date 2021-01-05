@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	bctypes "github.com/influxdata/flux/bytecode/types"
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
@@ -43,6 +44,7 @@ type Interpreter struct {
 	sideEffects    []SideEffect // a list of the side effects occurred during the last call to `Eval`.
 	pkgName        string
 	execOptsConfig ExecOptsConfig
+	code           []bctypes.OpCode
 }
 
 func NewInterpreter(pkg *Package, eoc ExecOptsConfig) *Interpreter {
@@ -67,6 +69,10 @@ func (itrp *Interpreter) PackageName() string {
 type SideEffect struct {
 	Node  semantic.Node
 	Value values.Value
+}
+
+type ProgramStart struct {
+	SideEffects []SideEffect
 }
 
 // Eval evaluates the expressions composing a Flux package and returns any side effects that occurred during this evaluation.
