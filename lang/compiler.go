@@ -844,6 +844,31 @@ func (p *BytecodeAstProgram) GetAst() (flux.ASTHandle, error) {
 	return p.Ast, nil
 }
 
+func (c *BytecodeTableObjectProgram) Start(ctx context.Context, alloc *memory.Allocator) (flux.Query, error) {
+	to := c.Tables
+	now := c.Now
+
+	o := applyOptions()
+	s, err := spec.FromTableObject(ctx, to, now)
+	if err != nil {
+		return nil, err
+	}
+	if o.verbose {
+		log.Println("Query Spec: ", flux.Formatted(s, flux.FmtJSON))
+	}
+	ps, err := buildPlan(ctx, s, o)
+	if err != nil {
+		return nil, err
+	}
+
+	np := &BytecodeProgram{
+		PlanSpec: ps,
+	}
+
+	return np.Start(ctx, alloc)
+}
+
+
 func (p *BytecodeProgram) SetLogger(logger *zap.Logger) {
 	p.Logger = logger
 }
@@ -910,30 +935,5 @@ func (p *BytecodeProgram) readMetadata(q *query, metaCh <-chan metadata.Metadata
 	for md := range metaCh {
 		q.stats.Metadata.AddAll(md)
 	}
-}
-
-func (c *BytecodeTableObjectProgram) Start(ctx context.Context, alloc *memory.Allocator) (flux.Query, error) {
-	to := c.Tables
-	now := c.Now
-
-	o := applyOptions()
-	s, err := spec.FromTableObject(ctx, to, now)
-	if err != nil {
-		return nil, err
-	}
-	if o.verbose {
-		log.Println("Query Spec: ", flux.Formatted(s, flux.FmtJSON))
-	}
-	ps, err := buildPlan(ctx, s, o)
-	if err != nil {
-		return nil, err
-	}
-
-
-	np := &Program{
-		PlanSpec: ps,
-	}
-
-	return np.Start(ctx, alloc)
 }
 
