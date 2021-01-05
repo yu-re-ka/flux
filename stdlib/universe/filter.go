@@ -93,20 +93,20 @@ func NewFilterTransformation(ctx context.Context, spec *FilterProcedureSpec, id 
 	return t, d, nil
 }
 
-func (t *filterTransformation) Process(view table.View, mem arrowmem.Allocator) (table.View, bool, error) {
+func (t *filterTransformation) Process(view table.View, d *executeutil.Dataset, mem arrowmem.Allocator) error {
 	// Prepare the function for the column types.
 	cols := view.Cols()
 	fn, err := t.fn.Prepare(cols)
 	if err != nil {
 		// TODO(nathanielc): Should we not fail the query for failed compilation?
-		return table.View{}, false, err
+		return err
 	}
 
 	// Retrieve the inferred input type for the function.
 	// If all of the inferred inputs are part of the group
 	// key, we can evaluate a record with only the group key.
 	if t.canFilterByKey(fn, view) {
-		return t.filterByKey(view)
+		return t.filterByKey(view, d)
 	}
 
 	// Prefill the columns that can be inferred from the group key.
@@ -123,7 +123,7 @@ func (t *filterTransformation) Process(view table.View, mem arrowmem.Allocator) 
 	}
 
 	// Filter the table and pass in the indices we have to read.
-	return t.filterTable(fn, view, record, indices)
+	return t.filterTable(d, fn, view, record, indices)
 }
 
 func (t *filterTransformation) canFilterByKey(fn *execute.RowPredicatePreparedFn, view table.View) bool {
@@ -160,12 +160,12 @@ func (t *filterTransformation) canFilterByKey(fn *execute.RowPredicatePreparedFn
 	return true
 }
 
-func (t *filterTransformation) filterByKey(view table.View) (table.View, bool, error) {
+func (t *filterTransformation) filterByKey(view table.View, d *executeutil.Dataset) error {
 	key := view.Key()
 	cols := key.Cols()
 	fn, err := t.fn.Prepare(cols)
 	if err != nil {
-		return table.View{}, false, err
+		return err
 	}
 
 	record, err := values.BuildObjectWithSize(len(cols), func(set values.ObjectSetter) error {
@@ -175,33 +175,33 @@ func (t *filterTransformation) filterByKey(view table.View) (table.View, bool, e
 		return nil
 	})
 	if err != nil {
-		return table.View{}, false, err
+		return err
 	}
 
 	v, err := fn.Eval(t.ctx, record)
 	if err != nil {
-		return table.View{}, false, err
+		return err
 	}
 
 	if !v {
 		if !t.keepEmptyTables {
-			return table.View{}, false, nil
+			return nil
 		}
 		// If we are supposed to keep empty tables, produce
 		// an empty buffer with this group key so later transformations
 		// see the group key.
 		buffer := arrow.EmptyBuffer(view.Key(), view.Cols())
-		return table.ViewFromBuffer(buffer), true, nil
+		return d.Process(table.ViewFromBuffer(buffer))
 	}
 	view.Retain()
-	return view, true, nil
+	return d.Process(view)
 }
 
-func (t *filterTransformation) filterTable(fn *execute.RowPredicatePreparedFn, in table.View, record values.Object, indices []int) (table.View, bool, error) {
+func (t *filterTransformation) filterTable(d *executeutil.Dataset, fn *execute.RowPredicatePreparedFn, in table.View, record values.Object, indices []int) error {
 	buffer := in.Buffer()
 	bitset, err := t.filter(fn, &buffer, record, indices)
 	if err != nil {
-		return table.View{}, false, err
+		return err
 	}
 	defer bitset.Release()
 
@@ -209,9 +209,9 @@ func (t *filterTransformation) filterTable(fn *execute.RowPredicatePreparedFn, i
 	if n == 0 {
 		if t.keepEmptyTables {
 			buffer := arrow.EmptyBuffer(in.Key(), in.Cols())
-			return table.ViewFromBuffer(buffer), true, nil
+			return d.Process(table.ViewFromBuffer(buffer))
 		}
-		return table.View{}, false, nil
+		return nil
 	}
 
 	// Produce arrays for each column.
@@ -228,7 +228,7 @@ func (t *filterTransformation) filterTable(fn *execute.RowPredicatePreparedFn, i
 		}
 		buffer.Values[j] = arrowutil.Filter(arr, bitset.Bytes(), t.alloc)
 	}
-	return table.ViewFromBuffer(buffer), true, nil
+	return d.Process(table.ViewFromBuffer(buffer))
 }
 
 func (t *filterTransformation) filter(fn *execute.RowPredicatePreparedFn, cr flux.ColReader, record values.Object, indices []int) (*arrowmem.Buffer, error) {

@@ -91,21 +91,30 @@ func (a *ArrowBuilder) CheckCol(c flux.ColMeta) (int, error) {
 	return idx, nil
 }
 
-// Table constructs a flux.Table from the current builders.
-func (a *ArrowBuilder) Table() (flux.Table, error) {
+// Buffer constructs an arrow.TableBuffer from the current builders.
+func (a *ArrowBuilder) Buffer() (arrow.TableBuffer, error) {
 	values := make([]array.Interface, len(a.Builders))
 	for j, b := range a.Builders {
 		values[j] = b.NewArray()
 	}
-	buffer := &arrow.TableBuffer{
+	buffer := arrow.TableBuffer{
 		GroupKey: a.GroupKey,
 		Columns:  a.Columns,
 		Values:   values,
 	}
 	if err := buffer.Validate(); err != nil {
+		return arrow.TableBuffer{}, err
+	}
+	return buffer, nil
+}
+
+// Table constructs a flux.Table from the current builders.
+func (a *ArrowBuilder) Table() (flux.Table, error) {
+	buffer, err := a.Buffer()
+	if err != nil {
 		return nil, err
 	}
-	return FromBuffer(buffer), nil
+	return FromBuffer(&buffer), nil
 }
 
 func (a *ArrowBuilder) Release() {

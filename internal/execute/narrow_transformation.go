@@ -11,7 +11,7 @@ import (
 // a TableView and does not modify its group key.
 type NarrowTransformation interface {
 	// Process will process the TableView and it may output a new TableView.
-	Process(view table.View, mem memory.Allocator) (table.View, bool, error)
+	Process(view table.View, d *Dataset, mem memory.Allocator) error
 }
 
 type narrowTransformation struct {
@@ -38,11 +38,7 @@ func (n *narrowTransformation) ProcessMessage(m execute.Message) error {
 		n.Finish(m.SrcDatasetID(), m.Error())
 		return nil
 	case execute.ProcessViewMsg:
-		view, ok, err := n.t.Process(m.View(), n.d.mem)
-		if err != nil || !ok {
-			return err
-		}
-		return n.d.Process(view)
+		return n.t.Process(m.View(), n.d, n.d.mem)
 	case execute.ProcessMsg:
 		return n.Process(m.SrcDatasetID(), m.Table())
 	}
