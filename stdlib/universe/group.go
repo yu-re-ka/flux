@@ -10,12 +10,11 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/internal/execute/dataset"
+	"github.com/influxdata/flux/internal/execute/function"
 	"github.com/influxdata/flux/internal/execute/table"
-	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
-	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
@@ -26,52 +25,20 @@ const (
 	groupModeExcept = "except"
 )
 
-type GroupOpSpec struct {
-	Mode    string   `json:"mode"`
-	Columns []string `json:"columns"`
+type GroupMode flux.GroupMode
+
+func (g *GroupMode) ReadArg(name string, arg values.Value, a *flux.Administration) error {
+	mode, err := validateGroupMode(arg.Str())
+	if err != nil {
+		return err
+	}
+	*g = GroupMode(mode)
+	return nil
 }
 
 func init() {
 	groupSignature := runtime.MustLookupBuiltinType("universe", "group")
-
-	runtime.RegisterPackageValue("universe", GroupKind, flux.MustValue(flux.FunctionValue(GroupKind, createGroupOpSpec, groupSignature)))
-	flux.RegisterOpSpec(GroupKind, newGroupOp)
-	plan.RegisterProcedureSpec(GroupKind, newGroupProcedure, GroupKind)
-	plan.RegisterLogicalRules(MergeGroupRule{})
-	execute.RegisterTransformation(GroupKind, createGroupTransformation)
-}
-
-func createGroupOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
-	if err := a.AddParentFromArgs(args); err != nil {
-		return nil, err
-	}
-
-	spec := new(GroupOpSpec)
-
-	if mode, ok, err := args.GetString("mode"); err != nil {
-		return nil, err
-	} else if ok {
-		if _, err := validateGroupMode(mode); err != nil {
-			return nil, err
-		}
-
-		spec.Mode = mode
-	} else {
-		spec.Mode = groupModeBy
-	}
-
-	if columns, ok, err := args.GetArray("columns", semantic.String); err != nil {
-		return nil, err
-	} else if ok {
-		spec.Columns, err = interpreter.ToStringArray(columns)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		spec.Columns = []string{}
-	}
-
-	return spec, nil
+	function.RegisterTransformation("universe", GroupKind, &GroupProcedureSpec{}, groupSignature)
 }
 
 func validateGroupMode(mode string) (flux.GroupMode, error) {
@@ -85,63 +52,22 @@ func validateGroupMode(mode string) (flux.GroupMode, error) {
 	}
 }
 
-func newGroupOp() flux.OperationSpec {
-	return new(GroupOpSpec)
-}
-
-func (s *GroupOpSpec) Kind() flux.OperationKind {
-	return GroupKind
-}
-
 type GroupProcedureSpec struct {
-	plan.DefaultCost
-	GroupMode flux.GroupMode
-	GroupKeys []string
+	Tables    *function.TableObject `flux:"tables,required"`
+	GroupMode GroupMode             `flux:"mode"`
+	GroupKeys []string              `flux:"columns"`
 }
 
-func newGroupProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
-	spec, ok := qs.(*GroupOpSpec)
-	if !ok {
-		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
+func (s *GroupProcedureSpec) CreateTransformation(id execute.DatasetID, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
+	spec := *s
+	if spec.GroupMode == GroupMode(flux.GroupModeNone) {
+		spec.GroupMode = GroupMode(flux.GroupModeBy)
 	}
-
-	mode, err := validateGroupMode(spec.Mode)
-	if err != nil {
-		return nil, err
-	}
-
-	p := &GroupProcedureSpec{
-		GroupMode: mode,
-		GroupKeys: spec.Columns,
-	}
-	return p, nil
-}
-
-func (s *GroupProcedureSpec) Kind() plan.ProcedureKind {
-	return GroupKind
-}
-func (s *GroupProcedureSpec) Copy() plan.ProcedureSpec {
-	ns := new(GroupProcedureSpec)
-
-	ns.GroupMode = s.GroupMode
-
-	ns.GroupKeys = make([]string, len(s.GroupKeys))
-	copy(ns.GroupKeys, s.GroupKeys)
-
-	return ns
-}
-
-func createGroupTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
-	s, ok := spec.(*GroupProcedureSpec)
-	if !ok {
-		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
-	}
-	t, d := NewGroupTransformation(s, id, a.Allocator())
+	t, d := NewGroupTransformation(&spec, id, a.Allocator())
 	return t, d, nil
 }
 
 type groupTransformation struct {
-	execute.ExecutionNode
 	d     execute.Dataset
 	cache table.BuilderCache
 	mem   *memory.Allocator
@@ -158,7 +84,7 @@ func NewGroupTransformation(spec *GroupProcedureSpec, id execute.DatasetID, mem 
 			},
 		},
 		mem:  mem,
-		mode: spec.GroupMode,
+		mode: flux.GroupMode(spec.GroupMode),
 		keys: spec.GroupKeys,
 	}
 	t.d = dataset.New(id, &t.cache)
@@ -379,18 +305,19 @@ func (r MergeGroupRule) Pattern() plan.Pattern {
 }
 
 func (r MergeGroupRule) Rewrite(ctx context.Context, lastGroup plan.Node) (plan.Node, bool, error) {
-	firstGroup := lastGroup.Predecessors()[0]
-	lastSpec := lastGroup.ProcedureSpec().(*GroupProcedureSpec)
-
-	if lastSpec.GroupMode != flux.GroupModeBy &&
-		lastSpec.GroupMode != flux.GroupModeExcept {
-		return lastGroup, false, nil
-	}
-
-	merged, err := plan.MergeToLogicalNode(lastGroup, firstGroup, lastSpec.Copy())
-	if err != nil {
-		return nil, false, err
-	}
-
-	return merged, true, nil
+	// firstGroup := lastGroup.Predecessors()[0]
+	// lastSpec := lastGroup.ProcedureSpec().(*GroupProcedureSpec)
+	//
+	// if lastSpec.GroupMode != flux.GroupModeBy &&
+	// 	lastSpec.GroupMode != flux.GroupModeExcept {
+	// 	return lastGroup, false, nil
+	// }
+	//
+	// merged, err := plan.MergeToLogicalNode(lastGroup, firstGroup, lastSpec.Copy())
+	// if err != nil {
+	// 	return nil, false, err
+	// }
+	//
+	// return merged, true, nil
+	return lastGroup, false, nil
 }
