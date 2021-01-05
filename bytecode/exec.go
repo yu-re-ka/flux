@@ -10,6 +10,8 @@ import (
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/values"
+//	"github.com/influxdata/flux/semantic"
 
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/internal/spec"
@@ -47,6 +49,34 @@ func (q *query) Done() {
 	}
 }
 
+type stack struct {
+	arr []interface{}
+}
+
+func (s *stack) PanicIfNotEmpty() {
+	if len(s.arr) != 0 {
+		panic("bytecode execution stack was not empty")
+	}
+}
+
+func (s *stack) PushSideEffects(se []interpreter.SideEffect) {
+	s.arr = append( s.arr, se )
+}
+func (s *stack) PopSideEffects() []interpreter.SideEffect {
+	i := s.arr[len(s.arr)-1]
+	s.arr = s.arr[:len(s.arr)-1]
+	return i.([]interpreter.SideEffect)
+}
+
+func (s *stack) PushValue(val values.Value) {
+	s.arr = append( s.arr, val )
+}
+func (s *stack) PopValue() values.Value {
+	i := s.arr[len(s.arr)-1]
+	s.arr = s.arr[:len(s.arr)-1]
+	return i.(values.Value)
+}
+
 func (q *query) Cancel() {
 	q.cancel()
 }
@@ -66,16 +96,46 @@ func (q *query) ProfilerResults() (flux.ResultIterator, error) {
 func Execute(ctx context.Context, alloc *memory.Allocator, now time.Time, code []bctypes.OpCode, logger *zap.Logger) (flux.Query, error) {
 	println("-> execution starting")
 
+	stack := &stack{}
+
 	for _, b := range code {
 		switch b.In {
 		case bctypes.IN_NONE:
-			/* ignore. */
+			/* 0, not an instruction */
+			panic("IN_NONE")
+
+		case bctypes.IN_CONS_SIDE_EFFECTS:
+			println("-- IN_CONS_SIDE_EFFECTS")
+
+			stack.PushSideEffects( make([]interpreter.SideEffect, 0) )
+
+		case bctypes.IN_LOAD_VALUE:
+			println("-- IN_LOAD_VALUE")
+			loadValue := b.Args.(interpreter.LoadValue)
+			value := loadValue.Value
+
+			stack.PushValue( value )
+
+		case bctypes.IN_APPEND_SIDE_EFFECT:
+			println("-- IN_APPEND_SIDE_EFFECT")
+
+			// Semanic node comes from the instruction arguments
+			appendSideEffect := b.Args.(interpreter.AppendSideEffect)
+			node := appendSideEffect.Node
+
+			// Value comes from the stack. The side effects to add to is one deeper.
+			value := stack.PopValue()
+			sideEffects := stack.PopSideEffects()
+
+			sideEffects = append( sideEffects, interpreter.SideEffect{Node: node, Value: value} )
+
+			// Result on stack.
+			stack.PushSideEffects( sideEffects )
 
 		case bctypes.IN_PROGRAM_START:
 			println("-- IN_PROGRAM_START")
 
-			programStart := b.Args.(interpreter.ProgramStart)
-			sideEffects := programStart.SideEffects
+			sideEffects := stack.PopSideEffects()
 
 			println("-> starting bytecode program")
 
@@ -150,6 +210,7 @@ func Execute(ctx context.Context, alloc *memory.Allocator, now time.Time, code [
 		}
 	}
 
+	stack.PanicIfNotEmpty()
 	return nil, nil
 }
 

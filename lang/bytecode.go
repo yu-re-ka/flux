@@ -163,8 +163,7 @@ func (p *BytecodeAstProgram) Start(ctx context.Context, alloc *memory.Allocator)
 		return nil, astErr
 	}
 
-	// Runtime evaluation: AST -> side effects
-	//var sideEffects []interpreter.SideEffect
+	// Program synthesis: AST -> byte codes
 	var opCodes []bctypes.OpCode
 	var scope values.Scope
 	var nowOpt values.Value
@@ -211,12 +210,10 @@ func (p *BytecodeTableObjectProgram) Start(ctx context.Context, alloc *memory.Al
 
 	// o := applyOptions()
 
-	sideEffects := []interpreter.SideEffect{
-		{Value: to},
-	}
+	sideEffect := interpreter.SideEffect{Value: to}
 
 	itrp := interpreter.NewInterpreter(nil, nil)
-	err := itrp.SynthesisTo(ctx, sideEffects)
+	err := itrp.SynthesisTo(ctx, sideEffect)
 	if err != nil {
 		return nil, err
 	}

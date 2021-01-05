@@ -152,7 +152,7 @@ func (r *runtime) Synthesis(ctx context.Context, astPkg flux.ASTHandle, es inter
 	}
 
 	// Construct the initial scope for this package.
-	importer := &importer{r: r}
+	importer := &synth_importer{r: r}
 	scope, err := r.newScopeFor("main", importer)
 	if err != nil {
 		return nil, nil, err

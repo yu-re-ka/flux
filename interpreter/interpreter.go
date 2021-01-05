@@ -71,10 +71,6 @@ type SideEffect struct {
 	Value values.Value
 }
 
-type ProgramStart struct {
-	SideEffects []SideEffect
-}
-
 // Eval evaluates the expressions composing a Flux package and returns any side effects that occurred during this evaluation.
 func (itrp *Interpreter) Eval(ctx context.Context, node semantic.Node, scope values.Scope, importer Importer) ([]SideEffect, error) {
 	itrp.sideEffects = itrp.sideEffects[:0]
