@@ -25,7 +25,7 @@ import (
 const (
 	FluxCompilerType   = "flux"
 	ASTCompilerType    = "ast"
-	ToBytecodeCompilerType = "tobc"
+	BytecodeCompilerType = "bytecode"
 )
 
 // AddCompilerMappings adds the Flux specific compiler mappings.
@@ -42,8 +42,8 @@ func AddCompilerMappings(mappings flux.CompilerMappings) error {
 	}); err != nil {
 		return err
 	}
-	if err := mappings.Add(ToBytecodeCompilerType, func() flux.Compiler {
-		return new(ToBytecodeCompiler)
+	if err := mappings.Add(BytecodeCompilerType, func() flux.Compiler {
+		return new(BytecodeCompiler)
 
 	}); err != nil {
 		return err
@@ -589,7 +589,7 @@ func getOptionValues(pkg values.Object, optionName string) ([]string, error) {
 	return rs, nil
 }
 
-type ToBytecodeCompiler struct {
+type BytecodeCompiler struct {
 	Now    time.Time
 	Extern json.RawMessage `json:"extern,omitempty"`
 	Query  string          `json:"query"`
@@ -617,6 +617,16 @@ type BytecodeAstProgram struct {
 
 // Program implements the flux.Program interface.
 // It will execute a compiled plan using an executor.
+type BytecodeTableObjectProgram struct {
+	*BytecodeProgram
+
+	Tables *flux.TableObject
+	Now    time.Time
+}
+
+
+// Program implements the flux.Program interface.
+// It will execute a compiled plan using an executor.
 type BytecodeProgram struct {
 	Logger   *zap.Logger
 	PlanSpec *plan.Spec
@@ -625,14 +635,7 @@ type BytecodeProgram struct {
 	opts *compileOptions
 }
 
-// Program implements the flux.Program interface.
-// It will execute a compiled plan using an executor.
-type BytecodeTableObjectProgram struct {
-	Tables *flux.TableObject
-	Now    time.Time
-}
-
-func (c ToBytecodeCompiler) Compile(ctx context.Context, runtime flux.Runtime) (flux.Program, error) {
+func (c BytecodeCompiler) Compile(ctx context.Context, runtime flux.Runtime) (flux.Program, error) {
 	println("-> to bytecode compiler Compile()")
 	query := c.Query
 
@@ -654,12 +657,13 @@ func (c ToBytecodeCompiler) Compile(ctx context.Context, runtime flux.Runtime) (
 	}, nil
 }
 
-func (c ToBytecodeCompiler) CompilerType() flux.CompilerType {
-	return ToBytecodeCompilerType
+func (c BytecodeCompiler) CompilerType() flux.CompilerType {
+	return BytecodeCompilerType
 }
 
 func (c *BytecodeTableObjectCompiler) Compile(ctx context.Context) (flux.Program, error) {
 	return &BytecodeTableObjectProgram{
+		BytecodeProgram: &BytecodeProgram{},
 		Tables: c.Tables,
 		Now: c.Now,
 	}, nil
@@ -667,6 +671,52 @@ func (c *BytecodeTableObjectCompiler) Compile(ctx context.Context) (flux.Program
 
 func (*BytecodeTableObjectCompiler) CompilerType() flux.CompilerType {
 	panic("TableObjectCompiler is not associated with a CompilerType")
+}
+
+func (p *BytecodeAstProgram) updateOpts(scope values.Scope) error {
+	pkg, ok := getPackageFromScope("planner", scope)
+	if !ok {
+		return nil
+	}
+	lo, po, err := getPlanOptions(pkg)
+	if err != nil {
+		return err
+	}
+	if lo != nil {
+		p.opts.planOptions.logical = append(p.opts.planOptions.logical, lo)
+	}
+	if po != nil {
+		p.opts.planOptions.physical = append(p.opts.planOptions.physical, po)
+	}
+	return nil
+}
+
+func (p *BytecodeAstProgram) updateProfilers(ctx context.Context, scope values.Scope) error {
+	if execute.HaveExecutionDependencies(ctx) {
+		deps := execute.GetExecutionDependencies(ctx)
+		p.tfProfiler = deps.ExecutionOptions.OperatorProfiler
+		p.Profilers = deps.ExecutionOptions.Profilers
+	}
+	return nil
+}
+
+// Prepare the Ast for semantic analysis
+func (p *BytecodeAstProgram) GetAst() (flux.ASTHandle, error) {
+	if p.Now.IsZero() {
+		p.Now = time.Now()
+	}
+	if p.opts == nil {
+		p.opts = defaultOptions()
+	}
+	if p.opts.extern != nil {
+		extern := p.opts.extern
+		if err := p.Runtime.MergePackages(extern, p.Ast); err != nil {
+			return nil, err
+		}
+		p.Ast = extern
+		p.opts.extern = nil
+	}
+	return p.Ast, nil
 }
 
 func (p *BytecodeAstProgram) Start(ctx context.Context, alloc *memory.Allocator) (flux.Query, error) {
@@ -752,122 +802,46 @@ func (p *BytecodeAstProgram) Start(ctx context.Context, alloc *memory.Allocator)
 
 	return res, err
 }
-
-func (p *BytecodeAstProgram) getSpec(ctx context.Context, alloc *memory.Allocator) (*flux.Spec, values.Scope, error) {
-	ast, astErr := p.GetAst()
-	if astErr != nil {
-		return nil, nil, astErr
-	}
-
-	s, cctx := opentracing.StartSpanFromContext(ctx, "eval")
-
-	// Set the now option to our own default and capture the option itself
-	// to allow us to find it after the run. A user might overwrite the
-	// now parameter with their own thing so we don't want to allow for
-	// that interference. If `option now` is used to overwrite this,
-	// the inner value pointed to by the option will be modified.
-	// TODO(jsternberg): Personal note, I don't like how now interacts with
-	// the runtime and flux code in so many places. We should evaluate how
-	// now is used and see if we can improve how now interacts with the system.
-	var nowOpt values.Value
-	sideEffects, scope, err := p.Runtime.Eval(cctx, ast, &ExecOptsConfig{},
-		flux.SetNowOption(p.Now),
-		func(r flux.Runtime, scope values.Scope) {
-			nowOpt, _ = scope.Lookup(interpreter.NowOption)
-			if _, ok := nowOpt.(*values.Option); !ok {
-				panic("now must be an option")
-			}
-		},
-	)
-	if err != nil {
-		return nil, nil, err
-	}
-	s.Finish()
-
-	s, cctx = opentracing.StartSpanFromContext(ctx, "compile")
-	defer s.Finish()
-	nowTime, err := nowOpt.Function().Call(ctx, nil)
-	if err != nil {
-		return nil, nil, errors.Wrap(err, codes.Inherit, "error in evaluating AST while starting program")
-	}
-	p.Now = nowTime.Time().Time()
-	sp, err := spec.FromEvaluation(cctx, sideEffects, p.Now)
-	if err != nil {
-		return nil, nil, errors.Wrap(err, codes.Inherit, "error in query specification while starting program")
-	}
-	return sp, scope, nil
-}
-
-func (p *BytecodeAstProgram) updateOpts(scope values.Scope) error {
-	pkg, ok := getPackageFromScope("planner", scope)
-	if !ok {
-		return nil
-	}
-	lo, po, err := getPlanOptions(pkg)
-	if err != nil {
-		return err
-	}
-	if lo != nil {
-		p.opts.planOptions.logical = append(p.opts.planOptions.logical, lo)
-	}
-	if po != nil {
-		p.opts.planOptions.physical = append(p.opts.planOptions.physical, po)
-	}
-	return nil
-}
-
-func (p *BytecodeAstProgram) updateProfilers(ctx context.Context, scope values.Scope) error {
-	if execute.HaveExecutionDependencies(ctx) {
-		deps := execute.GetExecutionDependencies(ctx)
-		p.tfProfiler = deps.ExecutionOptions.OperatorProfiler
-		p.Profilers = deps.ExecutionOptions.Profilers
-	}
-	return nil
-}
-
-// Prepare the Ast for semantic analysis
-func (p *BytecodeAstProgram) GetAst() (flux.ASTHandle, error) {
-	if p.Now.IsZero() {
-		p.Now = time.Now()
-	}
-	if p.opts == nil {
-		p.opts = defaultOptions()
-	}
-	if p.opts.extern != nil {
-		extern := p.opts.extern
-		if err := p.Runtime.MergePackages(extern, p.Ast); err != nil {
-			return nil, err
-		}
-		p.Ast = extern
-		p.opts.extern = nil
-	}
-	return p.Ast, nil
-}
-
-func (c *BytecodeTableObjectProgram) Start(ctx context.Context, alloc *memory.Allocator) (flux.Query, error) {
-	to := c.Tables
-	now := c.Now
+func (p *BytecodeTableObjectProgram) Start(ctx context.Context, alloc *memory.Allocator) (flux.Query, error) {
+	to := p.Tables
+	now := p.Now
 
 	o := applyOptions()
-	s, err := spec.FromTableObject(ctx, to, now)
+
+	sideEffects := []interpreter.SideEffect{{Value: to}}
+
+	sp, err := spec.FromEvaluation(ctx, sideEffects, now)
 	if err != nil {
 		return nil, err
 	}
 	if o.verbose {
-		log.Println("Query Spec: ", flux.Formatted(s, flux.FmtJSON))
+		log.Println("Query Spec: ", flux.Formatted(sp, flux.FmtJSON))
 	}
-	ps, err := buildPlan(ctx, s, o)
+
+	// Planning: *flux.Spec -> plan.Spec
+	var ps *plan.Spec
+
+	s, _ := opentracing.StartSpanFromContext(ctx, "plan")
+	defer s.Finish()
+	pb := plan.PlannerBuilder{}
+
+	planOptions := o.planOptions
+
+	lopts := planOptions.logical
+	popts := planOptions.physical
+
+	pb.AddLogicalOptions(lopts...)
+	pb.AddPhysicalOptions(popts...)
+
+	ps, err = pb.Build().Plan(ctx, sp)
 	if err != nil {
 		return nil, err
 	}
 
-	np := &BytecodeProgram{
-		PlanSpec: ps,
-	}
+	p.PlanSpec = ps
 
-	return np.Start(ctx, alloc)
+	return p.BytecodeProgram.Start(ctx, alloc)
 }
-
 
 func (p *BytecodeProgram) SetLogger(logger *zap.Logger) {
 	p.Logger = logger
