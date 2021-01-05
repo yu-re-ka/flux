@@ -1,73 +1,69 @@
 package execute
 
-import "github.com/influxdata/flux/execute"
-
-// MessageType designates a specific message type.
-type MessageType = execute.MessageType
-
-const (
-	// CloseMsg is sent when there will be no more messages
-	// from the upstream Dataset.
-	CloseMsg MessageType = iota << 10
-
-	// AbortMsg is sent when an upstream error occurred
-	// and no more messages will be sent.
-	AbortMsg
-
-	// ProcessMsg is sent when a new TableView is ready to
-	// be processed from the upstream Dataset.
-	ProcessMsg
-
-	// FlushKeyMsg is sent when the upstream Dataset wishes
-	// to flush the data associated with a key presently stored
-	// in the Dataset.
-	FlushKeyMsg
-
-	// WatermarkKeyMsg is sent when the upstream Dataset will send
-	// no more rows with a time older than the time in the watermark
-	// for the given key.
-	WatermarkKeyMsg
+import (
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/execute/table"
 )
 
-// Message is a message sent from a Dataset to another Dataset.
-type Message = execute.Message
+type srcMessage execute.DatasetID
 
-type message struct {
-	src DatasetID
+func (m srcMessage) SrcDatasetID() DatasetID {
+	return DatasetID(m)
 }
 
-func (m message) SrcDatasetID() DatasetID {
-	return m.src
+type finishMsg struct {
+	srcMessage
+	err error
 }
 
-type CloseMessage struct {
-	message
+func (m *finishMsg) Type() execute.MessageType {
+	return execute.FinishType
+}
+func (m *finishMsg) Error() error {
+	return m.err
 }
 
-type AbortMessage struct {
-	message
-	Err error
+type processViewMsg struct {
+	srcMessage
+	view table.View
 }
 
-type ProcessMessage struct {
-	message
-	TableView TableView
+func (m *processViewMsg) Type() execute.MessageType {
+	return execute.ProcessViewType
+}
+func (m *processViewMsg) View() table.View {
+	return m.view
 }
 
-type FlushKeyMessage struct {
-	message
-	Key TableViewKey
+type flushKeyMsg struct {
+	srcMessage
+	key flux.GroupKey
 }
 
-type WatermarkKeyMessage struct {
-	message
-	TimeColumn string
-	Watermark  int64
-	Key        TableViewKey
+func (m *flushKeyMsg) Type() execute.MessageType {
+	return execute.FlushKeyType
+}
+func (m *flushKeyMsg) Key() flux.GroupKey {
+	return m.key
 }
 
-func (m CloseMessage) Type() MessageType        { return CloseMsg }
-func (m AbortMessage) Type() MessageType        { return AbortMsg }
-func (m ProcessMessage) Type() MessageType      { return ProcessMsg }
-func (m FlushKeyMessage) Type() MessageType     { return FlushKeyMsg }
-func (m WatermarkKeyMessage) Type() MessageType { return WatermarkKeyMsg }
+type watermarkKeyMsg struct {
+	srcMessage
+	columnName string
+	watermark  int64
+	key        flux.GroupKey
+}
+
+func (m *watermarkKeyMsg) Type() execute.MessageType {
+	return execute.WatermarkKeyType
+}
+func (m *watermarkKeyMsg) ColumnName() string {
+	return m.columnName
+}
+func (m *watermarkKeyMsg) Time() int64 {
+	return m.watermark
+}
+func (m *watermarkKeyMsg) Key() flux.GroupKey {
+	return m.key
+}

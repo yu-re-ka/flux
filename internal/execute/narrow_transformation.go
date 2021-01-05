@@ -4,13 +4,14 @@ import (
 	"github.com/apache/arrow/go/arrow/memory"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/execute/table"
 )
 
 // NarrowTransformation implements a transformation that processes
 // a TableView and does not modify its group key.
 type NarrowTransformation interface {
 	// Process will process the TableView and it may output a new TableView.
-	Process(view TableView, mem memory.Allocator) (TableView, bool, error)
+	Process(view table.View, mem memory.Allocator) (table.View, bool, error)
 }
 
 type narrowTransformation struct {
@@ -30,19 +31,19 @@ func NewNarrowTransformation(id DatasetID, t NarrowTransformation, mem memory.Al
 }
 
 // ProcessMessage will process the incoming message.
-func (n *narrowTransformation) ProcessMessage(m Message) error {
+func (n *narrowTransformation) ProcessMessage(m execute.Message) error {
 	switch m := m.(type) {
-	case CloseMessage:
-		n.d.Close()
-	case AbortMessage:
-		n.d.Abort(m.Err)
-	case ProcessMessage:
-		view, ok, err := n.t.Process(m.TableView, n.d.mem)
-		if err != nil {
+	case execute.FinishMsg:
+		n.Finish(m.SrcDatasetID(), m.Error())
+		return nil
+	case execute.ProcessViewMsg:
+		view, ok, err := n.t.Process(m.View(), n.d.mem)
+		if err != nil || !ok {
 			return err
-		} else if ok {
-			n.d.Process(view)
 		}
+		return n.d.Process(view)
+	case execute.ProcessMsg:
+		return n.Process(m.SrcDatasetID(), m.Table())
 	}
 	return nil
 }
@@ -56,10 +57,10 @@ func (n *narrowTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 // Finish is implemented to remain compatible with legacy upstreams.
 func (n *narrowTransformation) Finish(id execute.DatasetID, err error) {
 	if err != nil {
-		n.d.Abort(err)
+		_ = n.d.Abort(err)
 		return
 	}
-	n.d.Close()
+	_ = n.d.Close()
 }
 
 func (n *narrowTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey) error {

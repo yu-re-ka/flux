@@ -7,25 +7,37 @@ import (
 	"sync"
 	"sync/atomic"
 
+	"github.com/apache/arrow/go/arrow/memory"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/internal/execute/table"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
 )
 
+// Transport is an interface for handling raw messages.
 type Transport interface {
-	Transformation
-	// Finished reports when the Transport has completed and there is no more work to do.
+	// ProcessMessage will process a message in the Transport.
+	ProcessMessage(m Message) error
+}
+
+// AsyncTransport is a Transport that performs its work in a separate goroutine.
+type AsyncTransport interface {
+	Transport
+	// Finished reports when the AsyncTransport has completed and there is no more work to do.
 	Finished() <-chan struct{}
 }
 
-// consecutiveTransport implements Transport by transporting data consecutively to the downstream Transformation.
+var _ Transformation = (*consecutiveTransport)(nil)
+
+// consecutiveTransport implements AsyncTransport by transporting data consecutively to the downstream Transformation.
 type consecutiveTransport struct {
 	dispatcher Dispatcher
 
-	t        Transformation
+	t        Transport
 	messages MessageQueue
+	label    string
 	stack    []interpreter.StackEntry
 
 	finished chan struct{}
@@ -36,12 +48,13 @@ type consecutiveTransport struct {
 	inflight       int32
 }
 
-func newConsecutiveTransport(dispatcher Dispatcher, t Transformation, n plan.Node) *consecutiveTransport {
+func newConsecutiveTransport(dispatcher Dispatcher, t Transformation, n plan.Node, mem memory.Allocator) *consecutiveTransport {
 	return &consecutiveTransport{
 		dispatcher: dispatcher,
-		t:          t,
+		t:          WrapTransformationInTransport(t, mem),
 		// TODO(nathanielc): Have planner specify message queue initial buffer size.
 		messages: newMessageQueue(64),
+		label:    string(n.ID()),
 		stack:    n.CallStack(),
 		finished: make(chan struct{}),
 	}
@@ -159,6 +172,11 @@ func (t *consecutiveTransport) pushMsg(m Message) {
 	t.schedule()
 }
 
+func (t *consecutiveTransport) ProcessMessage(m Message) error {
+	t.pushMsg(m)
+	return nil
+}
+
 const (
 	// consecutiveTransport schedule states
 	idle int32 = iota
@@ -188,7 +206,7 @@ PROCESS:
 	i := 0
 	for m := t.messages.Pop(); m != nil; m = t.messages.Pop() {
 		atomic.AddInt32(&t.inflight, -1)
-		if f, err := processMessage(ctx, t.t, m); err != nil || f {
+		if f, err := t.processMessage(ctx, m); err != nil || f {
 			// Set the error if there was any
 			t.setErr(err)
 
@@ -196,7 +214,11 @@ PROCESS:
 			if t.tryTransition(running, finished) {
 				// Call Finish if we have not already
 				if !f {
-					t.t.Finish(m.SrcDatasetID(), t.err())
+					m := &finishMsg{
+						srcMessage: srcMessage(m.SrcDatasetID()),
+						err:        t.err(),
+					}
+					_ = t.t.ProcessMessage(m)
 				}
 				// We are finished
 				close(t.finished)
@@ -223,45 +245,17 @@ PROCESS:
 	}
 }
 
-func (t *consecutiveTransport) Label() string {
-	return t.t.Label()
-}
-
-func (t *consecutiveTransport) SetLabel(label string) {
-	t.t.SetLabel(label)
-}
-
 // processMessage processes the message on t.
 // The return value is true if the message was a FinishMsg.
-func processMessage(ctx context.Context, t Transformation, m Message) (finished bool, err error) {
-	switch m := m.(type) {
-	case RetractTableMsg:
-		err = t.RetractTable(m.SrcDatasetID(), m.Key())
-	case ProcessMsg:
-		b := m.Table()
-		_, span := StartSpanFromContext(ctx, reflect.TypeOf(t).String(), t.Label())
-		err = t.Process(m.SrcDatasetID(), b)
-		if span != nil {
-			span.Finish()
-		}
-	case UpdateWatermarkMsg:
-		err = t.UpdateWatermark(m.SrcDatasetID(), m.WatermarkTime())
-	case UpdateProcessingTimeMsg:
-		err = t.UpdateProcessingTime(m.SrcDatasetID(), m.ProcessingTime())
-	case FinishMsg:
-		t.Finish(m.SrcDatasetID(), m.Error())
-		finished = true
-	default:
-		// If the message type is one defined by an extension,
-		// pass it directly to the ProcessMessage method
-		// if that is defined on the transformation.
-		if t, ok := t.(interface {
-			ProcessMessage(m Message) error
-		}); ok {
-			err = t.ProcessMessage(m)
-		}
+func (t *consecutiveTransport) processMessage(ctx context.Context, m Message) (finished bool, err error) {
+	if _, span := StartSpanFromContext(ctx, reflect.TypeOf(t.t).String(), t.label); span != nil {
+		defer span.Finish()
 	}
-	return
+	if err := t.t.ProcessMessage(m); err != nil {
+		return false, err
+	}
+	finished = isFinishMessage(m)
+	return finished, nil
 }
 
 type Message interface {
@@ -276,7 +270,25 @@ const (
 	ProcessType
 	UpdateWatermarkType
 	UpdateProcessingTimeType
+
+	// FinishType is sent when there are no more messages from
+	// the upstream Dataset or an upstream error occurred that
+	// caused the execution to abort.
 	FinishType
+
+	// ProcessViewType is sent when a new table.View is ready to
+	// be processed from the upstream Dataset.
+	ProcessViewType
+
+	// FlushKeyType is sent when the upstream Dataset wishes
+	// to flush the data associated with a key presently stored
+	// in the Dataset.
+	FlushKeyType
+
+	// WatermarkKeyType is sent when the upstream Dataset will send
+	// no more rows with a time older than the time in the watermark
+	// for the given key.
+	WatermarkKeyType
 )
 
 type srcMessage DatasetID
@@ -368,4 +380,89 @@ func (m *finishMsg) Type() MessageType {
 }
 func (m *finishMsg) Error() error {
 	return m.err
+}
+
+type ProcessViewMsg interface {
+	Message
+	View() table.View
+}
+
+type FlushKeyMsg interface {
+	Message
+	Key() flux.GroupKey
+}
+
+type WatermarkKeyMsg interface {
+	Message
+	ColumnName() string
+	Time() int64
+	Key() flux.GroupKey
+}
+
+// transformationTransportAdapter will translate Message values sent to
+// a Transport to an underlying Transformation.
+type transformationTransportAdapter struct {
+	t     Transformation
+	cache table.BuilderCache
+}
+
+// WrapTransformationInTransport will wrap a Transformation into
+// a Transport to be used for the execution engine.
+func WrapTransformationInTransport(t Transformation, mem memory.Allocator) Transport {
+	// If the Transformation implements the Transport interface,
+	// then we can just use that directly.
+	if tr, ok := t.(Transport); ok {
+		return tr
+	}
+	return &transformationTransportAdapter{
+		t: t,
+		cache: table.BuilderCache{
+			New: func(key flux.GroupKey) table.Builder {
+				return table.NewBufferedBuilder(key, mem)
+			},
+		},
+	}
+}
+
+func (t *transformationTransportAdapter) ProcessMessage(m Message) error {
+	switch m := m.(type) {
+	case RetractTableMsg:
+		return t.t.RetractTable(m.SrcDatasetID(), m.Key())
+	case ProcessMsg:
+		b := m.Table()
+		return t.t.Process(m.SrcDatasetID(), b)
+	case UpdateWatermarkMsg:
+		return t.t.UpdateWatermark(m.SrcDatasetID(), m.WatermarkTime())
+	case UpdateProcessingTimeMsg:
+		return t.t.UpdateProcessingTime(m.SrcDatasetID(), m.ProcessingTime())
+	case FinishMsg:
+		t.t.Finish(m.SrcDatasetID(), m.Error())
+		return nil
+	case ProcessViewMsg:
+		// Retrieve the buffered builder and append the
+		// table view to it. The view is implemented using
+		// arrow.TableBuffer which is compatible with
+		// flux.ColReader so we can append it directly.
+		b, _ := table.GetBufferedBuilder(m.View().Key(), &t.cache)
+		buffer := m.View().Buffer()
+		return b.AppendBuffer(&buffer)
+	case FlushKeyMsg:
+		// Retrieve the buffered builder for the given key
+		// and send the data to the next transformation.
+		tbl, err := t.cache.Table(m.Key())
+		if err != nil {
+			return err
+		}
+		t.cache.ExpireTable(m.Key())
+		return t.t.Process(m.SrcDatasetID(), tbl)
+	default:
+		// Message is not handled by older Transformation implementations.
+		return nil
+	}
+}
+
+// isFinishMessage will return true if the Message is a FinishMsg.
+func isFinishMessage(m Message) bool {
+	_, ok := m.(FinishMsg)
+	return ok
 }
