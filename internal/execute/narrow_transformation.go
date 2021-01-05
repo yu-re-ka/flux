@@ -10,7 +10,7 @@ import (
 // NarrowTransformation implements a transformation that processes
 // a TableView and does not modify its group key.
 type NarrowTransformation interface {
-	// Process will process the TableView and it may output a new TableView.
+	// Process will process the TableView.
 	Process(view table.View, d *Dataset, mem memory.Allocator) error
 }
 
@@ -39,6 +39,8 @@ func (n *narrowTransformation) ProcessMessage(m execute.Message) error {
 		return nil
 	case execute.ProcessViewMsg:
 		return n.t.Process(m.View(), n.d, n.d.mem)
+	case execute.FlushKeyMsg:
+		return n.d.FlushKey(m.Key())
 	case execute.ProcessMsg:
 		return n.Process(m.SrcDatasetID(), m.Table())
 	}

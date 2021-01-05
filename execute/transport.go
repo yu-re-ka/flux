@@ -3,7 +3,6 @@ package execute
 import (
 	"context"
 	"fmt"
-	"reflect"
 	"sync"
 	"sync/atomic"
 
@@ -14,6 +13,7 @@ import (
 	"github.com/influxdata/flux/internal/execute/table"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
+	"github.com/opentracing/opentracing-go"
 )
 
 // Transport is an interface for handling raw messages.
@@ -248,7 +248,8 @@ PROCESS:
 // processMessage processes the message on t.
 // The return value is true if the message was a FinishMsg.
 func (t *consecutiveTransport) processMessage(ctx context.Context, m Message) (finished bool, err error) {
-	if _, span := StartSpanFromContext(ctx, reflect.TypeOf(t.t).String(), t.label); span != nil {
+	if _, span := StartSpanFromContext(ctx, m.Type().String(), t.label); span != nil {
+		m.SetTags(span)
 		defer span.Finish()
 	}
 	if err := t.t.ProcessMessage(m); err != nil {
@@ -277,6 +278,9 @@ type Message interface {
 	// This is useful when the Message has to be sent to multiple
 	// receivers from a single sender.
 	Dup() Message
+
+	// SetTags will set the tags on the span.
+	SetTags(span opentracing.Span)
 }
 
 type MessageType int
@@ -307,12 +311,38 @@ const (
 	WatermarkKeyType
 )
 
+func (m MessageType) String() string {
+	switch m {
+	case RetractTableType:
+		return "RetractTableType"
+	case ProcessType:
+		return "ProcessType"
+	case UpdateWatermarkType:
+		return "UpdateWatermarkType"
+	case UpdateProcessingTimeType:
+		return "UpdateProcessingTimeType"
+	case FinishType:
+		return "FinishType"
+	case ProcessViewType:
+		return "ProcessViewType"
+	case FlushKeyType:
+		return "FlushKeyType"
+	case WatermarkKeyType:
+		return "WatermarkKeyType"
+	default:
+		return "UnknownMessageType"
+	}
+}
+
 type srcMessage DatasetID
 
 func (m srcMessage) SrcDatasetID() DatasetID {
 	return DatasetID(m)
 }
 func (m srcMessage) Ack() {}
+func (m srcMessage) SetTags(span opentracing.Span) {
+	span.SetTag("dataset", DatasetID(m).String())
+}
 
 type RetractTableMsg interface {
 	Message
@@ -332,6 +362,10 @@ func (m *retractTableMsg) Key() flux.GroupKey {
 }
 func (m *retractTableMsg) Dup() Message {
 	return m
+}
+func (m *retractTableMsg) SetTags(span opentracing.Span) {
+	m.srcMessage.SetTags(span)
+	span.SetTag("key", m.key.String())
 }
 
 type ProcessMsg interface {
@@ -361,6 +395,10 @@ func (m *processMsg) Dup() Message {
 	dup.table = cpy
 	return &dup
 }
+func (m *processMsg) SetTags(span opentracing.Span) {
+	m.srcMessage.SetTags(span)
+	span.SetTag("key", m.table.Key().String())
+}
 
 type UpdateWatermarkMsg interface {
 	Message
@@ -380,6 +418,10 @@ func (m *updateWatermarkMsg) WatermarkTime() Time {
 }
 func (m *updateWatermarkMsg) Dup() Message {
 	return m
+}
+func (m *updateWatermarkMsg) SetTags(span opentracing.Span) {
+	m.srcMessage.SetTags(span)
+	span.SetTag("time", int64(m.time))
 }
 
 type UpdateProcessingTimeMsg interface {
@@ -401,6 +443,10 @@ func (m *updateProcessingTimeMsg) ProcessingTime() Time {
 func (m *updateProcessingTimeMsg) Dup() Message {
 	return m
 }
+func (m *updateProcessingTimeMsg) SetTags(span opentracing.Span) {
+	m.srcMessage.SetTags(span)
+	span.SetTag("time", int64(m.time))
+}
 
 type FinishMsg interface {
 	Message
@@ -420,6 +466,12 @@ func (m *finishMsg) Error() error {
 }
 func (m *finishMsg) Dup() Message {
 	return m
+}
+func (m *finishMsg) SetTags(span opentracing.Span) {
+	m.srcMessage.SetTags(span)
+	if m.err != nil {
+		span.SetTag("error", m.err.Error())
+	}
 }
 
 type ProcessViewMsg interface {

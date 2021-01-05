@@ -76,7 +76,7 @@ type groupTransformation struct {
 
 func NewGroupTransformation(spec *GroupProcedureSpec, id execute.DatasetID, mem *memory.Allocator) (execute.Transformation, execute.Dataset) {
 	sort.Strings(spec.GroupKeys)
-	return executeutil.NewNarrowTransformation(id, &groupTransformation{
+	return executeutil.NewGroupTransformation(id, &groupTransformation{
 		mode: flux.GroupMode(spec.GroupMode),
 		keys: spec.GroupKeys,
 	}, mem)

@@ -60,11 +60,6 @@ func (b *BufferedBuilder) AppendBuffer(cr flux.ColReader) error {
 }
 
 func (b *BufferedBuilder) appendBuffer(cr flux.ColReader, mem memory.Allocator) error {
-	// Do not append a buffer if the ColReader is empty.
-	if cr.Len() == 0 {
-		return nil
-	}
-
 	// Construct a table buffer and put the arrays in the correct index.
 	buffer := &arrow.TableBuffer{
 		GroupKey: b.GroupKey,

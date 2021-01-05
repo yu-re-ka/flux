@@ -81,6 +81,14 @@ func (d *Dataset) Process(view table.View) error {
 	return d.sendMessage(m)
 }
 
+func (d *Dataset) FlushKey(key flux.GroupKey) error {
+	m := &flushKeyMsg{
+		srcMessage: srcMessage(d.id),
+		key:        key,
+	}
+	return d.sendMessage(m)
+}
+
 func (d *Dataset) UpdateWatermarkForKey(key flux.GroupKey, column string, t execute.Time) error {
 	m := &watermarkKeyMsg{
 		srcMessage: srcMessage(d.id),

@@ -36,11 +36,3 @@ type AggregateTransformation interface {
 	// old state will be kept.
 	Process(view table.View, state interface{}) (interface{}, bool, error)
 }
-
-// GroupTransformation is a transformation that can modify the group key.
-// Other than modifying the group key, it will output a TableView for each TableView
-// that it processes.
-type GroupTransformation interface {
-	// Process will process the TableView and it may output a new TableView with a new group key.
-	Process(view table.View) (table.View, bool, error)
-}
