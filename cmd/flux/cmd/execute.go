@@ -9,7 +9,9 @@ import (
 	"github.com/influxdata/flux/dependencies/influxdb"
 	"github.com/influxdata/flux/fluxinit"
 	"github.com/influxdata/flux/repl"
+	"github.com/opentracing/opentracing-go"
 	"github.com/spf13/cobra"
+	jaegercfg "github.com/uber/jaeger-client-go/config"
 )
 
 // executeCmd represents the execute command
@@ -47,8 +49,28 @@ func injectDependencies(ctx context.Context) (context.Context, flux.Dependencies
 }
 
 func execute(cmd *cobra.Command, args []string) error {
+	cfg, err := jaegercfg.FromEnv()
+	if err != nil {
+		return err
+	}
+	if cfg.ServiceName == "" {
+		cfg.ServiceName = "flux"
+	}
+
+	tracer, closer, err := cfg.NewTracer()
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err := closer.Close(); err != nil {
+			fmt.Println("Error:", err)
+		}
+	}()
+
+	opentracing.SetGlobalTracer(tracer)
 	fluxinit.FluxInit()
-	ctx, deps := injectDependencies(context.Background())
+	ctx := flux.WithQueryTracingEnabled(context.Background())
+	ctx, deps := injectDependencies(ctx)
 	r := repl.New(ctx, deps)
 	if err := r.Input(args[0]); err != nil {
 		return fmt.Errorf("failed to execute query: %v", err)
