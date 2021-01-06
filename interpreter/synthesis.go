@@ -88,31 +88,9 @@ func (itrp *Interpreter) synFile(ctx context.Context, file *semantic.File, scope
 		}
 	}
 	for _, stmt := range file.Body {
-		val, err := itrp.doStatement(ctx, stmt, scope)
+		err := itrp.synStatement(ctx, stmt, scope)
 		if err != nil {
 			return err
-		}
-		if es, ok := stmt.(*semantic.ExpressionStatement); ok {
-			// Only in the main package are all unassigned package
-			// level expressions coerced into producing side effects.
-			if itrp.pkgName == PackageMain {
-
-				// First push the value.
-				lv := LoadValue{
-					Value: val,
-				}
-				itrp.appendCode( bctypes.IN_LOAD_VALUE, lv )
-
-				// Add the side effect. The node is static and therefore will
-				// come from the instructio's arguments. The value comes from
-				// the stack.
-				ase := AppendSideEffect{
-					Node: es,
-				}
-				itrp.appendCode( bctypes.IN_APPEND_SIDE_EFFECT, ase )
-
-				itrp.sideEffects = append(itrp.sideEffects, SideEffect{Node: es, Value: val})
-			}
 		}
 	}
 	return nil
@@ -129,9 +107,62 @@ func (itrp *Interpreter) synImport(dec *semantic.ImportDeclaration, scope values
 		name = dec.As.Name
 	}
 	scope.Set(name, pkg)
+	return nil
+}
 
-//	// Packages can import side effects
-//	itrp.sideEffects = append(itrp.sideEffects, pkg.SideEffects()...)
+// synStatement returns the resolved value of a top-level statement
+func (itrp *Interpreter) synStatement(ctx context.Context, stmt semantic.Statement, scope values.Scope) error {
+	scope.SetReturn(values.InvalidValue)
+	switch s := stmt.(type) {
+	case *semantic.OptionStatement:
+		_, err := itrp.doOptionStatement(ctx, s, scope)
+		return err
+	case *semantic.BuiltinStatement:
+		// Nothing to do
+		return nil
+	case *semantic.TestStatement:
+		_, err := itrp.doTestStatement(ctx, s, scope)
+		return err
+	case *semantic.NativeVariableAssignment:
+		_, err := itrp.doVariableAssignment(ctx, s, scope)
+		return err
+	case *semantic.MemberAssignment:
+		_, err := itrp.doMemberAssignment(ctx, s, scope)
+		return err
+	case *semantic.ExpressionStatement:
+		v, err := itrp.doExpression(ctx, s.Expression, scope)
+		if err != nil {
+			return err
+		}
+
+		// Only in the main package are all unassigned package
+		// level expressions coerced into producing side effects.
+		if itrp.pkgName == PackageMain {
+			// First push the value.
+			lv := LoadValue{
+				Value: v,
+			}
+			itrp.appendCode( bctypes.IN_LOAD_VALUE, lv )
+
+			// Add the side effect. The node is static and therefore will
+			// come from the instructio's arguments. The value comes from
+			// the stack.
+			ase := AppendSideEffect{
+				Node: s,
+			}
+			itrp.appendCode( bctypes.IN_APPEND_SIDE_EFFECT, ase )
+		}
+		scope.SetReturn(v)
+		return nil
+	case *semantic.ReturnStatement:
+		v, err := itrp.doExpression(ctx, s.Argument, scope)
+		if err != nil {
+			return err
+		}
+		scope.SetReturn(v)
+	default:
+		return errors.Newf(codes.Internal, "unsupported statement type %T", stmt)
+	}
 	return nil
 }
 
