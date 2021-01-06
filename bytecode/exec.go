@@ -11,6 +11,7 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/values"
+	"github.com/influxdata/flux/semantic"
 
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/internal/spec"
@@ -21,32 +22,6 @@ import (
 	"github.com/influxdata/flux/execute"
 	"go.uber.org/zap"
 )
-
-// query implements the flux.Query interface.
-type query struct {
-	results chan flux.Result
-	stats   flux.Statistics
-	alloc   *memory.Allocator
-	span    opentracing.Span
-	cancel  func()
-	err     error
-	wg      sync.WaitGroup
-}
-
-func (q *query) Results() <-chan flux.Result {
-	return q.results
-}
-
-func (q *query) Done() {
-	q.cancel()
-	q.wg.Wait()
-	q.stats.MaxAllocated = q.alloc.MaxAllocated()
-	q.stats.TotalAllocated = q.alloc.TotalAllocated()
-	if q.span != nil {
-		q.span.Finish()
-		q.span = nil
-	}
-}
 
 type stack struct {
 	arr []interface{}
@@ -80,6 +55,33 @@ func (s *stack) Pop() {
 	s.arr = s.arr[:len(s.arr)-1]
 }
 
+
+// query implements the flux.Query interface.
+type query struct {
+	results chan flux.Result
+	stats   flux.Statistics
+	alloc   *memory.Allocator
+	span    opentracing.Span
+	cancel  func()
+	err     error
+	wg      sync.WaitGroup
+}
+
+func (q *query) Results() <-chan flux.Result {
+	return q.results
+}
+
+func (q *query) Done() {
+	q.cancel()
+	q.wg.Wait()
+	q.stats.MaxAllocated = q.alloc.MaxAllocated()
+	q.stats.TotalAllocated = q.alloc.TotalAllocated()
+	if q.span != nil {
+		q.span.Finish()
+		q.span = nil
+	}
+}
+
 func (q *query) Cancel() {
 	q.cancel()
 }
@@ -96,6 +98,17 @@ func (q *query) ProfilerResults() (flux.ResultIterator, error) {
 	return nil, nil
 }
 
+func functionName(call *semantic.CallExpression) string {
+	switch callee := call.Callee.(type) {
+	case *semantic.IdentifierExpression:
+		return callee.Name
+	case *semantic.MemberExpression:
+		return callee.Property
+	default:
+		return "<anonymous function>"
+	}
+}
+
 func Execute(ctx context.Context, alloc *memory.Allocator, now time.Time, code []bctypes.OpCode, logger *zap.Logger, scope values.Scope) (flux.Query, error) {
 	println("-> execution starting")
 
@@ -109,18 +122,63 @@ func Execute(ctx context.Context, alloc *memory.Allocator, now time.Time, code [
 
 		case bctypes.IN_CALL:
 			callOp := b.Args.(interpreter.CallOp)
+			call := callOp.Call
+			pipeArgument := callOp.PipeArgument
+			pipe  := callOp.Pipe
+			properties := callOp.Properties
 
-			// Pop the args and result of looking up the callee.
-			pop := callOp.Nargs
-			for ; pop > 0; pop-- {
-				stack.Pop()
+			argObj, err := values.BuildObject(func(set values.ObjectSetter) error {
+				// Pipe evaluated last, popped first.
+				if pipe != nil {
+					value := stack.PopValue()
+					set(pipeArgument, value)
+				}
+
+				// Popping call args requires iterating in reverse.
+				for i := len(properties)-1; i >= 0; i-- {
+					p := properties[i]
+					if pipe != nil && p.Key.Key() == pipeArgument {
+						return errors.Newf(codes.Invalid, "pipe argument also specified as a keyword parameter: %q", p.Key.Key())
+					}
+					value := stack.PopValue()
+					set(p.Key.Key(), value)
+				}
+
+				return nil
+			})
+			if err != nil {
+				return nil, err
 			}
 
-			who := stack.PopValue()
-			fmt.Printf("-- IN_CALL: %v %v\n", callOp.Nargs, who)
+			callee := stack.PopValue()
+
+			f := callee.Function()
+
+			// Check if the function is an interpFunction and rebind it.
+			// This is needed so that any side effects produced when
+			// calling this function are bound to the correct interpreter.
+//			if af, ok := f.(function); ok {
+//				af.itrp = itrp
+//				f = af
+//			}
+
+			// Call the function. We attach source location information
+			// to this call so it can be available for the function if needed.
+			// We do not attach this source location information when evaluating
+			// arguments as this source location information is only
+			// for the currently called function.
+			fname := functionName(call)
+
+			// ctx = withStackEntry(ctx, fname, call.Location())
+
+			value, err := f.Call(ctx, argObj)
+			if err != nil {
+				return nil, errors.Wrapf(err, codes.Inherit, "error calling function %q @%s", fname, call.Location())
+			}
+			fmt.Printf("-- IN_CALL: %v\n", callee)
 
 			// This is cheating. Push the return value computed during interpretation.
-			stack.PushValue( callOp.RetVal )
+			stack.PushValue( value )
 
 		case bctypes.IN_SCOPE_LOOKUP:
 			scopeLookup := b.Args.(interpreter.ScopeLookup)

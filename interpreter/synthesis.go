@@ -25,8 +25,10 @@ type ScopeLookup struct {
 }
 
 type CallOp struct {
-	Nargs int
-	RetVal values.Value
+	Call *semantic.CallExpression
+	Properties []*semantic.Property
+	Pipe semantic.Expression
+	PipeArgument string
 }
 
 func (itrp *Interpreter) Code() []bctypes.OpCode {
@@ -360,7 +362,7 @@ func (itrp *Interpreter) synCall(ctx context.Context, call *semantic.CallExpress
 	if ft.Nature() != semantic.Function {
 		return nil, errors.Newf(codes.Invalid, "cannot call function: %s: value is of type %v", call.Callee.Location(), callee.Type())
 	}
-	argObj, err := itrp.synArguments(ctx, call.Arguments, scope, ft, call.Pipe)
+	argObj, pipeArgument, err := itrp.synArguments(ctx, call.Arguments, scope, ft, call.Pipe)
 	if err != nil {
 		return nil, err
 	}
@@ -391,28 +393,25 @@ func (itrp *Interpreter) synCall(ctx context.Context, call *semantic.CallExpress
 		itrp.sideEffects = append(itrp.sideEffects, SideEffect{Node: call, Value: value})
 	}
 
-	nargs := len(call.Arguments.Properties)
-	if call.Pipe != nil {
-		nargs += 1
-	}
-
 	co := CallOp{
-		Nargs: nargs,
-		RetVal: value,
+		Call: call,
+		Properties: call.Arguments.Properties,
+		Pipe: call.Pipe,
+		PipeArgument: pipeArgument,
 	}
 	itrp.appendCode( bctypes.IN_CALL, co )
 
 	return value, nil
 }
 
-func (itrp *Interpreter) synArguments(ctx context.Context, args *semantic.ObjectExpression, scope values.Scope, funcType semantic.MonoType, pipe semantic.Expression) (values.Object, error) {
+func (itrp *Interpreter) synArguments(ctx context.Context, args *semantic.ObjectExpression, scope values.Scope, funcType semantic.MonoType, pipe semantic.Expression) (values.Object, string, error) {
 	if label, nok := itrp.checkForDuplicates(args.Properties); nok {
-		return nil, errors.Newf(codes.Invalid, "duplicate keyword parameter specified: %q", label)
+		return nil, "", errors.Newf(codes.Invalid, "duplicate keyword parameter specified: %q", label)
 	}
 
 	if pipe == nil && (args == nil || len(args.Properties) == 0) {
 		typ := semantic.NewObjectType(nil)
-		return values.NewObject(typ), nil
+		return values.NewObject(typ), "", nil
 	}
 
 	// Determine which argument matches the pipe argument.
@@ -420,13 +419,13 @@ func (itrp *Interpreter) synArguments(ctx context.Context, args *semantic.Object
 	if pipe != nil {
 		n, err := funcType.NumArguments()
 		if err != nil {
-			return nil, err
+			return nil, "", err
 		}
 
 		for i := 0; i < n; i++ {
 			arg, err := funcType.Argument(i)
 			if err != nil {
-				return nil, err
+				return nil, "", err
 			}
 			if arg.Pipe() {
 				pipeArgument = string(arg.Name())
@@ -435,7 +434,7 @@ func (itrp *Interpreter) synArguments(ctx context.Context, args *semantic.Object
 		}
 
 		if pipeArgument == "" {
-			return nil, errors.New(codes.Invalid, "pipe parameter value provided to function with no pipe parameter defined")
+			return nil, "", errors.New(codes.Invalid, "pipe parameter value provided to function with no pipe parameter defined")
 		}
 	}
 
@@ -444,18 +443,18 @@ func (itrp *Interpreter) synArguments(ctx context.Context, args *semantic.Object
 	for _, p := range args.Properties {
 		_, err := itrp.synExpression(ctx, p.Value, scope)
 		if err != nil {
-			return nil, err
+			return nil, "", err
 		}
 
 	}
 	if pipe != nil {
 		_, err := itrp.synExpression(ctx, pipe, scope)
 		if err != nil {
-			return nil, err
+			return nil, "", err
 		}
 	}
 
-	return values.BuildObject(func(set values.ObjectSetter) error {
+	value, err := values.BuildObject(func(set values.ObjectSetter) error {
 		for _, p := range args.Properties {
 			if pipe != nil && p.Key.Key() == pipeArgument {
 				return errors.Newf(codes.Invalid, "pipe argument also specified as a keyword parameter: %q", p.Key.Key())
@@ -476,6 +475,8 @@ func (itrp *Interpreter) synArguments(ctx context.Context, args *semantic.Object
 		}
 		return nil
 	})
+
+	return value, pipeArgument, err
 }
 
 func (itrp *Interpreter) synLiteral(lit semantic.Literal) (values.Value, error) {
