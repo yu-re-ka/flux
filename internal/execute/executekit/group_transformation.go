@@ -1,4 +1,4 @@
-package execute
+package executekit
 
 import (
 	"github.com/apache/arrow/go/arrow/memory"

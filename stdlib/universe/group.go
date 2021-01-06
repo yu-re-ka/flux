@@ -11,7 +11,7 @@ import (
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
-	executeutil "github.com/influxdata/flux/internal/execute"
+	"github.com/influxdata/flux/internal/execute/executekit"
 	"github.com/influxdata/flux/internal/execute/function"
 	"github.com/influxdata/flux/internal/execute/table"
 	"github.com/influxdata/flux/memory"
@@ -76,13 +76,13 @@ type groupTransformation struct {
 
 func NewGroupTransformation(spec *GroupProcedureSpec, id execute.DatasetID, mem *memory.Allocator) (execute.Transformation, execute.Dataset) {
 	sort.Strings(spec.GroupKeys)
-	return executeutil.NewGroupTransformation(id, &groupTransformation{
+	return executekit.NewGroupTransformation(id, &groupTransformation{
 		mode: flux.GroupMode(spec.GroupMode),
 		keys: spec.GroupKeys,
 	}, mem)
 }
 
-func (t *groupTransformation) Process(view table.View, d *executeutil.Dataset, mem arrowmem.Allocator) error {
+func (t *groupTransformation) Process(view table.View, d *executekit.Dataset, mem arrowmem.Allocator) error {
 	// Determine the group key of this table if the grouped columns
 	// are all part of the group key.
 	if key, ok, err := t.getTableKey(view); err != nil {
@@ -158,7 +158,7 @@ func (t *groupTransformation) getTableKey(tbl table.View) (flux.GroupKey, bool, 
 
 // groupByRow will determine which table each row belongs to
 // and to append them to that table.
-func (t *groupTransformation) groupByRow(tbl table.View, d *executeutil.Dataset, mem arrowmem.Allocator) error {
+func (t *groupTransformation) groupByRow(tbl table.View, d *executekit.Dataset, mem arrowmem.Allocator) error {
 	var on map[string]bool
 	switch t.mode {
 	case flux.GroupModeBy:

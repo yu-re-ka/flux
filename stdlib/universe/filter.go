@@ -14,7 +14,7 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/arrowutil"
 	"github.com/influxdata/flux/internal/errors"
-	executeutil "github.com/influxdata/flux/internal/execute"
+	"github.com/influxdata/flux/internal/execute/executekit"
 	"github.com/influxdata/flux/internal/execute/function"
 	"github.com/influxdata/flux/internal/execute/table"
 	"github.com/influxdata/flux/memory"
@@ -61,7 +61,7 @@ type FilterProcedureSpec struct {
 
 func (s *FilterProcedureSpec) CreateTransformation(id execute.DatasetID, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
 	fn := execute.NewRowPredicateFn(s.Fn.Fn, compiler.ToScope(s.Fn.Scope))
-	t, d := executeutil.NewNarrowTransformation(id, &filterTransformation{
+	t, d := executekit.NewNarrowTransformation(id, &filterTransformation{
 		fn:              fn,
 		ctx:             a.Context(),
 		keepEmptyTables: s.OnEmptyMode == KeepEmptyTables,
@@ -85,7 +85,7 @@ type filterTransformation struct {
 
 func NewFilterTransformation(ctx context.Context, spec *FilterProcedureSpec, id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset, error) {
 	fn := execute.NewRowPredicateFn(spec.Fn.Fn, compiler.ToScope(spec.Fn.Scope))
-	t, d := executeutil.NewNarrowTransformation(id, &filterTransformation{
+	t, d := executekit.NewNarrowTransformation(id, &filterTransformation{
 		fn:              fn,
 		ctx:             ctx,
 		keepEmptyTables: spec.OnEmptyMode == KeepEmptyTables,
@@ -93,7 +93,7 @@ func NewFilterTransformation(ctx context.Context, spec *FilterProcedureSpec, id 
 	return t, d, nil
 }
 
-func (t *filterTransformation) Process(view table.View, d *executeutil.Dataset, mem arrowmem.Allocator) error {
+func (t *filterTransformation) Process(view table.View, d *executekit.Dataset, mem arrowmem.Allocator) error {
 	// Prepare the function for the column types.
 	cols := view.Cols()
 	fn, err := t.fn.Prepare(cols)
@@ -160,7 +160,7 @@ func (t *filterTransformation) canFilterByKey(fn *execute.RowPredicatePreparedFn
 	return true
 }
 
-func (t *filterTransformation) filterByKey(view table.View, d *executeutil.Dataset) error {
+func (t *filterTransformation) filterByKey(view table.View, d *executekit.Dataset) error {
 	key := view.Key()
 	cols := key.Cols()
 	fn, err := t.fn.Prepare(cols)
@@ -197,7 +197,7 @@ func (t *filterTransformation) filterByKey(view table.View, d *executeutil.Datas
 	return d.Process(view)
 }
 
-func (t *filterTransformation) filterTable(d *executeutil.Dataset, fn *execute.RowPredicatePreparedFn, in table.View, record values.Object, indices []int) error {
+func (t *filterTransformation) filterTable(d *executekit.Dataset, fn *execute.RowPredicatePreparedFn, in table.View, record values.Object, indices []int) error {
 	buffer := in.Buffer()
 	bitset, err := t.filter(fn, &buffer, record, indices)
 	if err != nil {
