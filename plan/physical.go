@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"runtime"
 
 	"github.com/influxdata/flux/interpreter"
 )
@@ -78,7 +79,8 @@ func (pp *physicalPlanner) Plan(ctx context.Context, spec *Spec) (*Spec, error) 
 
 	// Update concurrency quota
 	if transformedSpec.Resources.ConcurrencyQuota == 0 {
-		transformedSpec.Resources.ConcurrencyQuota = len(transformedSpec.Roots)
+		// transformedSpec.Resources.ConcurrencyQuota = len(transformedSpec.Roots)
+		transformedSpec.Resources.ConcurrencyQuota = runtime.GOMAXPROCS(0)
 	}
 
 	return transformedSpec, nil
