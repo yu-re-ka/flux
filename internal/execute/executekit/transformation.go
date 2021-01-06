@@ -2,7 +2,6 @@ package executekit
 
 import (
 	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/internal/execute/table"
 )
 
 // Transformation is a method of transforming a Table or Tables into another Table.
@@ -17,22 +16,4 @@ import (
 type Transformation interface {
 	execute.Transformation
 	execute.Transport
-}
-
-// AggregateTransformation implements a transformation that aggregates
-// the results from multiple TableView values and then outputs a Table
-// with the same group key.
-//
-// This is similar to NarrowTransformation that it does not modify the group key,
-// but different because it will only output a table when the key is flushed.
-type AggregateTransformation interface {
-	// Process will process the TableView with the state from the previous
-	// time a table with this group key was invoked.
-	// If this group key has never been invoked before, the
-	// state will be nil.
-	// The transformation should return the new state and a boolean
-	// value of true if the state was created or modified.
-	// If false is returned, the new state will be discarded and any
-	// old state will be kept.
-	Process(view table.View, state interface{}) (interface{}, bool, error)
 }

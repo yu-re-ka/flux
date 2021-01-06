@@ -99,6 +99,21 @@ func (d *Dataset) UpdateWatermarkForKey(key flux.GroupKey, column string, t exec
 	return d.sendMessage(m)
 }
 
+func (d *Dataset) Lookup(key flux.GroupKey) (interface{}, bool) {
+	return d.cache.Lookup(key)
+}
+func (d *Dataset) LookupOrCreate(key flux.GroupKey, fn func() interface{}) interface{} {
+	if fn == nil {
+		fn = func() interface{} {
+			return nil
+		}
+	}
+	return d.cache.LookupOrCreate(key, fn)
+}
+func (d *Dataset) Set(key flux.GroupKey, value interface{}) {
+	d.cache.Set(key, value)
+}
+
 func (d *Dataset) RetractTable(key flux.GroupKey) error      { return nil }
 func (d *Dataset) UpdateProcessingTime(t execute.Time) error { return nil }
 func (d *Dataset) UpdateWatermark(mark execute.Time) error   { return nil }
