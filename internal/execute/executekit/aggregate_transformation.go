@@ -66,18 +66,14 @@ func (n *aggregateTransformation) ProcessMessage(m execute.Message) error {
 		state, _ := n.d.Lookup(view.Key())
 		if ns, ok, err := n.t.Aggregate(view, state, n.d.mem); err != nil {
 			return err
-		} else if ok && state != ns {
-			// Only call Set if the state is different.
-			// The call to Set incurs a (likely small) performance
-			// cost and there's no point in calling it if the
-			// state was modified and not recreated.
+		} else if ok {
 			n.d.Set(view.Key(), ns)
 		}
 		return nil
 	case execute.FlushKeyMsg:
 		// When we are flushing a key, perform a lookup for any
 		// state. If there is state, then send it to Compute.
-		if state, ok := n.d.Lookup(m.Key()); ok {
+		if state, ok := n.d.Delete(m.Key()); ok {
 			return n.t.Compute(m.Key(), state, n.d, n.d.mem)
 		}
 		return nil
@@ -111,6 +107,16 @@ func (n *aggregateTransformation) Process(id execute.DatasetID, tbl flux.Table) 
 
 // Finish is implemented to remain compatible with legacy upstreams.
 func (n *aggregateTransformation) Finish(id execute.DatasetID, err error) {
+	if err == nil {
+		n.d.cache.Range(func(key flux.GroupKey, value interface{}) {
+			if err != nil {
+				return
+			}
+			err = n.t.Compute(key, value, n.d, n.d.mem)
+		})
+		n.d.cache.Clear()
+	}
+
 	if err != nil {
 		_ = n.d.Abort(err)
 		return

@@ -113,6 +113,9 @@ func (d *Dataset) LookupOrCreate(key flux.GroupKey, fn func() interface{}) inter
 func (d *Dataset) Set(key flux.GroupKey, value interface{}) {
 	d.cache.Set(key, value)
 }
+func (d *Dataset) Delete(key flux.GroupKey) (v interface{}, found bool) {
+	return d.cache.Delete(key)
+}
 
 func (d *Dataset) RetractTable(key flux.GroupKey) error      { return nil }
 func (d *Dataset) UpdateProcessingTime(t execute.Time) error { return nil }

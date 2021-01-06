@@ -1,12 +1,15 @@
 package universe
 
 import (
-	"github.com/apache/arrow/go/arrow/array"
+	"github.com/apache/arrow/go/arrow/memory"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/internal/execute/executekit"
+	"github.com/influxdata/flux/internal/execute/function"
+	"github.com/influxdata/flux/internal/execute/table"
 	"github.com/influxdata/flux/runtime"
 )
 
@@ -18,119 +21,86 @@ type CountOpSpec struct {
 
 func init() {
 	countSignature := runtime.MustLookupBuiltinType("universe", "count")
-	runtime.RegisterPackageValue("universe", CountKind, flux.MustValue(flux.FunctionValue(CountKind, createCountOpSpec, countSignature)))
-	flux.RegisterOpSpec(CountKind, newCountOp)
-	plan.RegisterProcedureSpec(CountKind, newCountProcedure, CountKind)
-	execute.RegisterTransformation(CountKind, createCountTransformation)
-}
-
-func createCountOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
-	if err := a.AddParentFromArgs(args); err != nil {
-		return nil, err
-	}
-	s := new(CountOpSpec)
-	if err := s.AggregateConfig.ReadArgs(args); err != nil {
-		return nil, err
-	}
-	return s, nil
-}
-
-func newCountOp() flux.OperationSpec {
-	return new(CountOpSpec)
-}
-
-func (s *CountOpSpec) Kind() flux.OperationKind {
-	return CountKind
+	function.RegisterTransformation("universe", CountKind, &CountProcedureSpec{}, countSignature)
 }
 
 type CountProcedureSpec struct {
-	execute.AggregateConfig
+	Tables  *function.TableObject `flux:"tables,required"`
+	Columns []string              `flux:"columns"`
+	Column  string                `flux:"column"`
 }
 
-func newCountProcedure(qs flux.OperationSpec, a plan.Administration) (plan.ProcedureSpec, error) {
-	spec, ok := qs.(*CountOpSpec)
-	if !ok {
-		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
+func (s *CountProcedureSpec) CreateTransformation(id execute.DatasetID, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
+	columns := s.Columns
+	if len(s.Columns) == 0 {
+		if s.Column != "" {
+			columns = []string{s.Column}
+		} else {
+			columns = []string{execute.DefaultValueColLabel}
+		}
 	}
-	return &CountProcedureSpec{
-		AggregateConfig: spec.AggregateConfig,
-	}, nil
-}
-
-func (s *CountProcedureSpec) Kind() plan.ProcedureKind {
-	return CountKind
-}
-
-func (s *CountProcedureSpec) Copy() plan.ProcedureSpec {
-	return &CountProcedureSpec{
-		AggregateConfig: s.AggregateConfig,
-	}
-}
-
-func (s *CountProcedureSpec) AggregateMethod() string {
-	return CountKind
-}
-func (s *CountProcedureSpec) ReAggregateSpec() plan.ProcedureSpec {
-	return new(SumProcedureSpec)
-}
-
-// TriggerSpec implements plan.TriggerAwareProcedureSpec
-func (s *CountProcedureSpec) TriggerSpec() plan.TriggerSpec {
-	return plan.NarrowTransformationTriggerSpec{}
-}
-
-type CountAgg struct {
-	count int64
-}
-
-func createCountTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
-	s, ok := spec.(*CountProcedureSpec)
-	if !ok {
-		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
-	}
-
-	t, d := execute.NewAggregateTransformationAndDataset(id, mode, new(CountAgg), s.AggregateConfig, a.Allocator())
+	t, d := executekit.NewAggregateTransformation(id, &countTransformation{
+		Columns: columns,
+	}, a.Allocator())
 	return t, d, nil
 }
 
-func (a *CountAgg) NewBoolAgg() execute.DoBoolAgg {
-	return new(CountAgg)
-}
-func (a *CountAgg) NewIntAgg() execute.DoIntAgg {
-	return new(CountAgg)
-}
-func (a *CountAgg) NewUIntAgg() execute.DoUIntAgg {
-	return new(CountAgg)
-}
-func (a *CountAgg) NewFloatAgg() execute.DoFloatAgg {
-	return new(CountAgg)
-}
-func (a *CountAgg) NewStringAgg() execute.DoStringAgg {
-	return new(CountAgg)
+type countState struct {
+	Label string
+	Value int64
 }
 
-func (a *CountAgg) DoBool(vs *array.Boolean) {
-	a.count += int64(vs.Len())
-}
-func (a *CountAgg) DoUInt(vs *array.Uint64) {
-	a.count += int64(vs.Len())
-}
-func (a *CountAgg) DoInt(vs *array.Int64) {
-	a.count += int64(vs.Len())
-}
-func (a *CountAgg) DoFloat(vs *array.Float64) {
-	a.count += int64(vs.Len())
-}
-func (a *CountAgg) DoString(vs *array.Binary) {
-	a.count += int64(vs.Len())
+type countTransformation struct {
+	Columns []string
 }
 
-func (a *CountAgg) Type() flux.ColType {
-	return flux.TInt
+func (c countTransformation) Aggregate(view table.View, state interface{}, mem memory.Allocator) (interface{}, bool, error) {
+	if state == nil {
+		cs := make([]countState, len(c.Columns))
+		for i, column := range c.Columns {
+			cs[i].Label = column
+		}
+		state = cs
+	}
+	cs := state.([]countState)
+
+	for i, column := range c.Columns {
+		idx := view.Index(column)
+		if idx < 0 {
+			return nil, false, errors.New(codes.FailedPrecondition, "missing column %s", column)
+		}
+
+		values := view.Values(idx)
+		cs[i].Value += int64(values.Len() - values.NullN())
+	}
+	return cs, true, nil
 }
-func (a *CountAgg) ValueInt() int64 {
-	return a.count
-}
-func (a *CountAgg) IsNull() bool {
-	return false
+
+func (c countTransformation) Compute(key flux.GroupKey, state interface{}, d *executekit.Dataset, mem memory.Allocator) error {
+	builder := table.NewArrowBuilder(key, mem)
+	for _, col := range key.Cols() {
+		_, _ = builder.AddCol(col)
+	}
+
+	cs := state.([]countState)
+	for _, s := range cs {
+		_, _ = builder.AddCol(flux.ColMeta{
+			Label: s.Label,
+			Type:  flux.TInt,
+		})
+	}
+
+	for i, v := range key.Values() {
+		_ = arrow.AppendValue(builder.Builders[i], v)
+	}
+	offset := len(key.Cols())
+	for i, s := range cs {
+		_ = arrow.AppendInt(builder.Builders[i+offset], s.Value)
+	}
+
+	buffer, err := builder.Buffer()
+	if err != nil {
+		return err
+	}
+	return d.Process(table.ViewFromBuffer(buffer))
 }
