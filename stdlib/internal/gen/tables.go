@@ -7,6 +7,8 @@ import (
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/internal/execute/executekit"
+	"github.com/influxdata/flux/internal/execute/table"
 	"github.com/influxdata/flux/internal/gen"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
@@ -146,7 +148,7 @@ func createTablesSource(prSpec plan.ProcedureSpec, dsid execute.DatasetID, a exe
 		return nil, errors.Newf(codes.Internal, "invalid spec type %T", prSpec)
 	}
 	return &Source{
-		id:     dsid,
+		d:      executekit.NewDataset(dsid, a.Allocator()),
 		schema: spec.Schema,
 		alloc:  a.Allocator(),
 	}, nil
@@ -154,15 +156,14 @@ func createTablesSource(prSpec plan.ProcedureSpec, dsid execute.DatasetID, a exe
 
 type Source struct {
 	execute.ExecutionNode
-	id execute.DatasetID
-	ts []execute.Transformation
+	d *executekit.Dataset
 
 	schema gen.Schema
 	alloc  *memory.Allocator
 }
 
 func (s *Source) AddTransformation(t execute.Transformation) {
-	s.ts = append(s.ts, t)
+	s.d.AddTransformation(t)
 }
 
 func (s *Source) Run(ctx context.Context) {
@@ -171,40 +172,24 @@ func (s *Source) Run(ctx context.Context) {
 
 	tables, err := gen.Input(ctx, schema)
 	if err != nil {
-		for _, t := range s.ts {
-			t.Finish(s.id, err)
-		}
+		_ = s.d.Abort(err)
 		return
 	}
 
-	err = tables.Do(func(table flux.Table) error {
-		return s.processTable(ctx, table)
-	})
-	for _, t := range s.ts {
-		t.Finish(s.id, err)
-	}
-}
-
-func (s *Source) processTable(ctx context.Context, tbl flux.Table) error {
-	if len(s.ts) == 0 {
-		tbl.Done()
-		return nil
-	} else if len(s.ts) == 1 {
-		return s.ts[0].Process(s.id, tbl)
-	}
-
-	// There is more than one transformation so we need to
-	// copy the table for each transformation.
-	bufTable, err := execute.CopyTable(tbl)
-	if err != nil {
-		return err
-	}
-	defer bufTable.Done()
-
-	for _, t := range s.ts {
-		if err := t.Process(s.id, bufTable.Copy()); err != nil {
+	err = tables.Do(func(tbl flux.Table) error {
+		if err := tbl.Do(func(cr flux.ColReader) error {
+			view := table.ViewFromReader(cr)
+			view.Retain()
+			return s.d.Process(view)
+		}); err != nil {
 			return err
 		}
+		return s.d.FlushKey(tbl.Key())
+	})
+
+	if err != nil {
+		_ = s.d.Abort(err)
+		return
 	}
-	return nil
+	_ = s.d.Close()
 }
