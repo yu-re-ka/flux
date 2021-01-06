@@ -11,7 +11,6 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/values"
-//	"github.com/influxdata/flux/semantic"
 
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/internal/spec"
@@ -77,6 +76,10 @@ func (s *stack) PopValue() values.Value {
 	return i.(values.Value)
 }
 
+func (s *stack) Pop() {
+	s.arr = s.arr[:len(s.arr)-1]
+}
+
 func (q *query) Cancel() {
 	q.cancel()
 }
@@ -93,7 +96,7 @@ func (q *query) ProfilerResults() (flux.ResultIterator, error) {
 	return nil, nil
 }
 
-func Execute(ctx context.Context, alloc *memory.Allocator, now time.Time, code []bctypes.OpCode, logger *zap.Logger) (flux.Query, error) {
+func Execute(ctx context.Context, alloc *memory.Allocator, now time.Time, code []bctypes.OpCode, logger *zap.Logger, scope values.Scope) (flux.Query, error) {
 	println("-> execution starting")
 
 	stack := &stack{}
@@ -104,15 +107,45 @@ func Execute(ctx context.Context, alloc *memory.Allocator, now time.Time, code [
 			/* 0, not an instruction */
 			panic("IN_NONE")
 
+		case bctypes.IN_CALL:
+			callOp := b.Args.(interpreter.CallOp)
+
+			// Pop the args and result of looking up the callee.
+			pop := callOp.Nargs
+			for ; pop > 0; pop-- {
+				stack.Pop()
+			}
+
+			who := stack.PopValue()
+			fmt.Printf("-- IN_CALL: %v %v\n", callOp.Nargs, who)
+
+			// This is cheating. Push the return value computed during interpretation.
+			stack.PushValue( callOp.RetVal )
+
+		case bctypes.IN_SCOPE_LOOKUP:
+			scopeLookup := b.Args.(interpreter.ScopeLookup)
+			name := scopeLookup.Name
+
+			fmt.Printf("-- IN_SCOPE_LOOKUP: %v\n", name)
+			value, ok := scope.Lookup( name )
+			if !ok {
+				return nil, errors.Newf(codes.Invalid, "undefined identifier %q", name)
+			}
+			stack.PushValue(value)
+
+		case bctypes.IN_POP:
+			println("-- IN_POP")
+			stack.Pop()
+
 		case bctypes.IN_CONS_SIDE_EFFECTS:
 			println("-- IN_CONS_SIDE_EFFECTS")
 
 			stack.PushSideEffects( make([]interpreter.SideEffect, 0) )
 
 		case bctypes.IN_LOAD_VALUE:
-			println("-- IN_LOAD_VALUE")
 			loadValue := b.Args.(interpreter.LoadValue)
 			value := loadValue.Value
+			fmt.Printf("-- IN_LOAD_VALUE: %v\n", value)
 
 			stack.PushValue( value )
 
@@ -133,7 +166,7 @@ func Execute(ctx context.Context, alloc *memory.Allocator, now time.Time, code [
 			stack.PushSideEffects( sideEffects )
 
 		case bctypes.IN_PROGRAM_START:
-			println("-- IN_PROGRAM_START")
+			fmt.Printf("-- IN_PROGRAM_START\n")
 
 			sideEffects := stack.PopSideEffects()
 

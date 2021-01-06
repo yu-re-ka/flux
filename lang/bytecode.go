@@ -201,7 +201,7 @@ func (p *BytecodeAstProgram) Start(ctx context.Context, alloc *memory.Allocator)
 	now := p.Now
 	//o := p.opts
 
-	return bytecode.Execute( ctx, alloc, now, opCodes, p.Logger )
+	return bytecode.Execute( ctx, alloc, now, opCodes, p.Logger, scope )
 }
 
 func (p *BytecodeTableObjectProgram) Start(ctx context.Context, alloc *memory.Allocator) (flux.Query, error) {
@@ -220,5 +220,5 @@ func (p *BytecodeTableObjectProgram) Start(ctx context.Context, alloc *memory.Al
 
 	opCodes := itrp.Code()
 
-	return bytecode.Execute( ctx, alloc, now, opCodes, p.Logger )
+	return bytecode.Execute( ctx, alloc, now, opCodes, p.Logger, nil )
 }
