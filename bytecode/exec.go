@@ -123,25 +123,68 @@ func Execute(ctx context.Context, alloc *memory.Allocator, now time.Time, code [
 		case bctypes.IN_CALL:
 			callOp := b.Args.(interpreter.CallOp)
 			call := callOp.Call
-			pipeArgument := callOp.PipeArgument
 			pipe  := callOp.Pipe
 			properties := callOp.Properties
+
+			var pipeValue values.Value
+			propertyValues := make([]values.Value, len(properties))
+
+			// Pipe evaluated last, popped first.
+			if pipe != nil {
+				pipeValue = stack.PopValue()
+			}
+
+			// Popping call args requires iterating in reverse.
+			for i := len(properties)-1; i >= 0; i-- {
+				propertyValues[i] = stack.PopValue()
+			}
+
+			callee := stack.PopValue()
+
+			ft := callee.Type()
+			if ft.Nature() != semantic.Function {
+				return nil, errors.Newf(codes.Invalid, "cannot call function: %s: value is of type %v", call.Callee.Location(), callee.Type())
+			}
+
+			// Determine which argument matches the pipe argument.
+			var pipeArgument string
+			if pipe != nil {
+				n, err := ft.NumArguments()
+				if err != nil {
+					return nil, err
+				}
+
+				for i := 0; i < n; i++ {
+					arg, err := ft.Argument(i)
+					if err != nil {
+						return nil, err
+					}
+					if arg.Pipe() {
+						pipeArgument = string(arg.Name())
+						break
+					}
+				}
+
+				if pipeArgument == "" {
+					return nil, errors.New(codes.Invalid, "pipe parameter value provided to function with no pipe parameter defined")
+				}
+			}
 
 			argObj, err := values.BuildObject(func(set values.ObjectSetter) error {
 				// Pipe evaluated last, popped first.
 				if pipe != nil {
-					value := stack.PopValue()
-					set(pipeArgument, value)
+					set(pipeArgument, pipeValue)
 				}
 
 				// Popping call args requires iterating in reverse.
 				for i := len(properties)-1; i >= 0; i-- {
 					p := properties[i]
+
 					if pipe != nil && p.Key.Key() == pipeArgument {
 						return errors.Newf(codes.Invalid, "pipe argument also specified as a keyword parameter: %q", p.Key.Key())
 					}
-					value := stack.PopValue()
-					set(p.Key.Key(), value)
+
+					set(p.Key.Key(), propertyValues[i])
 				}
 
 				return nil
@@ -150,17 +193,15 @@ func Execute(ctx context.Context, alloc *memory.Allocator, now time.Time, code [
 				return nil, err
 			}
 
-			callee := stack.PopValue()
-
 			f := callee.Function()
 
 			// Check if the function is an interpFunction and rebind it.
 			// This is needed so that any side effects produced when
 			// calling this function are bound to the correct interpreter.
-//			if af, ok := f.(function); ok {
-//				af.itrp = itrp
-//				f = af
-//			}
+			// if af, ok := f.(function); ok {
+			//	af.itrp = itrp
+			//	f = af
+			// }
 
 			// Call the function. We attach source location information
 			// to this call so it can be available for the function if needed.
@@ -190,6 +231,16 @@ func Execute(ctx context.Context, alloc *memory.Allocator, now time.Time, code [
 				return nil, errors.Newf(codes.Invalid, "undefined identifier %q", name)
 			}
 			stack.PushValue(value)
+
+		case bctypes.IN_SCOPE_SET:
+			scopeSet := b.Args.(interpreter.ScopeSet)
+			name := scopeSet.Name
+
+			fmt.Printf("-- IN_SCOPE_SET: %v\n", name)
+
+			value := stack.PopValue()
+
+			scope.Set( name, value )
 
 		case bctypes.IN_POP:
 			println("-- IN_POP")

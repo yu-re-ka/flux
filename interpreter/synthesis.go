@@ -24,11 +24,14 @@ type ScopeLookup struct {
 	Name string
 }
 
+type ScopeSet struct {
+	Name string
+}
+
 type CallOp struct {
 	Call *semantic.CallExpression
 	Properties []*semantic.Property
 	Pipe semantic.Expression
-	PipeArgument string
 }
 
 func (itrp *Interpreter) Code() []bctypes.OpCode {
@@ -136,7 +139,7 @@ func (itrp *Interpreter) synStatement(ctx context.Context, stmt semantic.Stateme
 		_, err := itrp.doTestStatement(ctx, s, scope)
 		return err
 	case *semantic.NativeVariableAssignment:
-		_, err := itrp.synVariableAssignment(ctx, s, scope)
+		err := itrp.synVariableAssignment(ctx, s, scope)
 		return err
 	case *semantic.MemberAssignment:
 		_, err := itrp.doMemberAssignment(ctx, s, scope)
@@ -173,13 +176,24 @@ func (itrp *Interpreter) synStatement(ctx context.Context, stmt semantic.Stateme
 	return nil
 }
 
-func (itrp *Interpreter) synVariableAssignment(ctx context.Context, dec *semantic.NativeVariableAssignment, scope values.Scope) (values.Value, error) {
-	value, err := itrp.synExpression(ctx, dec.Init, scope)
+func (itrp *Interpreter) synVariableAssignment(ctx context.Context, dec *semantic.NativeVariableAssignment, scope values.Scope) error {
+	_, err := itrp.synExpression(ctx, dec.Init, scope)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	scope.Set(dec.Identifier.Name, value)
-	return value, nil
+
+	sl := ScopeSet{
+		Name: dec.Identifier.Name,
+	}
+
+	itrp.appendCode( bctypes.IN_SCOPE_SET, sl )
+
+	// Putting a placeholder in scope. Currently doing lookups here as well,
+	// but not interpreting the value. Just using this for earlier error
+	// reporting on name lookups.
+	scope.Set(dec.Identifier.Name, values.NewBool(false))
+
+	return nil
 }
 
 func (itrp *Interpreter) synExpression(ctx context.Context, expr semantic.Expression, scope values.Scope) (ret values.Value, err error) {
@@ -193,7 +207,7 @@ func (itrp *Interpreter) synExpression(ctx context.Context, expr semantic.Expres
 	case *semantic.DictExpression:
 		return itrp.doDict(ctx, e, scope)
 	case *semantic.IdentifierExpression:
-		value, ok := scope.Lookup(e.Name)
+		_, ok := scope.Lookup(e.Name)
 		if !ok {
 			return nil, errors.Newf(codes.Invalid, "undefined identifier %q", e.Name)
 		}
@@ -203,7 +217,7 @@ func (itrp *Interpreter) synExpression(ctx context.Context, expr semantic.Expres
 		}
 
 		itrp.appendCode( bctypes.IN_SCOPE_LOOKUP, sl )
-		return value, nil
+		return nil, nil
 
 	case *semantic.CallExpression:
 		return itrp.synCall(ctx, e, scope)
@@ -345,7 +359,7 @@ func (itrp *Interpreter) synExpression(ctx context.Context, expr semantic.Expres
 			Value: fv,
 		}
 		itrp.appendCode( bctypes.IN_LOAD_VALUE, lv )
-		return fv, nil
+		return nil, nil
 	default:
 		return nil, errors.Newf(codes.Internal, "unsupported expression %T", expr)
 	}
@@ -354,57 +368,27 @@ func (itrp *Interpreter) synExpression(ctx context.Context, expr semantic.Expres
 func (itrp *Interpreter) synCall(ctx context.Context, call *semantic.CallExpression, scope values.Scope) (values.Value, error) {
 	println("-> call expression")
 
-	callee, err := itrp.synExpression(ctx, call.Callee, scope)
-	if err != nil {
-		return nil, err
-	}
-	ft := callee.Type()
-	if ft.Nature() != semantic.Function {
-		return nil, errors.Newf(codes.Invalid, "cannot call function: %s: value is of type %v", call.Callee.Location(), callee.Type())
-	}
-	argObj, pipeArgument, err := itrp.synArguments(ctx, call.Arguments, scope, ft, call.Pipe)
+	_, err := itrp.synExpression(ctx, call.Callee, scope)
 	if err != nil {
 		return nil, err
 	}
 
-	f := callee.Function()
-
-	// Check if the function is an interpFunction and rebind it.
-	// This is needed so that any side effects produced when
-	// calling this function are bound to the correct interpreter.
-	if af, ok := f.(function); ok {
-		af.itrp = itrp
-		f = af
-	}
-
-	// Call the function. We attach source location information
-	// to this call so it can be available for the function if needed.
-	// We do not attach this source location information when evaluating
-	// arguments as this source location information is only
-	// for the currently called function.
-	fname := functionName(call)
-	ctx = withStackEntry(ctx, fname, call.Location())
-	value, err := f.Call(ctx, argObj)
+	_, _, err = itrp.synArguments(ctx, call.Arguments, scope, call.Pipe)
 	if err != nil {
-		return nil, errors.Wrapf(err, codes.Inherit, "error calling function %q @%s", fname, call.Location())
-	}
-
-	if f.HasSideEffect() {
-		itrp.sideEffects = append(itrp.sideEffects, SideEffect{Node: call, Value: value})
+		return nil, err
 	}
 
 	co := CallOp{
 		Call: call,
 		Properties: call.Arguments.Properties,
 		Pipe: call.Pipe,
-		PipeArgument: pipeArgument,
 	}
 	itrp.appendCode( bctypes.IN_CALL, co )
 
-	return value, nil
+	return nil, nil
 }
 
-func (itrp *Interpreter) synArguments(ctx context.Context, args *semantic.ObjectExpression, scope values.Scope, funcType semantic.MonoType, pipe semantic.Expression) (values.Object, string, error) {
+func (itrp *Interpreter) synArguments(ctx context.Context, args *semantic.ObjectExpression, scope values.Scope, pipe semantic.Expression) (values.Object, string, error) {
 	if label, nok := itrp.checkForDuplicates(args.Properties); nok {
 		return nil, "", errors.Newf(codes.Invalid, "duplicate keyword parameter specified: %q", label)
 	}
@@ -414,31 +398,29 @@ func (itrp *Interpreter) synArguments(ctx context.Context, args *semantic.Object
 		return values.NewObject(typ), "", nil
 	}
 
-	// Determine which argument matches the pipe argument.
-	var pipeArgument string
-	if pipe != nil {
-		n, err := funcType.NumArguments()
-		if err != nil {
-			return nil, "", err
-		}
-
-		for i := 0; i < n; i++ {
-			arg, err := funcType.Argument(i)
-			if err != nil {
-				return nil, "", err
-			}
-			if arg.Pipe() {
-				pipeArgument = string(arg.Name())
-				break
-			}
-		}
-
-		if pipeArgument == "" {
-			return nil, "", errors.New(codes.Invalid, "pipe parameter value provided to function with no pipe parameter defined")
-		}
-	}
-
-	// fmt.Printf("synArguments: pipe is %v\n", )
+//	// Determine which argument matches the pipe argument.
+//	var pipeArgument string
+//	if pipe != nil {
+//		n, err := funcType.NumArguments()
+//		if err != nil {
+//			return nil, "", err
+//		}
+//
+//		for i := 0; i < n; i++ {
+//			arg, err := funcType.Argument(i)
+//			if err != nil {
+//				return nil, "", err
+//			}
+//			if arg.Pipe() {
+//				pipeArgument = string(arg.Name())
+//				break
+//			}
+//		}
+//
+//		if pipeArgument == "" {
+//			return nil, "", errors.New(codes.Invalid, "pipe parameter value provided to function with no pipe parameter defined")
+//		}
+//	}
 
 	for _, p := range args.Properties {
 		_, err := itrp.synExpression(ctx, p.Value, scope)
@@ -454,29 +436,29 @@ func (itrp *Interpreter) synArguments(ctx context.Context, args *semantic.Object
 		}
 	}
 
-	value, err := values.BuildObject(func(set values.ObjectSetter) error {
-		for _, p := range args.Properties {
-			if pipe != nil && p.Key.Key() == pipeArgument {
-				return errors.Newf(codes.Invalid, "pipe argument also specified as a keyword parameter: %q", p.Key.Key())
-			}
-			value, err := itrp.doExpression(ctx, p.Value, scope)
-			if err != nil {
-				return err
-			}
-			set(p.Key.Key(), value)
-		}
+//	value, err := values.BuildObject(func(set values.ObjectSetter) error {
+//		for _, p := range args.Properties {
+//			if pipe != nil && p.Key.Key() == pipeArgument {
+//				return errors.Newf(codes.Invalid, "pipe argument also specified as a keyword parameter: %q", p.Key.Key())
+//			}
+//			value, err := itrp.doExpression(ctx, p.Value, scope)
+//			if err != nil {
+//				return err
+//			}
+//			set(p.Key.Key(), value)
+//		}
+//
+//		if pipe != nil {
+//			value, err := itrp.doExpression(ctx, pipe, scope)
+//			if err != nil {
+//				return err
+//			}
+//			set(pipeArgument, value)
+//		}
+//		return nil
+//	})
 
-		if pipe != nil {
-			value, err := itrp.doExpression(ctx, pipe, scope)
-			if err != nil {
-				return err
-			}
-			set(pipeArgument, value)
-		}
-		return nil
-	})
-
-	return value, pipeArgument, err
+	return nil, "", nil
 }
 
 func (itrp *Interpreter) synLiteral(lit semantic.Literal) (values.Value, error) {

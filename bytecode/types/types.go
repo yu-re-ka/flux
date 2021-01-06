@@ -9,6 +9,7 @@ const (
 	IN_SCOPE_LOOKUP
 	IN_POP
 	IN_CALL
+	IN_SCOPE_SET
 )
 
 type OpCode struct {
