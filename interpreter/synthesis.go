@@ -2,7 +2,6 @@ package interpreter
 
 import (
 	"context"
-//	"fmt"
 
 	bctypes "github.com/influxdata/flux/bytecode/types"
 	"github.com/influxdata/flux/ast"
@@ -34,6 +33,17 @@ type CallOp struct {
 	Pipe semantic.Expression
 }
 
+type SynthesizedFunction struct {
+	function
+	InputScope values.Scope
+	Nested values.Scope
+}
+
+type toSynthesize struct {
+	F SynthesizedFunction
+	Offset int
+}
+
 func (itrp *Interpreter) Code() []bctypes.OpCode {
 	return itrp.code
 }
@@ -43,6 +53,10 @@ func (itrp *Interpreter) appendCode( in byte, args interface{} ) {
 }
 
 func (itrp *Interpreter) Synthesis(ctx context.Context, node semantic.Node, scope values.Scope, importer Importer) error {
+	itrp.disableFuncSynthesis = false
+
+	itrp.funcsToSynthesize = make([]toSynthesize, 0)
+
 	itrp.appendCode( bctypes.IN_CONS_SIDE_EFFECTS, 0 )
 
 	itrp.sideEffects = itrp.sideEffects[:0]
@@ -51,9 +65,32 @@ func (itrp *Interpreter) Synthesis(ctx context.Context, node semantic.Node, scop
 	}
 
 	itrp.appendCode( bctypes.IN_PROGRAM_START, 0 )
+	itrp.appendCode( bctypes.IN_STOP, 0 )
+
+	if itrp.pkgName != PackageMain {
+		return nil
+	}
+
+	// Synthesize functions. Note that this array grows as we process it, so
+	// iterate it with an integer.
+	for f := 0; f < len(itrp.funcsToSynthesize); f++ {
+		itrp.funcsToSynthesize[f].Offset = len(itrp.code)
+		nested := scope.Nest(nil)
+
+		/* Need an appropriate scope based on the */
+
+		for _, stmt := range itrp.funcsToSynthesize[f].F.IEEEEEE().Block.Body {
+			// Making a fake scope. Shouldn't really need this, at this point.
+			err := itrp.synStatement(ctx, stmt, nested);
+			if err != nil {
+				return err
+			}
+		}
+		itrp.appendCode( bctypes.IN_RET, 0 )
+	}
+
 	return nil
 }
-
 
 func (itrp *Interpreter) SynthesisTo(ctx context.Context, sideEffect SideEffect) error {
 	itrp.appendCode( bctypes.IN_CONS_SIDE_EFFECTS, 0 )
@@ -70,6 +107,7 @@ func (itrp *Interpreter) SynthesisTo(ctx context.Context, sideEffect SideEffect)
 	itrp.appendCode( bctypes.IN_APPEND_SIDE_EFFECT, ase )
 
 	itrp.appendCode( bctypes.IN_PROGRAM_START, 0 )
+	itrp.appendCode( bctypes.IN_STOP, 0 )
 	return nil
 }
 
@@ -188,11 +226,6 @@ func (itrp *Interpreter) synVariableAssignment(ctx context.Context, dec *semanti
 
 	itrp.appendCode( bctypes.IN_SCOPE_SET, sl )
 
-	// Putting a placeholder in scope. Currently doing lookups here as well,
-	// but not interpreting the value. Just using this for earlier error
-	// reporting on name lookups.
-	scope.Set(dec.Identifier.Name, values.NewBool(false))
-
 	return nil
 }
 
@@ -207,11 +240,6 @@ func (itrp *Interpreter) synExpression(ctx context.Context, expr semantic.Expres
 	case *semantic.DictExpression:
 		return itrp.doDict(ctx, e, scope)
 	case *semantic.IdentifierExpression:
-		_, ok := scope.Lookup(e.Name)
-		if !ok {
-			return nil, errors.Newf(codes.Invalid, "undefined identifier %q", e.Name)
-		}
-
 		sl := ScopeLookup{
 			Name: e.Name,
 		}
@@ -349,10 +377,17 @@ func (itrp *Interpreter) synExpression(ctx context.Context, expr semantic.Expres
 	case *semantic.FunctionExpression:
 		// In the case of builtin functions this function value is shared across all query requests
 		// and as such must NOT be a pointer value.
-		fv := function{
-			e:     e,
-			scope: scope,
-			itrp:  itrp,
+		fv := SynthesizedFunction{
+			function: function{
+				e:     e,
+				scope: scope,
+				itrp:  itrp,
+				funcIndex: len(itrp.funcsToSynthesize),
+			},
+		}
+
+		if !itrp.disableFuncSynthesis {
+			itrp.funcsToSynthesize = append(itrp.funcsToSynthesize, toSynthesize{F: fv})
 		}
 
 		lv := LoadValue{
@@ -365,9 +400,69 @@ func (itrp *Interpreter) synExpression(ctx context.Context, expr semantic.Expres
 	}
 }
 
-func (itrp *Interpreter) synCall(ctx context.Context, call *semantic.CallExpression, scope values.Scope) (values.Value, error) {
-	println("-> call expression")
+func (f SynthesizedFunction) Function() values.Function {
+	return f
+}
 
+func (f SynthesizedFunction) IEEEEEE() *semantic.FunctionExpression {
+	return f.e
+}
+
+func (f SynthesizedFunction) prepareScope(ctx context.Context, args Arguments, inputScope values.Scope) (values.Scope, error) {
+	blockScope := inputScope.Nest(nil)
+	if f.e.Parameters != nil {
+	PARAMETERS:
+		for _, p := range f.e.Parameters.List {
+			if f.e.Defaults != nil {
+				for _, d := range f.e.Defaults.Properties {
+					if d.Key.Key() == p.Key.Name {
+						v, ok := args.Get(p.Key.Name)
+						if !ok {
+							// Use default value
+							var err error
+							// evaluate default expressions outside the block scope
+							v, err = f.itrp.doExpression(ctx, d.Value, inputScope)
+							if err != nil {
+								return nil, err
+							}
+						}
+						blockScope.Set(p.Key.Name, v)
+						continue PARAMETERS
+					}
+				}
+			}
+			v, err := args.GetRequired(p.Key.Name)
+			if err != nil {
+				return nil, err
+			}
+			blockScope.Set(p.Key.Name, v)
+		}
+	}
+
+	// Validate the function block.
+	if !isValidFunctionBlock(f.e.Block) {
+		return nil, errors.New(codes.Invalid, "return statement is not the last statement in the block")
+	}
+
+	//f.Nested = blockScope.Nest(nil)
+
+	return blockScope.Nest(nil), nil
+}
+
+func (f SynthesizedFunction) PrepCall(ctx context.Context, args values.Object, scope values.Scope) (values.Value, values.Scope, error) {
+	bytecodeOffset := int64(f.itrp.funcsToSynthesize[f.funcIndex].Offset)
+
+	argsNew := newArguments(args)
+	retScope, err := f.prepareScope(ctx, argsNew, scope)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return values.NewInt(bytecodeOffset), retScope, nil
+}
+
+
+func (itrp *Interpreter) synCall(ctx context.Context, call *semantic.CallExpression, scope values.Scope) (values.Value, error) {
 	_, err := itrp.synExpression(ctx, call.Callee, scope)
 	if err != nil {
 		return nil, err
@@ -423,17 +518,21 @@ func (itrp *Interpreter) synArguments(ctx context.Context, args *semantic.Object
 //	}
 
 	for _, p := range args.Properties {
+		itrp.disableFuncSynthesis = true
 		_, err := itrp.synExpression(ctx, p.Value, scope)
 		if err != nil {
 			return nil, "", err
 		}
+		itrp.disableFuncSynthesis = false
 
 	}
 	if pipe != nil {
+		itrp.disableFuncSynthesis = true
 		_, err := itrp.synExpression(ctx, pipe, scope)
 		if err != nil {
 			return nil, "", err
 		}
+		itrp.disableFuncSynthesis = false
 	}
 
 //	value, err := values.BuildObject(func(set values.ObjectSetter) error {

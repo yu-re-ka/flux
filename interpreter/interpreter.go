@@ -45,6 +45,8 @@ type Interpreter struct {
 	pkgName        string
 	execOptsConfig ExecOptsConfig
 	code           []bctypes.OpCode
+	funcsToSynthesize   []toSynthesize
+	disableFuncSynthesis bool
 }
 
 func NewInterpreter(pkg *Package, eoc ExecOptsConfig) *Interpreter {
@@ -769,6 +771,8 @@ type function struct {
 	scope values.Scope
 
 	itrp *Interpreter
+
+	funcIndex int
 }
 
 func (f function) Type() semantic.MonoType {
@@ -841,6 +845,7 @@ func (f function) Call(ctx context.Context, args values.Object) (values.Value, e
 	}
 	return v, nil
 }
+
 func (f function) doCall(ctx context.Context, args Arguments) (values.Value, error) {
 	if f.itrp == nil {
 		// Create an new interpreter

@@ -51,6 +51,33 @@ func (s *stack) PopValue() values.Value {
 	return i.(values.Value)
 }
 
+func (s *stack) PushQuery(q flux.Query) {
+	s.arr = append( s.arr, q )
+}
+func (s *stack) PopQuery() flux.Query {
+	i := s.arr[len(s.arr)-1]
+	s.arr = s.arr[:len(s.arr)-1]
+	return i.(flux.Query)
+}
+
+func (s *stack) PushInt(i int) {
+	s.arr = append( s.arr, i )
+}
+func (s *stack) PopInt() int {
+	i := s.arr[len(s.arr)-1]
+	s.arr = s.arr[:len(s.arr)-1]
+	return i.(int)
+}
+
+func (s *stack) PushScope(sc values.Scope) {
+	s.arr = append( s.arr, sc )
+}
+func (s *stack) PopScope() values.Scope {
+	i := s.arr[len(s.arr)-1]
+	s.arr = s.arr[:len(s.arr)-1]
+	return i.(values.Scope)
+}
+
 func (s *stack) Pop() {
 	s.arr = s.arr[:len(s.arr)-1]
 }
@@ -114,7 +141,9 @@ func Execute(ctx context.Context, alloc *memory.Allocator, now time.Time, code [
 
 	stack := &stack{}
 
-	for _, b := range code {
+loop:
+	for ip := 0; ip < len(code); {
+		b := code[ip]
 		switch b.In {
 		case bctypes.IN_NONE:
 			/* 0, not an instruction */
@@ -170,7 +199,7 @@ func Execute(ctx context.Context, alloc *memory.Allocator, now time.Time, code [
 				}
 			}
 
-			argObj, err := values.BuildObject(func(set values.ObjectSetter) error {
+			argsObj, err := values.BuildObject(func(set values.ObjectSetter) error {
 				// Pipe evaluated last, popped first.
 				if pipe != nil {
 					set(pipeArgument, pipeValue)
@@ -212,14 +241,67 @@ func Execute(ctx context.Context, alloc *memory.Allocator, now time.Time, code [
 
 			// ctx = withStackEntry(ctx, fname, call.Location())
 
-			value, err := f.Call(ctx, argObj)
-			if err != nil {
-				return nil, errors.Wrapf(err, codes.Inherit, "error calling function %q @%s", fname, call.Location())
-			}
 			fmt.Printf("-- IN_CALL: %v\n", callee)
 
-			// This is cheating. Push the return value computed during interpretation.
-			stack.PushValue( value )
+			// Bit of a hack here. The call interface doesn't accept the scope because it uses the one
+			// set during the original interpretation pass. That pass is now a synthesis with a bogus scope, the real
+			// scope is in our state here. So bypass the abstraction and pass it in.
+			if sf, ok := f.(interpreter.SynthesizedFunction); ok {
+				// Abandoning the interface here. Need to pass a scope and return the new one.
+				value, retScope, err := sf.PrepCall(ctx, argsObj, scope)
+				if err != nil {
+					return nil, errors.Wrapf(err, codes.Inherit, "error calling function %q @%s", fname, call.Location())
+				}
+
+				// If the function is a synthesized function, then the return
+				// value of the call is the bytecode offset we need to call to.
+
+				// Preserve the scope.
+				stack.PushScope( scope )
+
+				// Replace with the nested scope computed during Call()
+				scope = retScope
+
+				// Push return location, the next instruction
+				stack.PushInt( ip + 1 )
+
+				// Jump to targs. Skip the increment.
+				ip = int(value.Int())
+
+				fmt.Printf("-> this is a synthesized call, jumping to offset %v\n", ip )
+				continue loop
+			} else {
+				value, err := f.Call(ctx, argsObj)
+				if err != nil {
+					return nil, errors.Wrapf(err, codes.Inherit, "error calling function %q @%s", fname, call.Location())
+				}
+
+				// If not a synthesized call, then the above Call() invocation
+				// actually called the function. The return value comes back.
+				stack.PushValue( value )
+			}
+
+		case bctypes.IN_RET:
+			fmt.Printf("-- IN_RET\n")
+
+			// Return value is on the top of the stack.
+			retVal := stack.PopValue()
+			fmt.Printf("-> got retval %v\n", retVal)
+
+			// Return location is next.
+			ip = stack.PopInt()
+			fmt.Printf("-> return to %v\n", ip)
+
+			// Scope is last.
+			scope = stack.PopScope()
+			fmt.Printf("-> scope is %v\n", scope)
+
+			// Now put the return value back.
+			stack.PushValue( retVal )
+
+			// Continue because we have modified ip and do not need to advance
+			// it.
+			continue loop
 
 		case bctypes.IN_SCOPE_LOOKUP:
 			scopeLookup := b.Args.(interpreter.ScopeLookup)
@@ -278,8 +360,6 @@ func Execute(ctx context.Context, alloc *memory.Allocator, now time.Time, code [
 			fmt.Printf("-- IN_PROGRAM_START\n")
 
 			sideEffects := stack.PopSideEffects()
-
-			println("-> starting bytecode program")
 
 			// Producing flux spec: side effects -> *flux.Spec
 			var sp *flux.Spec
@@ -348,12 +428,19 @@ func Execute(ctx context.Context, alloc *memory.Allocator, now time.Time, code [
 			q.wg.Add(1)
 			go readMetadata(q, md)
 
-			return q, nil
+			stack.PushQuery(q)
+
+		case bctypes.IN_STOP:
+			fmt.Printf("-- IN_STOP\n")
+			break loop
 		}
+
+		ip = ip + 1
 	}
 
+	query := stack.PopQuery()
 	stack.PanicIfNotEmpty()
-	return nil, nil
+	return query, nil
 }
 
 func processResults(ctx context.Context, q *query, resultMap map[string]flux.Result) {

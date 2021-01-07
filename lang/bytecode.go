@@ -65,7 +65,6 @@ type BytecodeProgram struct {
 }
 
 func (c BytecodeCompiler) Compile(ctx context.Context, runtime flux.Runtime) (flux.Program, error) {
-	println("-> to bytecode compiler Compile()")
 	query := c.Query
 
 	q := query

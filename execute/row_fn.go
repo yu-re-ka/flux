@@ -44,8 +44,6 @@ func (f *dynamicFn) typeof(cols []flux.ColMeta) (semantic.MonoType, error) {
 }
 
 func (f *dynamicFn) prepare(cols []flux.ColMeta, extraTypes map[string]semantic.MonoType) (preparedFn, error) {
-	println("-> dynamic function prepare" )
-
 	// Prepare the type of the record column.
 	recordType, err := f.typeof(cols)
 	if err != nil {
