@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/bytecode"
+	bctypes "github.com/influxdata/flux/bytecode/types"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
@@ -13,8 +15,6 @@ import (
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/values"
-	"github.com/influxdata/flux/bytecode"
-	bctypes "github.com/influxdata/flux/bytecode/types"
 	"go.uber.org/zap"
 )
 
@@ -52,7 +52,6 @@ type BytecodeTableObjectProgram struct {
 	Tables *flux.TableObject
 	Now    time.Time
 }
-
 
 // Program implements the flux.Program interface.
 // It will execute a compiled plan using an executor.
@@ -92,8 +91,8 @@ func (c BytecodeCompiler) CompilerType() flux.CompilerType {
 func (c *BytecodeTableObjectCompiler) Compile(ctx context.Context) (flux.Program, error) {
 	return &BytecodeTableObjectProgram{
 		BytecodeProgram: &BytecodeProgram{},
-		Tables: c.Tables,
-		Now: c.Now,
+		Tables:          c.Tables,
+		Now:             c.Now,
 	}, nil
 }
 
@@ -178,7 +177,7 @@ func (p *BytecodeAstProgram) Start(ctx context.Context, alloc *memory.Allocator)
 	// Set the now option to our own default and capture the option itself
 	// to allow us to find it after the run.
 	opCodes, scope, err = p.Runtime.Synthesis(ctx, ast,
-			&ExecOptsConfig{}, flux.SetNowOption(p.Now), checkNow )
+		&ExecOptsConfig{}, flux.SetNowOption(p.Now), checkNow)
 	if err != nil {
 		return nil, err
 	}
@@ -200,7 +199,7 @@ func (p *BytecodeAstProgram) Start(ctx context.Context, alloc *memory.Allocator)
 	now := p.Now
 	//o := p.opts
 
-	return bytecode.Execute( ctx, alloc, now, opCodes, p.Logger, scope )
+	return bytecode.Execute(ctx, alloc, now, opCodes, p.Logger, scope)
 }
 
 func (p *BytecodeTableObjectProgram) Start(ctx context.Context, alloc *memory.Allocator) (flux.Query, error) {
@@ -219,5 +218,5 @@ func (p *BytecodeTableObjectProgram) Start(ctx context.Context, alloc *memory.Al
 
 	opCodes := itrp.Code()
 
-	return bytecode.Execute( ctx, alloc, now, opCodes, p.Logger, nil )
+	return bytecode.Execute(ctx, alloc, now, opCodes, p.Logger, nil)
 }

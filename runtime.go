@@ -4,10 +4,10 @@ import (
 	"context"
 	"time"
 
+	bctypes "github.com/influxdata/flux/bytecode/types"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
-	bctypes "github.com/influxdata/flux/bytecode/types"
 )
 
 // Runtime encapsulates the operations supported by the flux runtime.

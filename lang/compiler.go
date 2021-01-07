@@ -23,8 +23,8 @@ import (
 )
 
 const (
-	FluxCompilerType   = "flux"
-	ASTCompilerType    = "ast"
+	FluxCompilerType     = "flux"
+	ASTCompilerType      = "ast"
 	BytecodeCompilerType = "bytecode"
 )
 
@@ -588,4 +588,3 @@ func getOptionValues(pkg values.Object, optionName string) ([]string, error) {
 	})
 	return rs, nil
 }
-

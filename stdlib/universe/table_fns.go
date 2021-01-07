@@ -513,7 +513,7 @@ func tableFindBytecode(ctx context.Context, to *flux.TableObject, fn *execute.Ta
 		}
 	}
 
-	lp, ok := p.(*lang.Program);
+	lp, ok := p.(*lang.Program)
 	if ok {
 		deps.Metadata.Add("flux/query-plan",
 			fmt.Sprintf("%v", plan.Formatted(lp.PlanSpec, plan.WithDetails())))

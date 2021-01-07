@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	bctypes "github.com/influxdata/flux/bytecode/types"
 	"github.com/influxdata/flux/ast"
+	bctypes "github.com/influxdata/flux/bytecode/types"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/semantic"
@@ -41,11 +41,11 @@ func (es *defExecOptsConfig) ConfigureProfiler(ctx context.Context, profilerName
 func (es *defExecOptsConfig) ConfigureNow(ctx context.Context, now time.Time)               {}
 
 type Interpreter struct {
-	sideEffects    []SideEffect // a list of the side effects occurred during the last call to `Eval`.
-	pkgName        string
-	execOptsConfig ExecOptsConfig
-	code           []bctypes.OpCode
-	funcsToSynthesize   []toSynthesize
+	sideEffects          []SideEffect // a list of the side effects occurred during the last call to `Eval`.
+	pkgName              string
+	execOptsConfig       ExecOptsConfig
+	code                 []bctypes.OpCode
+	funcsToSynthesize    []toSynthesize
 	disableFuncSynthesis bool
 }
 

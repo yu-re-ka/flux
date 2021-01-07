@@ -3,14 +3,14 @@ package types
 const (
 	IN_NONE = iota
 
-	// Side effect lists. 
+	// Side effect lists.
 	IN_CONS_SIDE_EFFECTS
 	IN_APPEND_SIDE_EFFECT
 
 	// Read any flux value embedded in the bytecode and push it to the stack.
 	IN_LOAD_VALUE
 
-	// Lookup a value in the current scope. 
+	// Lookup a value in the current scope.
 	IN_SCOPE_LOOKUP
 
 	// Set a value in the current scope.
@@ -34,7 +34,6 @@ const (
 )
 
 type OpCode struct {
-	In byte
+	In   byte
 	Args interface{}
 }
-

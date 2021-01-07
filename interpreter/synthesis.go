@@ -3,12 +3,12 @@ package interpreter
 import (
 	"context"
 
-	bctypes "github.com/influxdata/flux/bytecode/types"
 	"github.com/influxdata/flux/ast"
+	bctypes "github.com/influxdata/flux/bytecode/types"
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
-	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/codes"
 )
 
 type LoadValue struct {
@@ -28,19 +28,19 @@ type ScopeSet struct {
 }
 
 type CallOp struct {
-	Call *semantic.CallExpression
+	Call       *semantic.CallExpression
 	Properties []*semantic.Property
-	Pipe semantic.Expression
+	Pipe       semantic.Expression
 }
 
 type SynthesizedFunction struct {
 	function
 	InputScope values.Scope
-	Nested values.Scope
+	Nested     values.Scope
 }
 
 type toSynthesize struct {
-	F SynthesizedFunction
+	F      SynthesizedFunction
 	Offset int
 }
 
@@ -48,7 +48,7 @@ func (itrp *Interpreter) Code() []bctypes.OpCode {
 	return itrp.code
 }
 
-func (itrp *Interpreter) appendCode( in byte, args interface{} ) {
+func (itrp *Interpreter) appendCode(in byte, args interface{}) {
 	itrp.code = append(itrp.code, bctypes.OpCode{In: in, Args: args})
 }
 
@@ -57,15 +57,15 @@ func (itrp *Interpreter) Synthesis(ctx context.Context, node semantic.Node, scop
 
 	itrp.funcsToSynthesize = make([]toSynthesize, 0)
 
-	itrp.appendCode( bctypes.IN_CONS_SIDE_EFFECTS, 0 )
+	itrp.appendCode(bctypes.IN_CONS_SIDE_EFFECTS, 0)
 
 	itrp.sideEffects = itrp.sideEffects[:0]
 	if err := itrp.synRoot(ctx, node, scope, importer); err != nil {
 		return err
 	}
 
-	itrp.appendCode( bctypes.IN_EXECUTE_FLUX, 0 )
-	itrp.appendCode( bctypes.IN_STOP, 0 )
+	itrp.appendCode(bctypes.IN_EXECUTE_FLUX, 0)
+	itrp.appendCode(bctypes.IN_STOP, 0)
 
 	if itrp.pkgName != PackageMain {
 		return nil
@@ -81,33 +81,33 @@ func (itrp *Interpreter) Synthesis(ctx context.Context, node semantic.Node, scop
 
 		for _, stmt := range itrp.funcsToSynthesize[f].F.IEEEEEE().Block.Body {
 			// Making a fake scope. Shouldn't really need this, at this point.
-			err := itrp.synStatement(ctx, stmt, nested);
+			err := itrp.synStatement(ctx, stmt, nested)
 			if err != nil {
 				return err
 			}
 		}
-		itrp.appendCode( bctypes.IN_RET, 0 )
+		itrp.appendCode(bctypes.IN_RET, 0)
 	}
 
 	return nil
 }
 
 func (itrp *Interpreter) SynthesisTo(ctx context.Context, sideEffect SideEffect) error {
-	itrp.appendCode( bctypes.IN_CONS_SIDE_EFFECTS, 0 )
+	itrp.appendCode(bctypes.IN_CONS_SIDE_EFFECTS, 0)
 
 	lv := LoadValue{
 		Value: sideEffect.Value,
 	}
-	itrp.appendCode( bctypes.IN_LOAD_VALUE, lv )
+	itrp.appendCode(bctypes.IN_LOAD_VALUE, lv)
 
 	ase := AppendSideEffect{
 		Node: sideEffect.Node,
 	}
 
-	itrp.appendCode( bctypes.IN_APPEND_SIDE_EFFECT, ase )
+	itrp.appendCode(bctypes.IN_APPEND_SIDE_EFFECT, ase)
 
-	itrp.appendCode( bctypes.IN_EXECUTE_FLUX, 0 )
-	itrp.appendCode( bctypes.IN_STOP, 0 )
+	itrp.appendCode(bctypes.IN_EXECUTE_FLUX, 0)
+	itrp.appendCode(bctypes.IN_STOP, 0)
 	return nil
 }
 
@@ -197,7 +197,7 @@ func (itrp *Interpreter) synStatement(ctx context.Context, stmt semantic.Stateme
 			ase := AppendSideEffect{
 				Node: s,
 			}
-			itrp.appendCode( bctypes.IN_APPEND_SIDE_EFFECT, ase )
+			itrp.appendCode(bctypes.IN_APPEND_SIDE_EFFECT, ase)
 		}
 
 		scope.SetReturn(v)
@@ -224,7 +224,7 @@ func (itrp *Interpreter) synVariableAssignment(ctx context.Context, dec *semanti
 		Name: dec.Identifier.Name,
 	}
 
-	itrp.appendCode( bctypes.IN_SCOPE_SET, sl )
+	itrp.appendCode(bctypes.IN_SCOPE_SET, sl)
 
 	return nil
 }
@@ -244,7 +244,7 @@ func (itrp *Interpreter) synExpression(ctx context.Context, expr semantic.Expres
 			Name: e.Name,
 		}
 
-		itrp.appendCode( bctypes.IN_SCOPE_LOOKUP, sl )
+		itrp.appendCode(bctypes.IN_SCOPE_LOOKUP, sl)
 		return nil, nil
 
 	case *semantic.CallExpression:
@@ -254,13 +254,13 @@ func (itrp *Interpreter) synExpression(ctx context.Context, expr semantic.Expres
 			// Must be a pipe and no arguments.
 			if e.Pipe == nil {
 				return nil, errors.Newf(codes.Invalid,
-						"findRecord must have a pipe in" )
+					"findRecord must have a pipe in")
 			}
 
 			// We need to end up with a list of side effects. To do that we
 			// must create an empty list first as it needs to be deeper on the
 			// stack for the append.
-			itrp.appendCode( bctypes.IN_CONS_SIDE_EFFECTS, 0 )
+			itrp.appendCode(bctypes.IN_CONS_SIDE_EFFECTS, 0)
 
 			// Synthesize the pipe in. Output here will be a table object. want
 			// to turn this into a list of side effects for the execution
@@ -271,14 +271,14 @@ func (itrp *Interpreter) synExpression(ctx context.Context, expr semantic.Expres
 			}
 
 			// Append the table object as a side effect to the above created list.
-			ase := AppendSideEffect{ Node: e }
-			itrp.appendCode( bctypes.IN_APPEND_SIDE_EFFECT, ase )
+			ase := AppendSideEffect{Node: e}
+			itrp.appendCode(bctypes.IN_APPEND_SIDE_EFFECT, ase)
 
 			// Now we can invoke execution.
-			itrp.appendCode( bctypes.IN_EXECUTE_FLUX, 0 )
+			itrp.appendCode(bctypes.IN_EXECUTE_FLUX, 0)
 
 			// Drain the results.
-			itrp.appendCode( bctypes.IN_FIND_RECORD, 0 )
+			itrp.appendCode(bctypes.IN_FIND_RECORD, 0)
 
 			return nil, nil
 		} else {
@@ -414,9 +414,9 @@ func (itrp *Interpreter) synExpression(ctx context.Context, expr semantic.Expres
 		// and as such must NOT be a pointer value.
 		fv := SynthesizedFunction{
 			function: function{
-				e:     e,
-				scope: scope,
-				itrp:  itrp,
+				e:         e,
+				scope:     scope,
+				itrp:      itrp,
 				funcIndex: len(itrp.funcsToSynthesize),
 			},
 		}
@@ -428,7 +428,7 @@ func (itrp *Interpreter) synExpression(ctx context.Context, expr semantic.Expres
 		lv := LoadValue{
 			Value: fv,
 		}
-		itrp.appendCode( bctypes.IN_LOAD_VALUE, lv )
+		itrp.appendCode(bctypes.IN_LOAD_VALUE, lv)
 		return nil, nil
 	default:
 		return nil, errors.Newf(codes.Internal, "unsupported expression %T", expr)
@@ -496,7 +496,6 @@ func (f SynthesizedFunction) PrepCall(ctx context.Context, args values.Object, s
 	return values.NewInt(bytecodeOffset), retScope, nil
 }
 
-
 func (itrp *Interpreter) synCall(ctx context.Context, call *semantic.CallExpression, scope values.Scope) (values.Value, error) {
 	_, err := itrp.synExpression(ctx, call.Callee, scope)
 	if err != nil {
@@ -509,11 +508,11 @@ func (itrp *Interpreter) synCall(ctx context.Context, call *semantic.CallExpress
 	}
 
 	co := CallOp{
-		Call: call,
+		Call:       call,
 		Properties: call.Arguments.Properties,
-		Pipe: call.Pipe,
+		Pipe:       call.Pipe,
 	}
-	itrp.appendCode( bctypes.IN_CALL, co )
+	itrp.appendCode(bctypes.IN_CALL, co)
 
 	return nil, nil
 }
@@ -528,29 +527,29 @@ func (itrp *Interpreter) synArguments(ctx context.Context, args *semantic.Object
 		return values.NewObject(typ), "", nil
 	}
 
-//	// Determine which argument matches the pipe argument.
-//	var pipeArgument string
-//	if pipe != nil {
-//		n, err := funcType.NumArguments()
-//		if err != nil {
-//			return nil, "", err
-//		}
-//
-//		for i := 0; i < n; i++ {
-//			arg, err := funcType.Argument(i)
-//			if err != nil {
-//				return nil, "", err
-//			}
-//			if arg.Pipe() {
-//				pipeArgument = string(arg.Name())
-//				break
-//			}
-//		}
-//
-//		if pipeArgument == "" {
-//			return nil, "", errors.New(codes.Invalid, "pipe parameter value provided to function with no pipe parameter defined")
-//		}
-//	}
+	//	// Determine which argument matches the pipe argument.
+	//	var pipeArgument string
+	//	if pipe != nil {
+	//		n, err := funcType.NumArguments()
+	//		if err != nil {
+	//			return nil, "", err
+	//		}
+	//
+	//		for i := 0; i < n; i++ {
+	//			arg, err := funcType.Argument(i)
+	//			if err != nil {
+	//				return nil, "", err
+	//			}
+	//			if arg.Pipe() {
+	//				pipeArgument = string(arg.Name())
+	//				break
+	//			}
+	//		}
+	//
+	//		if pipeArgument == "" {
+	//			return nil, "", errors.New(codes.Invalid, "pipe parameter value provided to function with no pipe parameter defined")
+	//		}
+	//	}
 
 	for _, p := range args.Properties {
 		itrp.disableFuncSynthesis = true
@@ -570,27 +569,27 @@ func (itrp *Interpreter) synArguments(ctx context.Context, args *semantic.Object
 		itrp.disableFuncSynthesis = false
 	}
 
-//	value, err := values.BuildObject(func(set values.ObjectSetter) error {
-//		for _, p := range args.Properties {
-//			if pipe != nil && p.Key.Key() == pipeArgument {
-//				return errors.Newf(codes.Invalid, "pipe argument also specified as a keyword parameter: %q", p.Key.Key())
-//			}
-//			value, err := itrp.doExpression(ctx, p.Value, scope)
-//			if err != nil {
-//				return err
-//			}
-//			set(p.Key.Key(), value)
-//		}
-//
-//		if pipe != nil {
-//			value, err := itrp.doExpression(ctx, pipe, scope)
-//			if err != nil {
-//				return err
-//			}
-//			set(pipeArgument, value)
-//		}
-//		return nil
-//	})
+	//	value, err := values.BuildObject(func(set values.ObjectSetter) error {
+	//		for _, p := range args.Properties {
+	//			if pipe != nil && p.Key.Key() == pipeArgument {
+	//				return errors.Newf(codes.Invalid, "pipe argument also specified as a keyword parameter: %q", p.Key.Key())
+	//			}
+	//			value, err := itrp.doExpression(ctx, p.Value, scope)
+	//			if err != nil {
+	//				return err
+	//			}
+	//			set(p.Key.Key(), value)
+	//		}
+	//
+	//		if pipe != nil {
+	//			value, err := itrp.doExpression(ctx, pipe, scope)
+	//			if err != nil {
+	//				return err
+	//			}
+	//			set(pipeArgument, value)
+	//		}
+	//		return nil
+	//	})
 
 	return nil, "", nil
 }
@@ -604,7 +603,7 @@ func (itrp *Interpreter) synLiteral(lit semantic.Literal) (values.Value, error) 
 	lv := LoadValue{
 		Value: value,
 	}
-	itrp.appendCode( bctypes.IN_LOAD_VALUE, lv )
+	itrp.appendCode(bctypes.IN_LOAD_VALUE, lv)
 
 	return value, nil
 }
@@ -624,8 +623,7 @@ func (itrp *Interpreter) synArray(ctx context.Context, a *semantic.ArrayExpressi
 	lv := LoadValue{
 		Value: value,
 	}
-	itrp.appendCode( bctypes.IN_LOAD_VALUE, lv )
+	itrp.appendCode(bctypes.IN_LOAD_VALUE, lv)
 
 	return value, nil
 }
-

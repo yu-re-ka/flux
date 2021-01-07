@@ -166,4 +166,3 @@ func (imp *synth_importer) ImportPackageObject(path string) (*interpreter.Packag
 	imp.pkgs[path] = interpreter.NewPackageWithValues(itrp.PackageName(), path, obj)
 	return imp.pkgs[path], nil
 }
-

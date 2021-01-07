@@ -2,26 +2,25 @@ package bytecode
 
 import (
 	"context"
-	"time"
 	"fmt"
 	"sync"
+	"time"
 
-	bctypes "github.com/influxdata/flux/bytecode/types"
-	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux"
+	bctypes "github.com/influxdata/flux/bytecode/types"
 	"github.com/influxdata/flux/interpreter"
-	"github.com/influxdata/flux/values"
+	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/values"
 
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/internal/spec"
-	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/codes"
-	"github.com/opentracing/opentracing-go"
 	"github.com/influxdata/flux/metadata"
-	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/plan"
+	"github.com/opentracing/opentracing-go"
 	"go.uber.org/zap"
-
 
 	"github.com/influxdata/flux/values/objects"
 )
@@ -37,7 +36,7 @@ func (s *stack) PanicIfNotEmpty() {
 }
 
 func (s *stack) PushSideEffects(se []interpreter.SideEffect) {
-	s.arr = append( s.arr, se )
+	s.arr = append(s.arr, se)
 }
 func (s *stack) PopSideEffects() []interpreter.SideEffect {
 	i := s.arr[len(s.arr)-1]
@@ -46,7 +45,7 @@ func (s *stack) PopSideEffects() []interpreter.SideEffect {
 }
 
 func (s *stack) PushValue(val values.Value) {
-	s.arr = append( s.arr, val )
+	s.arr = append(s.arr, val)
 }
 func (s *stack) PopValue() values.Value {
 	i := s.arr[len(s.arr)-1]
@@ -55,7 +54,7 @@ func (s *stack) PopValue() values.Value {
 }
 
 func (s *stack) PushQuery(q flux.Query) {
-	s.arr = append( s.arr, q )
+	s.arr = append(s.arr, q)
 }
 func (s *stack) PopQuery() flux.Query {
 	i := s.arr[len(s.arr)-1]
@@ -64,7 +63,7 @@ func (s *stack) PopQuery() flux.Query {
 }
 
 func (s *stack) PushInt(i int) {
-	s.arr = append( s.arr, i )
+	s.arr = append(s.arr, i)
 }
 func (s *stack) PopInt() int {
 	i := s.arr[len(s.arr)-1]
@@ -73,7 +72,7 @@ func (s *stack) PopInt() int {
 }
 
 func (s *stack) PushScope(sc values.Scope) {
-	s.arr = append( s.arr, sc )
+	s.arr = append(s.arr, sc)
 }
 func (s *stack) PopScope() values.Scope {
 	i := s.arr[len(s.arr)-1]
@@ -84,7 +83,6 @@ func (s *stack) PopScope() values.Scope {
 func (s *stack) Pop() {
 	s.arr = s.arr[:len(s.arr)-1]
 }
-
 
 // query implements the flux.Query interface.
 type query struct {
@@ -209,7 +207,7 @@ loop:
 		case bctypes.IN_CALL:
 			callOp := b.Args.(interpreter.CallOp)
 			call := callOp.Call
-			pipe  := callOp.Pipe
+			pipe := callOp.Pipe
 			properties := callOp.Properties
 
 			var pipeValue values.Value
@@ -221,7 +219,7 @@ loop:
 			}
 
 			// Popping call args requires iterating in reverse.
-			for i := len(properties)-1; i >= 0; i-- {
+			for i := len(properties) - 1; i >= 0; i-- {
 				propertyValues[i] = stack.PopValue()
 			}
 
@@ -263,7 +261,7 @@ loop:
 				}
 
 				// Popping call args requires iterating in reverse.
-				for i := len(properties)-1; i >= 0; i-- {
+				for i := len(properties) - 1; i >= 0; i-- {
 					p := properties[i]
 
 					if pipe != nil && p.Key.Key() == pipeArgument {
@@ -314,18 +312,18 @@ loop:
 				// value of the call is the bytecode offset we need to call to.
 
 				// Preserve the scope.
-				stack.PushScope( scope )
+				stack.PushScope(scope)
 
 				// Replace with the nested scope computed during Call()
 				scope = retScope
 
 				// Push return location, the next instruction
-				stack.PushInt( ip + 1 )
+				stack.PushInt(ip + 1)
 
 				// Jump to targs. Skip the increment.
 				ip = int(value.Int())
 
-				fmt.Printf("-> this is a synthesized call, jumping to offset %v\n", ip )
+				fmt.Printf("-> this is a synthesized call, jumping to offset %v\n", ip)
 				continue loop
 			} else {
 				value, err := f.Call(ctx, argsObj)
@@ -335,7 +333,7 @@ loop:
 
 				// If not a synthesized call, then the above Call() invocation
 				// actually called the function. The return value comes back.
-				stack.PushValue( value )
+				stack.PushValue(value)
 			}
 
 		case bctypes.IN_RET:
@@ -354,7 +352,7 @@ loop:
 			fmt.Printf("-> scope is %v\n", scope)
 
 			// Now put the return value back.
-			stack.PushValue( retVal )
+			stack.PushValue(retVal)
 
 			// Continue because we have modified ip and do not need to advance
 			// it.
@@ -365,7 +363,7 @@ loop:
 			name := scopeLookup.Name
 
 			fmt.Printf("-- IN_SCOPE_LOOKUP: %v\n", name)
-			value, ok := scope.Lookup( name )
+			value, ok := scope.Lookup(name)
 			if !ok {
 				return nil, errors.Newf(codes.Invalid, "undefined identifier %q", name)
 			}
@@ -379,7 +377,7 @@ loop:
 
 			value := stack.PopValue()
 
-			scope.Set( name, value )
+			scope.Set(name, value)
 
 		case bctypes.IN_POP:
 			fmt.Printf("-- IN_POP\n")
@@ -388,14 +386,14 @@ loop:
 		case bctypes.IN_CONS_SIDE_EFFECTS:
 			fmt.Printf("-- IN_CONS_SIDE_EFFECTS\n")
 
-			stack.PushSideEffects( make([]interpreter.SideEffect, 0) )
+			stack.PushSideEffects(make([]interpreter.SideEffect, 0))
 
 		case bctypes.IN_LOAD_VALUE:
 			loadValue := b.Args.(interpreter.LoadValue)
 			value := loadValue.Value
 			fmt.Printf("-- IN_LOAD_VALUE: %v\n", value)
 
-			stack.PushValue( value )
+			stack.PushValue(value)
 
 		case bctypes.IN_APPEND_SIDE_EFFECT:
 			fmt.Printf("-- IN_APPEND_SIDE_EFFECT\n")
@@ -408,10 +406,10 @@ loop:
 			value := stack.PopValue()
 			sideEffects := stack.PopSideEffects()
 
-			sideEffects = append( sideEffects, interpreter.SideEffect{Node: node, Value: value} )
+			sideEffects = append(sideEffects, interpreter.SideEffect{Node: node, Value: value})
 
 			// Result on stack.
-			stack.PushSideEffects( sideEffects )
+			stack.PushSideEffects(sideEffects)
 
 		case bctypes.IN_FIND_RECORD:
 			fmt.Printf("-- IN_FIND_RECORD\n")
@@ -460,14 +458,14 @@ loop:
 					}
 					val = objectFromRow(int(rowIdx), cr)
 					return nil
-				});
+				})
 
 				if err != nil {
 					return nil, err
 				}
 			}
 
-			stack.PushValue( val )
+			stack.PushValue(val)
 
 		case bctypes.IN_EXECUTE_FLUX:
 			fmt.Printf("-- IN_EXECUTE_FLUX\n")

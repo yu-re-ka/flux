@@ -6,13 +6,13 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
+	bctypes "github.com/influxdata/flux/bytecode/types"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/libflux/go/libflux"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
-	bctypes "github.com/influxdata/flux/bytecode/types"
 )
 
 // Default contains the preregistered packages and builtin values
