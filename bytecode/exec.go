@@ -21,6 +21,9 @@ import (
 	"github.com/influxdata/flux/metadata"
 	"github.com/influxdata/flux/execute"
 	"go.uber.org/zap"
+
+
+	"github.com/influxdata/flux/values/objects"
 )
 
 type stack struct {
@@ -136,8 +139,62 @@ func functionName(call *semantic.CallExpression) string {
 	}
 }
 
+func emptyObject() values.Object {
+	vsMap := make(map[string]values.Value)
+	return values.NewObjectWithValues(vsMap)
+}
+
+func objectFromRow(idx int, cr flux.ColReader) values.Object {
+	vsMap := make(map[string]values.Value, len(cr.Cols()))
+	for j, c := range cr.Cols() {
+		var v values.Value
+		switch c.Type {
+		case flux.TString:
+			if vs := cr.Strings(j); vs.IsValid(idx) {
+				v = values.New(vs.ValueString(idx))
+			} else {
+				v = values.NewNull(semantic.BasicString)
+			}
+		case flux.TInt:
+			if vs := cr.Ints(j); vs.IsValid(idx) {
+				v = values.New(vs.Value(idx))
+			} else {
+				v = values.NewNull(semantic.BasicInt)
+			}
+		case flux.TUInt:
+			if vs := cr.UInts(j); vs.IsValid(idx) {
+				v = values.New(vs.Value(idx))
+			} else {
+				v = values.NewNull(semantic.BasicUint)
+			}
+		case flux.TFloat:
+			if vs := cr.Floats(j); vs.IsValid(idx) {
+				v = values.New(vs.Value(idx))
+			} else {
+				v = values.NewNull(semantic.BasicFloat)
+			}
+		case flux.TBool:
+			if vs := cr.Bools(j); vs.IsValid(idx) {
+				v = values.New(vs.Value(idx))
+			} else {
+				v = values.NewNull(semantic.BasicBool)
+			}
+		case flux.TTime:
+			if vs := cr.Times(j); vs.IsValid(idx) {
+				v = values.New(values.Time(vs.Value(idx)))
+			} else {
+				v = values.NewNull(semantic.BasicTime)
+			}
+		default:
+			execute.PanicUnknownType(c.Type)
+		}
+		vsMap[c.Label] = v
+	}
+	return values.NewObjectWithValues(vsMap)
+}
+
 func Execute(ctx context.Context, alloc *memory.Allocator, now time.Time, code []bctypes.OpCode, logger *zap.Logger, scope values.Scope) (flux.Query, error) {
-	println("-> execution starting")
+	fmt.Printf("-> execution starting\n")
 
 	stack := &stack{}
 
@@ -325,11 +382,11 @@ loop:
 			scope.Set( name, value )
 
 		case bctypes.IN_POP:
-			println("-- IN_POP")
+			fmt.Printf("-- IN_POP\n")
 			stack.Pop()
 
 		case bctypes.IN_CONS_SIDE_EFFECTS:
-			println("-- IN_CONS_SIDE_EFFECTS")
+			fmt.Printf("-- IN_CONS_SIDE_EFFECTS\n")
 
 			stack.PushSideEffects( make([]interpreter.SideEffect, 0) )
 
@@ -341,7 +398,7 @@ loop:
 			stack.PushValue( value )
 
 		case bctypes.IN_APPEND_SIDE_EFFECT:
-			println("-- IN_APPEND_SIDE_EFFECT")
+			fmt.Printf("-- IN_APPEND_SIDE_EFFECT\n")
 
 			// Semanic node comes from the instruction arguments
 			appendSideEffect := b.Args.(interpreter.AppendSideEffect)
@@ -356,8 +413,64 @@ loop:
 			// Result on stack.
 			stack.PushSideEffects( sideEffects )
 
-		case bctypes.IN_PROGRAM_START:
-			fmt.Printf("-- IN_PROGRAM_START\n")
+		case bctypes.IN_FIND_RECORD:
+			fmt.Printf("-- IN_FIND_RECORD\n")
+
+			// Take a query from the stack, drain it, push a record. Ripped from table_fns.go
+			query := stack.PopQuery()
+
+			var tv *objects.Table
+			var found bool
+			var val values.Object
+			var err error
+			const rowIdx int = 0
+			for res := range query.Results() {
+				if err := res.Tables().Do(func(tbl flux.Table) error {
+					defer tbl.Done()
+					if found {
+						// the result is filled, you can skip other tables
+						return nil
+					}
+
+					found = true
+
+					if found {
+						tv, err = objects.NewTable(tbl)
+						if err != nil {
+							return err
+						}
+					} else {
+						_ = tbl.Do(func(flux.ColReader) error { return nil })
+					}
+					return nil
+				}); err != nil {
+					return nil, err
+				}
+			}
+
+			if tv == nil {
+				val = emptyObject()
+			} else {
+				tbl := tv.Table()
+
+				err := tbl.Do(func(cr flux.ColReader) error {
+					if rowIdx < 0 || int(rowIdx) >= cr.Len() {
+						val = emptyObject()
+						return nil
+					}
+					val = objectFromRow(int(rowIdx), cr)
+					return nil
+				});
+
+				if err != nil {
+					return nil, err
+				}
+			}
+
+			stack.PushValue( val )
+
+		case bctypes.IN_EXECUTE_FLUX:
+			fmt.Printf("-- IN_EXECUTE_FLUX\n")
 
 			sideEffects := stack.PopSideEffects()
 

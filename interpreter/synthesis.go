@@ -64,7 +64,7 @@ func (itrp *Interpreter) Synthesis(ctx context.Context, node semantic.Node, scop
 		return err
 	}
 
-	itrp.appendCode( bctypes.IN_PROGRAM_START, 0 )
+	itrp.appendCode( bctypes.IN_EXECUTE_FLUX, 0 )
 	itrp.appendCode( bctypes.IN_STOP, 0 )
 
 	if itrp.pkgName != PackageMain {
@@ -106,7 +106,7 @@ func (itrp *Interpreter) SynthesisTo(ctx context.Context, sideEffect SideEffect)
 
 	itrp.appendCode( bctypes.IN_APPEND_SIDE_EFFECT, ase )
 
-	itrp.appendCode( bctypes.IN_PROGRAM_START, 0 )
+	itrp.appendCode( bctypes.IN_EXECUTE_FLUX, 0 )
 	itrp.appendCode( bctypes.IN_STOP, 0 )
 	return nil
 }
@@ -248,7 +248,42 @@ func (itrp *Interpreter) synExpression(ctx context.Context, expr semantic.Expres
 		return nil, nil
 
 	case *semantic.CallExpression:
-		return itrp.synCall(ctx, e, scope)
+		// Catching firstRecord here and generating code appropriately
+		callee, ok := e.Callee.(*semantic.IdentifierExpression)
+		if ok && callee.Name == "findRecord" {
+			// Must be a pipe and no arguments.
+			if e.Pipe == nil {
+				return nil, errors.Newf(codes.Invalid,
+						"findRecord must have a pipe in" )
+			}
+
+			// We need to end up with a list of side effects. To do that we
+			// must create an empty list first as it needs to be deeper on the
+			// stack for the append.
+			itrp.appendCode( bctypes.IN_CONS_SIDE_EFFECTS, 0 )
+
+			// Synthesize the pipe in. Output here will be a table object. want
+			// to turn this into a list of side effects for the execution
+			// instruction.
+			_, err := itrp.synExpression(ctx, e.Pipe, scope)
+			if err != nil {
+				return nil, err
+			}
+
+			// Append the table object as a side effect to the above created list.
+			ase := AppendSideEffect{ Node: e }
+			itrp.appendCode( bctypes.IN_APPEND_SIDE_EFFECT, ase )
+
+			// Now we can invoke execution.
+			itrp.appendCode( bctypes.IN_EXECUTE_FLUX, 0 )
+
+			// Drain the results.
+			itrp.appendCode( bctypes.IN_FIND_RECORD, 0 )
+
+			return nil, nil
+		} else {
+			return itrp.synCall(ctx, e, scope)
+		}
 	case *semantic.MemberExpression:
 		obj, err := itrp.synExpression(ctx, e.Object, scope)
 		if err != nil {
