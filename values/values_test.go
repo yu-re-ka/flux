@@ -2,8 +2,10 @@ package values_test
 
 import (
 	"fmt"
+	"math/rand"
 	"regexp"
 	"testing"
+	"time"
 
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
@@ -35,5 +37,45 @@ func TestNewNull(t *testing.T) {
 	v := values.NewNull(semantic.BasicString)
 	if want, got := true, v.IsNull(); want != got {
 		t.Fatalf("unexpected value -want/+got\n\t- %v\n\t+ %v", want, got)
+	}
+}
+
+var Result struct {
+	Value   values.Value
+	Nature  semantic.Nature
+	Float64 float64
+}
+
+func BenchmarkNewFloat(b *testing.B) {
+	rnd := rand.New(rand.NewSource(time.Now().UnixNano()))
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	for i := 0; i < b.N; i++ {
+		Result.Value = values.NewFloat(rnd.Float64())
+	}
+}
+
+func BenchmarkValue_Float(b *testing.B) {
+	rnd := rand.New(rand.NewSource(time.Now().UnixNano()))
+	v := values.NewFloat(rnd.Float64())
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	for i := 0; i < b.N; i++ {
+		Result.Float64 = v.Float()
+	}
+}
+
+func BenchmarkValue_Float_Nature(b *testing.B) {
+	v := values.NewFloat(0)
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	for i := 0; i < b.N; i++ {
+		Result.Nature = v.Type().Nature()
 	}
 }
