@@ -11,6 +11,7 @@ type Query interface {
 	// Results returns a channel that will deliver the query results.
 	// Its possible that the channel is closed before any results arrive,
 	// in which case the query should be inspected for an error using Err().
+	// No more results are available when the channel is closed.
 	Results() <-chan Result
 
 	// Done must always be called to free resources. It is safe to call Done

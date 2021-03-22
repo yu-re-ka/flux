@@ -173,6 +173,8 @@ func (t *TestRunner) Gather(root string, names []string) error {
 			return err
 		}
 		for i, astf := range asts {
+			//fmt.Println("########################")
+			//fmt.Println(ast.Format(astf))
 			test := NewTest(tcnames[i], astf)
 			if len(names) == 0 || contains(names, test.Name()) {
 				t.tests = append(t.tests, &test)
@@ -384,6 +386,9 @@ func isTestFile(fi os.FileInfo, filename string) bool {
 // Run runs all tests, reporting their results.
 func (t *TestRunner) Run(executor TestExecutor, verbosity int) {
 	for _, test := range t.tests {
+		if verbosity > 0 {
+			fmt.Println("Running", test.name)
+		}
 		test.Run(executor)
 		t.reporter.ReportTestRun(test)
 	}
@@ -448,12 +453,16 @@ type TestExecutor interface {
 }
 
 func NewTestExecutor(ctx context.Context) (TestExecutor, error) {
-	return testExecutor{}, nil
+	return testExecutor{
+		verbosity: 3,
+	}, nil
 }
 
-type testExecutor struct{}
+type testExecutor struct {
+	verbosity int
+}
 
-func (testExecutor) Run(pkg *ast.Package) error {
+func (t testExecutor) Run(pkg *ast.Package) error {
 	jsonAST, err := json.Marshal(pkg)
 	if err != nil {
 		return err
@@ -474,22 +483,44 @@ func (testExecutor) Run(pkg *ast.Package) error {
 	}
 	defer query.Done()
 
-	results := flux.NewResultIteratorFromQuery(query)
-	for results.More() {
-		result := results.Next()
-		err := result.Tables().Do(func(tbl flux.Table) error {
-			// The data returned here is the result of `testing.diff`, so any result means that
-			// a comparison of two tables showed inequality. Capture that inequality as part of the error.
-			// XXX: rockstar (08 Dec 2020) - This could use some ergonomic work, as the diff output
-			// is not exactly "human readable."
-			return fmt.Errorf("%s", table.Stringify(tbl))
-		})
-		if err != nil {
-			return err
+	// Consume all the test results,
+	// This is necessary because the query engine is lazy
+	// and will not do any work unless we read its results.
+RESULTS:
+	for {
+		select {
+		case <-ctx.Done():
+			return errors.New(codes.Internal, "query cancelled")
+		case result, ok := <-query.Results():
+			if !ok {
+				//No more results
+				break RESULTS
+			}
+			if t.verbosity > 1 {
+				fmt.Println("Result ", result.Name())
+			}
+			// No-op consume results
+			err := result.Tables().Do(func(tbl flux.Table) error {
+				if t.verbosity > 1 {
+					fmt.Println(table.Stringify(tbl))
+					return nil
+				} else {
+					return tbl.Do(func(cr flux.ColReader) error {
+						return nil
+					})
+				}
+			})
+			if err != nil {
+				return err
+			}
 		}
 	}
-	results.Release()
-	return results.Err()
+	err = query.Err()
+	if err != nil {
+		return err
+	}
+	// Verify all expectations and assertions of the testing framework.
+	return testing.Check(ctx)
 }
 
 func (testExecutor) Close() error { return nil }

@@ -1,8 +1,12 @@
 package testing
 
 import (
+	"context"
+	"fmt"
+
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/dependencies/testing"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
@@ -58,8 +62,8 @@ func newAssertEmptyProcedure(qs flux.OperationSpec, pa plan.Administration) (pla
 }
 
 type AssertEmptyTransformation struct {
+	ctx context.Context
 	execute.ExecutionNode
-	failures int64
 
 	d     execute.Dataset
 	cache execute.TableBuilderCache
@@ -72,12 +76,13 @@ func createAssertEmptyTransformation(id execute.DatasetID, mode execute.Accumula
 		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
 	}
 
-	transform := NewAssertEmptyTransformation(dataset, cache)
+	transform := NewAssertEmptyTransformation(a.Context(), dataset, cache)
 	return transform, dataset, nil
 }
 
-func NewAssertEmptyTransformation(d execute.Dataset, cache execute.TableBuilderCache) *AssertEmptyTransformation {
+func NewAssertEmptyTransformation(ctx context.Context, d execute.Dataset, cache execute.TableBuilderCache) *AssertEmptyTransformation {
 	return &AssertEmptyTransformation{
+		ctx:   ctx,
 		d:     d,
 		cache: cache,
 	}
@@ -88,8 +93,12 @@ func (t *AssertEmptyTransformation) RetractTable(id execute.DatasetID, key flux.
 }
 
 func (t *AssertEmptyTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
+	//TODO pass the table data downstream
 	if !tbl.Empty() {
-		t.failures++
+		testing.Assert(t.ctx, testing.Assertion{
+			Result:  testing.AssertionFailed,
+			Message: fmt.Sprintf("table is not empty. group key: %s", tbl.Key().String()),
+		})
 	}
 	// TODO: The Do method must be called at the moment.
 	return tbl.Do(func(cr flux.ColReader) error {
@@ -106,8 +115,5 @@ func (t *AssertEmptyTransformation) UpdateProcessingTime(id execute.DatasetID, m
 }
 
 func (t *AssertEmptyTransformation) Finish(id execute.DatasetID, err error) {
-	if err == nil && t.failures > 0 {
-		err = errors.Newf(codes.Aborted, "found %d tables that were not empty", t.failures)
-	}
 	t.d.Finish(err)
 }

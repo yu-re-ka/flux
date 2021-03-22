@@ -74,13 +74,40 @@ func ExpectPlannerRule(ctx context.Context, name string, n int) error {
 	return nil
 }
 
+// Assert records the result of a test assertion.
+func Assert(ctx context.Context, a Assertion) error {
+	tf, err := getTestingFramework(ctx)
+	if err != nil {
+		return err
+	}
+	tf.assertions = append(tf.assertions, a)
+	return nil
+}
+
 type testingFramework struct {
-	want results
-	got  results
+	want       results
+	got        results
+	assertions assertionSet
+}
+
+type AssertionResult int
+
+const (
+	AssertionPassed AssertionResult = iota
+	AssertionFailed
+)
+
+type Assertion struct {
+	Result  AssertionResult
+	Message string
 }
 
 func (tf *testingFramework) Check() error {
-	return tf.want.Check(tf.got)
+	err := tf.want.Check(tf.got)
+	if err != nil {
+		return err
+	}
+	return tf.assertions.Check()
 }
 
 type results struct {
@@ -92,6 +119,17 @@ func (want results) Check(got results) error {
 		got := got.plannerRules[name]
 		if want != got {
 			return errors.Newf(codes.Invalid, "planner rule invoked an unexpected number of times: %d (want) != %d (got)", want, got)
+		}
+	}
+	return nil
+}
+
+type assertionSet []Assertion
+
+func (as assertionSet) Check() error {
+	for _, a := range as {
+		if a.Result == AssertionFailed {
+			return errors.Newf(codes.Invalid, "assertion failed: %v", a.Message)
 		}
 	}
 	return nil
