@@ -35,6 +35,12 @@ func getTestingFramework(ctx context.Context) (*testingFramework, error) {
 	return tf.(*testingFramework), nil
 }
 
+// Enabled will return true if the testing framework is enabled.
+func Enabled(ctx context.Context) bool {
+	_, err := getTestingFramework(ctx)
+	return err == nil
+}
+
 // MarkInvokedPlannerRule will mark that a planner rule was
 // invoked and record that information in the testing dependencies.
 //
