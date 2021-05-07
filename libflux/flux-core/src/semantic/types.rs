@@ -82,6 +82,11 @@ impl Substitutable for PolyType {
         }
     }
     fn free_vars(&self) -> Vec<Tvar> {
+        println!(
+            "PolyType free: {:?} {:?}",
+            &self.vars,
+            self.expr.free_vars()
+        );
         minus(&self.vars, self.expr.free_vars())
     }
 }

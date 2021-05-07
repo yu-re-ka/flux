@@ -20,7 +20,7 @@ use crate::semantic::{
     infer::{Constraint, Constraints},
     sub::{Substitutable, Substitution},
     types::{
-        Array, Dictionary, Function, Kind, MonoType, MonoTypeMap, PolyType, PolyTypeMap, Tvar,
+        Array, Dictionary, Function, Kind, MonoType, MonoTypeMap, PolyType, SemanticMap, Tvar,
         TvarKinds,
     },
 };
@@ -558,6 +558,10 @@ impl VariableAssgn {
 
         let t = self.init.type_of().apply(&sub);
         let p = infer::generalize(&env, &kinds, t);
+        println!(
+            "Generalize var {} vars: {:?} cons: {:?}",
+            &self.id.name, &p.vars, &p.cons
+        );
 
         // Update variable assignment nodes with the free vars
         // and kind constraints obtained from generalization.
@@ -793,56 +797,111 @@ impl FunctionExpr {
         let mut req = MonoTypeMap::new();
         let mut opt = MonoTypeMap::new();
         // This params will build the nested env when inferring the function body.
-        let mut params = PolyTypeMap::new();
+        // map[ param name: (fresh tvar, optional type of default value)]
+        let mut params = SemanticMap::<String, (Tvar, Option<MonoType>)>::new();
         for param in &mut self.params {
-            match param.default {
+            // Assume we do not know the type of the param even if it has a default value.
+            // We will check the default satisfies the infered type later.
+            // Use a fresh TVar.
+            let id = param.key.name.clone();
+            let ftvar = f.fresh();
+            let default_type = match param.default {
                 Some(ref mut e) => {
+                    // Add this param to the optional set
+                    opt.insert(id.clone(), MonoType::Var(ftvar));
+                    // Infer the type of the default value
                     let (nenv, ncons) = e.infer(env, f)?;
                     cons = cons + ncons;
-                    let id = param.key.name.clone();
-                    // We are here: `f = (a=1) => {...}`.
-                    // So, this PolyType is actually a MonoType, whose type
-                    // is the one of the default value ("1" in "a=1").
-                    let typ = PolyType {
-                        vars: Vec::new(),
-                        cons: TvarKinds::new(),
-                        expr: e.type_of(),
-                    };
-                    params.insert(id.clone(), typ);
-                    opt.insert(id, e.type_of());
                     env = nenv;
+                    Some(e.type_of())
                 }
                 None => {
-                    // We are here: `f = (a) => {...}`.
-                    // So, we do not know the type of "a". Let's use a fresh TVar.
-                    let id = param.key.name.clone();
-                    let ftvar = f.fresh();
-                    let typ = PolyType {
-                        vars: Vec::new(),
-                        cons: TvarKinds::new(),
-                        expr: MonoType::Var(ftvar),
-                    };
-                    params.insert(id.clone(), typ.clone());
                     // Piped arguments cannot have a default value.
                     // So check if this is a piped argument.
                     if param.is_pipe {
                         pipe = Some(types::Property {
-                            k: id,
+                            k: id.clone(),
                             v: MonoType::Var(ftvar),
                         });
                     } else {
-                        req.insert(id, MonoType::Var(ftvar));
+                        req.insert(id.clone(), MonoType::Var(ftvar));
                     }
+                    None
                 }
             };
+            params.insert(id, (ftvar.clone(), default_type));
         }
         // Add the parameters to some nested environment.
         let mut nenv = Environment::new(env);
-        for (id, param) in params.into_iter() {
-            nenv.add(id, param);
+        for (id, (param, _)) in (&params).into_iter() {
+            nenv.add(
+                id.clone(),
+                PolyType {
+                    // function parameters are not free
+                    vars: Vec::new(),
+                    cons: TvarKinds::new(),
+                    expr: MonoType::Var(param.clone()),
+                },
+            );
         }
         // And use it to infer the body.
         let (nenv, bcons) = self.body.infer(nenv, f)?;
+        println!("Body env: {:?}", nenv);
+        println!("Body constraints: {:?}", bcons);
+
+        // Solve the body in order to generalize the parameter types
+        let mut kinds = TvarKinds::new();
+        let sub = infer::solve(&bcons, &mut kinds, f)?;
+        println!("Body kinds {:?}", &kinds);
+        println!("Body solution {:?}", &sub);
+        // Apply substitution to the type environment
+        let mut nenv = nenv.apply(&sub);
+        // Update env with generalized parameters
+        for param in &mut self.params {
+            if let Some(pt) = nenv.lookup(&param.key.name) {
+                if let MonoType::Var(tvar) = pt.expr {
+                    // create polytype where the parameter tvar is free
+                    let mut vars = pt.vars.clone();
+                    vars.push(tvar);
+                    let pt = PolyType {
+                        vars,
+                        cons: pt.cons.clone(),
+                        expr: pt.expr.clone(),
+                    };
+                    // update env with new poly type
+                    nenv.add(param.key.name.clone(), pt.clone());
+                }
+            }
+        }
+        // Constrain the default values by the infered types for the params
+        // using the nested env.
+        for param in &mut self.params {
+            if let Some(ref mut e) = param.default {
+                let (_param_tvar, default_type) = &params[&param.key.name];
+                if let Some(default_type) = default_type {
+                    if let Some(pt) = nenv.lookup(&param.key.name) {
+                        println!(
+                            "Original Param constrained pt: {} {:?}",
+                            &param.key.name, &pt
+                        );
+
+                        let pt = infer::generalize(&nenv, &kinds, pt.expr.clone());
+                        println!("Param constrained pt: {} {:?}", &param.key.name, &pt);
+                        // instantiate the param type and constrain the default type to the
+                        // instantiation
+                        let (t, ncons) = infer::instantiate(pt, f, param.loc.clone());
+                        cons = cons + ncons;
+                        let c = Constraint::Equal {
+                            act: default_type.clone(),
+                            exp: t.clone(),
+                            loc: e.loc().clone(),
+                        };
+                        println!("add const: {:?}", &c);
+                        cons.add(c);
+                    }
+                }
+            }
+        }
         // Now pop the nested environment, we don't need it anymore.
         let env = nenv.pop();
         let retn = self.body.type_of();
@@ -852,7 +911,9 @@ impl FunctionExpr {
             pipe,
             retn,
         }));
+        // update constraints with constraints from body
         cons = cons + bcons;
+        // add constraint for function expression
         cons.add(Constraint::Equal {
             exp: self.typ.clone(),
             act: func,

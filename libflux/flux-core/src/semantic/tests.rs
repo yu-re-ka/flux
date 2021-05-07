@@ -2779,13 +2779,34 @@ fn call_expr() {
             f(x: (w=<-) => w)
         "#,
         exp: map![
-            "f" => "(x:(<-:int) => C) => C",
+            "f" => "(x: (<-: int) => C) => C",
         ]
     }
-    // pipe args have different names
-    test_infer_err! {
+    // pipe args does not have an inferred name
+    test_infer! {
+        src: r#"
+            f = (arg, w) => w |> arg()
+        "#,
+        exp: map![
+            "f" => "(arg: (<-: A) => B, w: A) => B"
+        ]
+    }
+    // pipe args can have different names from default arg
+    test_infer! {
         src: r#"
             f = (arg=(x=<-) => x, w) => w |> arg()
+            f(arg: (v=<-) => "asdf", w: 0)
+        "#,
+        exp: map![
+            "f" => "(?arg: (<-: A) => B, w: A) => B"
+        ]
+    }
+    // pipe args have different names from default arg
+    test_infer_err! {
+        env: map![
+            "f" => "(arg: (<-x:A) => A) => A",
+        ],
+        src: r#"
             f(arg: (v=<-) => v, w: 0)
         "#,
     }
@@ -3283,7 +3304,7 @@ fn function_default_arguments_1() {
             y = f(a: x, b: f(a:x))
         "#,
         exp: map![
-            "f" => "(a: int, ?b: int) => int",
+            "f" => "(a: A, ?b: A) => A where A: Addable",
             "x" => "int",
             "y" => "int",
         ],
@@ -3294,18 +3315,80 @@ fn function_default_arguments_2() {
     test_infer! {
         src: r#"
             f = (a, b, c=2.2, d=1) => ({r: a + c, s: b + d})
+            v = f(a: 3, b: 1.1, c: 1, d: 0.5)
             w = f(a: 0.1, b: 4, c: 3.3, d: 3)
             x = f(a: 1.1, b: 2, c: 3.3)
             y = f(a: 2.2, b: 1, d: 3)
             z = f(a: 3.3, b: 3)
         "#,
         exp: map![
-            "f" => "(a: float, b: int, ?c: float, ?d: int) => {r: float , s: int}",
+            "f" => "(a: A, b: B, ?c: A, ?d: B) => {r: A , s: B} where A: Addable, B: Addable",
+            "v" => "{r: int , s: float}",
             "w" => "{r: float , s: int}",
             "x" => "{r: float , s: int}",
             "y" => "{r: float , s: int}",
             "z" => "{r: float , s: int}",
         ],
+    }
+}
+#[test]
+fn function_default_arguments_3() {
+    test_infer! {
+        env: map![
+            "f" => "(t: A) => A where A: Timeable",
+            "now" => "() => time",
+        ],
+        src: r#"
+            x = (t=now()) => f(t:t)
+        "#,
+        exp: map![
+            "x" => "(?t: A) => A where A: Timeable",
+        ],
+    }
+}
+#[test]
+fn function_default_arguments_error() {
+    // Default value that does not meet the constraints of the body should produce an error
+    test_error_msg! {
+        src: r#"
+            f = (a, b="hey there") => a * b
+        "#,
+        err: "type error @2:23-2:34: string is not Divisible",
+    }
+}
+#[test]
+fn function_default_generic_argument_error() {
+    // Are these the right semantics?
+    //  I think so?
+    //      b=1.5 should be checked against the type constraint Addable
+    //  f(a:"", b:"") should not be checked against the type of the default
+    //
+    //  How do we generate a constraint that does the above?
+    //   I am thinking we leverage instantiation to create a phantom copy
+    //   of the parameter and type check the default value against that copy.
+    //   Constraints are transitive, so if we add a constraint between the default value and the
+    //   param and add a constraint between the call value and the param we have in effect created
+    //   a constraint between the call value and the default value.
+    //   Hence why we want to instantiate the param. Doing so has been tricky.
+    //
+    // If you do NOT use the default you are NOT constrained by it
+    test_infer! {
+        src: r#"
+            f = (a, b=1.5) => a + b
+            x = f(a:"hi", b: " there")
+        "#,
+        exp: map![
+            "f" => "(a:A, ?b: A) => A where A: Addable",
+            "x" => "string",
+        ],
+    }
+    // If you do use the default you are constrained by it
+    test_error_msg! {
+        src: r#"
+            f = (a, b=1.5) => a + b
+            x = f(a:"hi")
+        "#,
+        err: "asdf",
     }
 }
 #[test]
@@ -3335,8 +3418,8 @@ fn function_default_arguments_and_pipes() {
         "#,
         exp: map![
             "f" => "(<-t: B, f: (<-: B, a: A) => C, g: A) => C",
-            "x" => "(a: int, ?b: int, <-m: int) => int",
-            "z" => "(a: {B with m: A}, ?b: float, ?c: float, <-m: float) => {r: A , s: float}",
+            "x" => "(a: A, ?b: A, <-m: A) => A where A: Addable",
+            "z" => "(a: {B with m: A}, ?b: C, ?c: C, <-m: C) => {r: A , s: C} where C: Addable",
             "y" => "int",
             "v" => "{s: float, r: string}",
         ],

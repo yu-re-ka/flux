@@ -131,6 +131,12 @@ pub fn solve(
 //
 pub fn generalize(env: &Environment, with: &TvarKinds, t: MonoType) -> PolyType {
     let vars = minus(&env.free_vars(), t.free_vars());
+    println!(
+        "generalized vars {:?} {:?} {:?}",
+        &env.free_vars(),
+        t.free_vars(),
+        &vars
+    );
     let mut cons = TvarKinds::new();
     for (tv, kinds) in with {
         if vars.contains(tv) {
