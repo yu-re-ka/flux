@@ -226,9 +226,9 @@ impl From<fb::Fun<'_>> for Option<Function> {
             };
         }
         Some(Function {
-            req,
-            opt,
-            pipe,
+            //TODO
+            positional: Vec::new(),
+            named: semantic_map! {},
             retn: from_table(t.retn()?, t.retn_type())?,
         })
     }
@@ -543,15 +543,16 @@ fn build_fun<'a>(
     mut fun: Function,
 ) -> flatbuffers::WIPOffset<fb::Fun<'a>> {
     let mut args = Vec::new();
-    if let Some(pipe) = fun.pipe {
-        args.push((pipe.k, pipe.v, true, false))
-    };
-    for (k, v) in fun.req {
-        args.push((k, v, false, false));
-    }
-    for (k, v) in fun.opt {
-        args.push((k, v, false, true));
-    }
+    // TODO
+    //if let Some(pipe) = fun.pipe {
+    //    args.push((pipe.k, pipe.v, true, false))
+    //};
+    //for (k, v) in fun.req {
+    //    args.push((k, v, false, false));
+    //}
+    //for (k, v) in fun.opt {
+    //    args.push((k, v, false, true));
+    //}
     let args = build_vec(args, builder, build_arg);
     let args = builder.create_vector(args.as_slice());
 

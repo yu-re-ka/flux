@@ -382,44 +382,45 @@ impl<'a> semantic::walk::Visitor<'_> for SerializingVisitor<'a> {
             }
 
             walk::Node::CallExpr(call) => {
-                let (pipe, pipe_type) = {
-                    match &call.pipe {
-                        Some(_) => v.pop_expr(),
-                        _ => (None, fbsemantic::Expression::NONE),
-                    }
-                };
+                //TODO
+                //let (pipe, pipe_type) = {
+                //    match &call.pipe {
+                //        Some(_) => v.pop_expr(),
+                //        _ => (None, fbsemantic::Expression::NONE),
+                //    }
+                //};
 
-                let (callee, callee_type) = v.pop_expr();
+                //let (callee, callee_type) = v.pop_expr();
 
-                let arguments = {
-                    let arg_num = call.arguments.len();
-                    let start = v.properties.len() - arg_num;
-                    let arg_slice = &v.properties.as_slice()[start..];
-                    let vec = v.builder.create_vector(arg_slice);
-                    v.properties.truncate(start);
-                    Some(vec)
-                };
+                //let arguments = {
+                //    let arg_num = call.arguments.len();
+                //    let start = v.properties.len() - arg_num;
+                //    let arg_slice = &v.properties.as_slice()[start..];
+                //    let vec = v.builder.create_vector(arg_slice);
+                //    v.properties.truncate(start);
+                //    Some(vec)
+                //};
 
-                let call_typ = call.typ.clone();
-                let (typ, typ_type) = types::build_type(&mut v.builder, call_typ);
+                //let call_typ = call.typ.clone();
+                //let (typ, typ_type) = types::build_type(&mut v.builder, call_typ);
 
-                let call = fbsemantic::CallExpression::create(
-                    &mut v.builder,
-                    &fbsemantic::CallExpressionArgs {
-                        loc,
-                        callee,
-                        callee_type,
-                        arguments,
-                        pipe,
-                        pipe_type,
-                        typ: Some(typ),
-                        typ_type,
-                    },
-                );
-                v.expr_stack.push((
-                    call.as_union_value(),
-                    fbsemantic::Expression::CallExpression,
-                ));
+                //let call = fbsemantic::CallExpression::create(
+                //    &mut v.builder,
+                //    &fbsemantic::CallExpressionArgs {
+                //        loc,
+                //        callee,
+                //        callee_type,
+                //        arguments,
+                //        pipe,
+                //        pipe_type,
+                //        typ: Some(typ),
+                //        typ_type,
+                //    },
+                //);
+                //v.expr_stack.push((
+                //    call.as_union_value(),
+                //    fbsemantic::Expression::CallExpression,
+                //));
             }
 
             walk::Node::BinaryExpr(bin) => {
@@ -531,7 +532,8 @@ impl<'a> semantic::walk::Visitor<'_> for SerializingVisitor<'a> {
                     &fbsemantic::FunctionParameterArgs {
                         loc,
                         key,
-                        is_pipe: func_param.is_pipe,
+                        // TODO is_pipe: func_param.is_pipe,
+                        is_pipe: false,
                         default,
                         default_type,
                     },

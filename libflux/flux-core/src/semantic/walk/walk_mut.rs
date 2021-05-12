@@ -418,10 +418,10 @@ where
             }
             NodeMut::CallExpr(ref mut n) => {
                 walk_mut(v, &mut NodeMut::from_expr(&mut n.callee));
-                if let Some(mut p) = n.pipe.as_mut() {
-                    walk_mut(v, &mut NodeMut::from_expr(&mut p));
+                for mut arg in n.positional.iter_mut() {
+                    walk_mut(v, &mut NodeMut::from_expr(&mut arg));
                 }
-                for mut arg in n.arguments.iter_mut() {
+                for mut arg in n.named.iter_mut() {
                     walk_mut(v, &mut NodeMut::Property(&mut arg));
                 }
             }

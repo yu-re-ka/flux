@@ -563,11 +563,11 @@ impl Parser {
         };
         let _rparen = self.close(TokenType::RParen);
         self.expect(TokenType::Arrow);
-        let mt = self.parse_monotype();
+        let rt = self.parse_monotype();
         MonoType::Function(Box::new(FunctionType {
-            base: self.base_node_from_other_end(&_lparen, mt.base()),
+            base: self.base_node_from_other_end(&_lparen, rt.base()),
             parameters: params,
-            monotype: mt,
+            retn: rt,
         }))
     }
 
@@ -594,33 +594,24 @@ impl Parser {
                 self.expect(TokenType::Colon);
                 let mt = self.parse_monotype();
                 let _base = self.base_node_from_token(&symbol);
-                ParameterType::Optional {
+                ParameterType {
                     base: self.base_node_from_others(&_base, mt.base()),
-                    name: id,
+                    name: Some(id),
                     monotype: mt,
+                    required: false,
                 }
             }
             TokenType::PipeReceive => {
+                // Required parameter, but we don't know its name as its a pipe receive parameter.
                 let symbol = self.expect(TokenType::PipeReceive);
-                if self.peek().tok == TokenType::Ident {
-                    let id = self.parse_identifier();
-                    self.expect(TokenType::Colon);
-                    let mt = self.parse_monotype();
-                    let _base = self.base_node_from_token(&symbol);
-                    ParameterType::Pipe {
-                        base: self.base_node_from_others(&_base, mt.base()),
-                        name: Some(id),
-                        monotype: mt,
-                    }
-                } else {
-                    self.expect(TokenType::Colon);
-                    let mt = self.parse_monotype();
-                    let _base = self.base_node_from_token(&symbol);
-                    ParameterType::Pipe {
-                        base: self.base_node_from_others(&_base, mt.base()),
-                        name: None,
-                        monotype: mt,
-                    }
+                self.expect(TokenType::Colon);
+                let mt = self.parse_monotype();
+                let _base = self.base_node_from_token(&symbol);
+                ParameterType {
+                    base: self.base_node_from_others(&_base, mt.base()),
+                    name: None,
+                    monotype: mt,
+                    required: true,
                 }
             }
             _ => {
@@ -628,10 +619,11 @@ impl Parser {
                 let id = self.parse_identifier();
                 self.expect(TokenType::Colon);
                 let mt = self.parse_monotype();
-                ParameterType::Required {
+                ParameterType {
                     base: self.base_node_from_others(&id.base, mt.base()),
-                    name: id,
+                    name: Some(id),
                     monotype: mt,
+                    required: true,
                 }
             }
         }

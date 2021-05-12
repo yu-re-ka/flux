@@ -145,10 +145,10 @@ fn infer_types(
                 "unexpected types:".red().bold(),
                 "want:".green().bold(),
                 want.iter().fold(String::new(), |acc, (name, poly)| acc
-                    + &format!("\t{}: {}\n", name, poly)),
+                    + &format!("\t{}: {}\n", name, poly.normal())),
                 "got:".red().bold(),
                 got.iter().fold(String::new(), |acc, (name, poly)| acc
-                    + &format!("\t{}: {}\n", name, poly)),
+                    + &format!("\t{}: {}\n", name, poly.normal())),
             );
         }
     }
@@ -3295,6 +3295,39 @@ fn function_instantiation_and_generalization() {
     }
 }
 #[test]
+fn function_positional_arguments() {
+    test_infer! {
+        src: r#"
+            f = (a, b=1) => a + b
+            v = f(a: 2, b: 4)
+            w = f(a: 2)
+            x = f(2)
+            y = f(2, 4)
+            z = f(2, b: 4)
+        "#,
+        exp: map![
+            "f" => "(a: int, ?b: int) => int",
+            "v" => "int",
+            "w" => "int",
+            "x" => "int",
+            "y" => "int",
+            "z" => "int",
+        ],
+    }
+    test_infer_err! {
+        src: r#"
+            f = (a, b=1) => a + b
+            z = f(2, 4, b: 4)
+        "#,
+    }
+    test_infer_err! {
+        src: r#"
+            f = (a, b=1) => a + b
+            z = f(2, a: 4)
+        "#,
+    }
+}
+#[test]
 fn function_default_arguments_1() {
     test_infer! {
         src: r#"
@@ -3332,12 +3365,12 @@ fn function_default_arguments_2() {
 fn function_pipe_identity() {
     test_infer! {
         src: r#"
-            f = (a=<-) => a
+            f = (a) => a
             x = f(a:2.2)
             y = 1 |> f()
         "#,
         exp: map![
-            "f" => "(<-a: A) => A",
+            "f" => "(a: A) => A",
             "x" => "float",
             "y" => "int",
         ],
@@ -3347,16 +3380,16 @@ fn function_pipe_identity() {
 fn function_default_arguments_and_pipes() {
     test_infer! {
         src: r#"
-            f = (f, g, t=<-) => t |> f(a: g)
-            x = (a, b=2, m=<-) => a + b + m
-            z = (a, b=3.3, c=4.3, m=<-) => ({r: a.m, s: b + c + m})
+            f = (t, f, g) => t |> f(a: g)
+            x = (m, a, b=2) => a + b + m
+            z = (m, a, b=3.3, c=4.3) => ({r: a.m, s: b + c + m})
             y = f(f: x, g: 100, t: 33)
             v = 2.2 |> f(f: z, g: {m: "4.5"})
         "#,
         exp: map![
-            "f" => "(<-t: B, f: (<-: B, a: A) => C, g: A) => C",
-            "x" => "(a: int, ?b: int, <-m: int) => int",
-            "z" => "(a: {B with m: A}, ?b: float, ?c: float, <-m: float) => {r: A , s: float}",
+            "f" => "(t: B, f: (<-: B, a: A) => C, g: A) => C",
+            "x" => "(m: int, a: int, ?b: int) => int",
+            "z" => "(m: float, a: {B with m: A}, ?b: float, ?c: float) => {r: A , s: float}",
             "y" => "int",
             "v" => "{s: float, r: string}",
         ],

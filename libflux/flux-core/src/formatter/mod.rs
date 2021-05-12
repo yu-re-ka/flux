@@ -366,38 +366,23 @@ impl Formatter {
         }
         self.write_rune(')');
         self.write_string(" => ");
-        self.format_monotype(&n.monotype);
+        self.format_monotype(&n.retn);
     }
     fn format_parameter_type(&mut self, n: &ast::ParameterType) {
         match &n {
-            ast::ParameterType::Required {
+            ast::ParameterType {
                 base: _,
                 name,
                 monotype,
+                required,
             } => {
-                self.format_identifier(&name);
-                self.write_string(": ");
-                self.format_monotype(&monotype);
-            }
-            ast::ParameterType::Optional {
-                base: _,
-                name,
-                monotype,
-            } => {
-                self.write_rune('?');
-                self.format_identifier(&name);
-                self.write_string(": ");
-                self.format_monotype(&monotype);
-            }
-            ast::ParameterType::Pipe {
-                base: _,
-                name,
-                monotype,
-            } => {
-                self.write_string("<-");
-                match name {
-                    Some(n) => self.format_identifier(n),
-                    None => {}
+                if !required {
+                    self.write_rune('?');
+                }
+                if let Some(name) = &name {
+                    self.format_identifier(name);
+                } else {
+                    self.write_string("<-");
                 }
                 self.write_string(": ");
                 self.format_monotype(&monotype);

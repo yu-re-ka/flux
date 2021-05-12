@@ -411,10 +411,10 @@ where
             }
             Node::CallExpr(ref n) => {
                 walk(v, Rc::new(Node::from_expr(&n.callee)));
-                if let Some(ref p) = n.pipe {
-                    walk(v, Rc::new(Node::from_expr(p)));
+                for arg in n.positional.iter() {
+                    walk(v, Rc::new(Node::from_expr(arg)));
                 }
-                for arg in n.arguments.iter() {
+                for arg in n.named.iter() {
                     walk(v, Rc::new(Node::Property(arg)));
                 }
             }

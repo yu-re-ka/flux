@@ -1,8 +1,8 @@
 //! "Fresh" type variable identifiers.
 
 use crate::semantic::types::{
-    Array, Function, MonoType, MonoTypeVecMap, PolyType, Property, Record, SemanticMap, Tvar,
-    TvarMap,
+    Array, Function, MonoType, MonoTypeVecMap, Parameter, PolyType, Property, Record, SemanticMap,
+    Tvar, TvarMap,
 };
 use std::collections::BTreeMap;
 use std::hash::Hash;
@@ -183,10 +183,19 @@ impl Fresh for Property {
 impl Fresh for Function {
     fn fresh(self, f: &mut Fresher, sub: &mut TvarMap) -> Self {
         Function {
-            req: self.req.fresh(f, sub),
-            opt: self.opt.fresh(f, sub),
-            pipe: self.pipe.fresh(f, sub),
+            positional: self.positional.fresh(f, sub),
+            named: self.named.fresh(f, sub),
             retn: self.retn.fresh(f, sub),
+        }
+    }
+}
+
+impl Fresh for Parameter {
+    fn fresh(self, f: &mut Fresher, sub: &mut TvarMap) -> Self {
+        Parameter {
+            name: self.name,
+            typ: self.typ.fresh(f, sub),
+            required: self.required,
         }
     }
 }

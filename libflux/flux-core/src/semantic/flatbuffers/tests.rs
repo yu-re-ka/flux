@@ -683,19 +683,20 @@ fn compare_param(
     semantic_param: &semantic::nodes::FunctionParameter,
     fb_param: &fbsemantic::FunctionParameter,
 ) -> Result<(), String> {
-    compare_loc(&semantic_param.loc, &fb_param.loc())?;
-    if semantic_param.is_pipe != fb_param.is_pipe() {
-        return Err(format!(
-            "mismatch: semantic: {}, fb: {}",
-            semantic_param.is_pipe,
-            fb_param.is_pipe()
-        ));
-    }
-    compare_ids(&semantic_param.key, &fb_param.key());
-    if let Some(def) = &semantic_param.default {
-        compare_exprs(&def, fb_param.default_type(), &fb_param.default());
-    }
-    Ok(())
+    Err("todo".to_string())
+    //    compare_loc(&semantic_param.loc, &fb_param.loc())?;
+    //    if semantic_param.is_pipe != fb_param.is_pipe() {
+    //        return Err(format!(
+    //            "mismatch: semantic: {}, fb: {}",
+    //            semantic_param.is_pipe,
+    //            fb_param.is_pipe()
+    //        ));
+    //    }
+    //    compare_ids(&semantic_param.key, &fb_param.key());
+    //    if let Some(def) = &semantic_param.default {
+    //        compare_exprs(&def, fb_param.default_type(), &fb_param.default());
+    //    }
+    //    Ok(())
 }
 
 fn compare_property(
@@ -869,19 +870,20 @@ fn compare_call_exprs(
     semantic_ce: &semantic::nodes::CallExpr,
     fb_ce: &Option<fbsemantic::CallExpression>,
 ) -> Result<(), String> {
-    let fb_ce = unwrap_or_fail("call expr", fb_ce)?;
-    compare_loc(&semantic_ce.loc, &fb_ce.loc())?;
-    compare_exprs(&semantic_ce.callee, fb_ce.callee_type(), &fb_ce.callee())?;
-    let fb_args = fb_ce.arguments().unwrap();
-    let mut index = 0;
-    loop {
-        if index >= semantic_ce.arguments.len() {
-            break;
-        }
-        compare_property(&semantic_ce.arguments[index], &fb_args.get(index));
-        index += 1;
-    }
-    Ok(())
+    Err("todo".to_string())
+    //    let fb_ce = unwrap_or_fail("call expr", fb_ce)?;
+    //    compare_loc(&semantic_ce.loc, &fb_ce.loc())?;
+    //    compare_exprs(&semantic_ce.callee, fb_ce.callee_type(), &fb_ce.callee())?;
+    //    let fb_args = fb_ce.arguments().unwrap();
+    //    let mut index = 0;
+    //    loop {
+    //        if index >= semantic_ce.arguments.len() {
+    //            break;
+    //        }
+    //        compare_property(&semantic_ce.arguments[index], &fb_args.get(index));
+    //        index += 1;
+    //    }
+    //    Ok(())
 }
 
 fn compare_string_expr_part_list(

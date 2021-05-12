@@ -1438,12 +1438,12 @@ import "path/bar"
 fn optional_query_metadata() {
     let mut p = Parser::new(
         r#"option task = {
-				name: "foo",
-				every: 1h,
-				delay: 10m,
-				cron: "0 2 * * *",
-				retry: 5,
-			  }"#,
+                                name: "foo",
+                                every: 1h,
+                                delay: 10m,
+                                cron: "0 2 * * *",
+                                retry: 5,
+                          }"#,
     );
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
@@ -1906,18 +1906,18 @@ fn test_parse_type_expression() {
                     ..BaseNode::default()
                 },
                 parameters: vec![
-                    ParameterType::Required {
+                    ParameterType{
                         base: BaseNode {
                             location: loc.get(1, 2, 1, 5),
                             ..BaseNode::default()
                         },
-                        name: Identifier {
+                        name: Some(Identifier {
                             base: BaseNode {
                                 location: loc.get(1, 2, 1, 3),
                                 ..BaseNode::default()
                             },
                             name: "a".to_string(),
-                        },
+                        }),
                         monotype: MonoType::Tvar(TvarType {
                             base: BaseNode {
                                 location: loc.get(1, 4, 1, 5),
@@ -1931,19 +1931,20 @@ fn test_parse_type_expression() {
                                 name: "T".to_string(),
                             },
                         }),
+                        required: true,
                     },
-                    ParameterType::Required {
+                    ParameterType{
                         base: BaseNode {
                             location: loc.get(1, 7, 1, 10),
                             ..BaseNode::default()
                         },
-                        name: Identifier {
+                        name: Some(Identifier {
                             base: BaseNode {
                                 location: loc.get(1, 7, 1, 8),
                                 ..BaseNode::default()
                             },
                             name: "b".to_string(),
-                        },
+                        }),
                         monotype: MonoType::Tvar(TvarType {
                             base: BaseNode {
                                 location: loc.get(1, 9, 1, 10),
@@ -1957,9 +1958,10 @@ fn test_parse_type_expression() {
                                 name: "T".to_string(),
                             },
                         }),
+                        required:true,
                     },
                 ],
-                monotype: MonoType::Tvar(TvarType {
+                retn: MonoType::Tvar(TvarType {
                     base: BaseNode {
                         location: loc.get(1, 15, 1, 16),
                         ..BaseNode::default()
@@ -2626,7 +2628,7 @@ fn test_parse_type_expression_function_with_no_params() {
                 },
 
                 parameters: vec![],
-                monotype: MonoType::Basic(NamedType {
+                retn: MonoType::Basic(NamedType {
                     base: BaseNode {
                         location: loc.get(1, 7, 1, 10),
                         ..BaseNode::default()
@@ -2663,18 +2665,18 @@ fn test_parse_function_type_trailing_comma() {
                     ..BaseNode::default()
                 },
 
-                parameters: vec![ParameterType::Required {
+                parameters: vec![ParameterType{
                     base: BaseNode {
                         location: loc.get(1, 2, 1, 7),
                         ..BaseNode::default()
                     },
-                    name: Identifier {
+                    name: Some(Identifier {
                         base: BaseNode {
                             location: loc.get(1, 2, 1, 3),
                             ..BaseNode::default()
                         },
                         name: "a".to_string(),
-                    },
+                    }),
                     monotype: MonoType::Basic(NamedType {
                         base: BaseNode {
                             location: loc.get(1, 4, 1, 7),
@@ -2688,8 +2690,9 @@ fn test_parse_function_type_trailing_comma() {
                             name: "int".to_string(),
                         },
                     }),
+                    required: true,
                 },],
-                monotype: MonoType::Basic(NamedType {
+                retn: MonoType::Basic(NamedType {
                     base: BaseNode {
                         location: loc.get(1, 13, 1, 16),
                         ..BaseNode::default()
@@ -2726,18 +2729,18 @@ fn test_parse_type_expression_function_with_params() {
                     ..BaseNode::default()
                 },
                 parameters: vec![
-                    ParameterType::Required {
+                    ParameterType {
                         base: BaseNode {
                             location: loc.get(1, 2, 1, 8),
                             ..BaseNode::default()
                         },
-                        name: Identifier {
+                        name: Some(Identifier {
                             base: BaseNode {
                                 location: loc.get(1, 2, 1, 3),
                                 ..BaseNode::default()
                             },
                             name: "A".to_string(),
-                        },
+                        }),
                         monotype: MonoType::Basic(NamedType {
                             base: BaseNode {
                                 location: loc.get(1, 5, 1, 8),
@@ -2751,19 +2754,20 @@ fn test_parse_type_expression_function_with_params() {
                                 name: "int".to_string(),
                             },
                         }),
+                        required: true,
                     },
-                    ParameterType::Required {
+                    ParameterType {
                         base: BaseNode {
                             location: loc.get(1, 10, 1, 17),
                             ..BaseNode::default()
                         },
-                        name: Identifier {
+                        name: Some(Identifier {
                             base: BaseNode {
                                 location: loc.get(1, 10, 1, 11),
                                 ..BaseNode::default()
                             },
                             name: "B".to_string(),
-                        },
+                        }),
                         monotype: MonoType::Basic(NamedType {
                             base: BaseNode {
                                 location: loc.get(1, 13, 1, 17),
@@ -2777,9 +2781,10 @@ fn test_parse_type_expression_function_with_params() {
                                 name: "uint".to_string(),
                             },
                         }),
+                        required: true,
                     }
                 ],
-                monotype: MonoType::Basic(NamedType {
+                retn: MonoType::Basic(NamedType {
                     base: BaseNode {
                         location: loc.get(1, 22, 1, 25),
                         ..BaseNode::default()
@@ -2816,18 +2821,18 @@ fn test_parse_type_expression_function_optional_params() {
                     location: loc.get(1, 1, 1, 17),
                     ..BaseNode::default()
                 },
-                parameters: vec![ParameterType::Optional {
+                parameters: vec![ParameterType {
                     base: BaseNode {
                         location: loc.get(1, 2, 1, 9),
                         ..BaseNode::default()
                     },
-                    name: Identifier {
+                    name:Some( Identifier {
                         base: BaseNode {
                             location: loc.get(1, 3, 1, 4),
                             ..BaseNode::default()
                         },
                         name: "A".to_string(),
-                    },
+                    }),
                     monotype: MonoType::Basic(NamedType {
                         base: BaseNode {
                             location: loc.get(1, 6, 1, 9),
@@ -2841,8 +2846,9 @@ fn test_parse_type_expression_function_optional_params() {
                             name: "int".to_string(),
                         },
                     }),
+                    required: false,
                 }],
-                monotype: MonoType::Basic(NamedType {
+                retn: MonoType::Basic(NamedType {
                     base: BaseNode {
                         location: loc.get(1, 14, 1, 17),
                         ..BaseNode::default()
@@ -2861,123 +2867,6 @@ fn test_parse_type_expression_function_optional_params() {
     )
 }
 
-#[test]
-fn test_parse_type_expression_function_named_params() {
-    let mut p = Parser::new(r#"(<-A: int) => int"#);
-    let parsed = p.parse_type_expression();
-    let loc = Locator::new(&p.source[..]);
-    assert_eq!(
-        parsed,
-        TypeExpression {
-            base: BaseNode {
-                location: loc.get(1, 1, 1, 18),
-                ..BaseNode::default()
-            },
-            monotype: MonoType::Function(Box::new(FunctionType {
-                base: BaseNode {
-                    location: loc.get(1, 1, 1, 18),
-                    ..BaseNode::default()
-                },
-                parameters: vec![ParameterType::Pipe {
-                    base: BaseNode {
-                        location: loc.get(1, 2, 1, 10),
-                        ..BaseNode::default()
-                    },
-                    name: Some(Identifier {
-                        base: BaseNode {
-                            location: loc.get(1, 4, 1, 5),
-                            ..BaseNode::default()
-                        },
-                        name: "A".to_string(),
-                    }),
-                    monotype: MonoType::Basic(NamedType {
-                        base: BaseNode {
-                            location: loc.get(1, 7, 1, 10),
-                            ..BaseNode::default()
-                        },
-                        name: Identifier {
-                            base: BaseNode {
-                                location: loc.get(1, 7, 1, 10),
-                                ..BaseNode::default()
-                            },
-                            name: "int".to_string(),
-                        },
-                    }),
-                }],
-                monotype: MonoType::Basic(NamedType {
-                    base: BaseNode {
-                        location: loc.get(1, 15, 1, 18),
-                        ..BaseNode::default()
-                    },
-                    name: Identifier {
-                        base: BaseNode {
-                            location: loc.get(1, 15, 1, 18),
-                            ..BaseNode::default()
-                        },
-                        name: "int".to_string(),
-                    }
-                }),
-            })),
-            constraints: vec![],
-        },
-    )
-}
-
-#[test]
-fn test_parse_type_expression_function_unnamed_params() {
-    let mut p = Parser::new(r#"(<- : int) => int"#);
-    let parsed = p.parse_type_expression();
-    let loc = Locator::new(&p.source[..]);
-    assert_eq!(
-        parsed,
-        TypeExpression {
-            base: BaseNode {
-                location: loc.get(1, 1, 1, 18),
-                ..BaseNode::default()
-            },
-            monotype: MonoType::Function(Box::new(FunctionType {
-                base: BaseNode {
-                    location: loc.get(1, 1, 1, 18),
-                    ..BaseNode::default()
-                },
-                parameters: vec![ParameterType::Pipe {
-                    base: BaseNode {
-                        location: loc.get(1, 2, 1, 10),
-                        ..BaseNode::default()
-                    },
-                    name: None,
-                    monotype: MonoType::Basic(NamedType {
-                        base: BaseNode {
-                            location: loc.get(1, 7, 1, 10),
-                            ..BaseNode::default()
-                        },
-                        name: Identifier {
-                            base: BaseNode {
-                                location: loc.get(1, 7, 1, 10),
-                                ..BaseNode::default()
-                            },
-                            name: "int".to_string(),
-                        },
-                    }),
-                }],
-                monotype: MonoType::Basic(NamedType {
-                    base: BaseNode {
-                        location: loc.get(1, 15, 1, 18),
-                        ..BaseNode::default()
-                    },
-                    name: Identifier {
-                        base: BaseNode {
-                            location: loc.get(1, 15, 1, 18),
-                            ..BaseNode::default()
-                        },
-                        name: "int".to_string(),
-                    }
-                }),
-            })),
-            constraints: vec![],
-        },
-    )
-}
 
 #[test]
 fn test_parse_constraint_two_ident() {
@@ -3289,7 +3178,7 @@ fn from() {
 fn comment() {
     let mut p = Parser::new(
         r#"// Comment
-			from()"#,
+                        from()"#,
     );
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
@@ -4200,7 +4089,7 @@ fn parse_dict_arbitrary_keys() {
 fn use_variable_to_declare_something() {
     let mut p = Parser::new(
         r#"howdy = 1
-			from()"#,
+                        from()"#,
     );
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
@@ -4268,7 +4157,7 @@ fn use_variable_to_declare_something() {
 fn variable_is_from_statement() {
     let mut p = Parser::new(
         r#"howdy = from()
-			howdy.count()"#,
+                        howdy.count()"#,
     );
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
@@ -4828,9 +4717,9 @@ fn pipe_expression_into_non_call_expression() {
 fn two_variables_for_two_froms() {
     let mut p = Parser::new(
         r#"howdy = from()
-			doody = from()
-			howdy|>count()
-			doody|>sum()"#,
+                        doody = from()
+                        howdy|>count()
+                        doody|>sum()"#,
     );
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
@@ -5057,9 +4946,9 @@ fn from_with_database() {
 fn map_member_expressions() {
     let mut p = Parser::new(
         r#"m = {key1: 1, key2:"value2"}
-			m.key1
-			m["key2"]
-			"#,
+                        m.key1
+                        m["key2"]
+                        "#,
     );
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
@@ -6831,8 +6720,8 @@ fn unary_expressions_with_too_many_comments() {
 a = 5.0
 // eval this
 10.0 * -a == -0.5
-	// or this
-	or a == 6.0"#,
+        // or this
+        or a == 6.0"#,
     );
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
@@ -11013,8 +10902,8 @@ fn from_with_limit() {
 fn from_with_range_and_count() {
     let mut p = Parser::new(
         r#"from(bucket:"mydb/autogen")
-						|> range(start:-4h, stop:-2h)
-						|> count()"#,
+                                                |> range(start:-4h, stop:-2h)
+                                                |> count()"#,
     );
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
@@ -11208,9 +11097,9 @@ fn from_with_range_and_count() {
 fn from_with_range_limit_and_count() {
     let mut p = Parser::new(
         r#"from(bucket:"mydb/autogen")
-						|> range(start:-4h, stop:-2h)
-						|> limit(n:10)
-						|> count()"#,
+                                                |> range(start:-4h, stop:-2h)
+                                                |> limit(n:10)
+                                                |> count()"#,
     );
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
@@ -11948,12 +11837,12 @@ fn from_with_join_with_complex_expression() {
     let mut p = Parser::new(
         r#"
 a = from(bucket:"Flux/autogen")
-	|> filter(fn: (r) => r["_measurement"] == "a")
-	|> range(start:-1h)
+        |> filter(fn: (r) => r["_measurement"] == "a")
+        |> range(start:-1h)
 
 b = from(bucket:"Flux/autogen")
-	|> filter(fn: (r) => r["_measurement"] == "b")
-	|> range(start:-1h)
+        |> filter(fn: (r) => r["_measurement"] == "b")
+        |> range(start:-1h)
 
 join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_field"])"#,
     );
