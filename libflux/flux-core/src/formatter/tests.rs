@@ -867,8 +867,7 @@ i =
 // list
 // of
 // comments
-j
-// not lost
+j// not lost
 "#,
     );
 }
@@ -1168,4 +1167,18 @@ test2 = 2",
         "test1 = 1
 test2 = 2",
     );
+}
+#[test]
+fn comment_new_line() {
+//Make sure that if a user puts his comments in line with his text that it is not deleted.
+    assert_unchanged("option foo = {a: 1} //Hello my name is \
+    joe and I like to eat my toe");
+//     assert_unchanged(
+//         "if x then //Hello
+//     y //Hello 2
+// else if g then//Hello 3
+//     7 //Hello 4
+// else
+//     z",
+    //);
 }
