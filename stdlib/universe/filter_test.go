@@ -9,7 +9,6 @@ import (
 	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/internal/gen"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/lang"
 	"github.com/influxdata/flux/memory"
@@ -17,10 +16,8 @@ import (
 	"github.com/influxdata/flux/plan/plantest"
 	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/runtime"
-	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	"github.com/influxdata/flux/stdlib/universe"
-	"github.com/influxdata/flux/values"
 	"github.com/influxdata/flux/values/valuestest"
 )
 
@@ -924,43 +921,4 @@ func TestFilter_MergeFilterRule(t *testing.T) {
 			plantest.LogicalRuleTestHelper(t, &tc)
 		})
 	}
-}
-
-func BenchmarkFilter_Values(b *testing.B) {
-	b.Run("1000", func(b *testing.B) {
-		fn := executetest.FunctionExpression(b, `(r) => r._value > 0.0`)
-		benchmarkFilter(b, 1000, fn)
-	})
-}
-
-func benchmarkFilter(b *testing.B, n int, fn *semantic.FunctionExpression) {
-	b.ReportAllocs()
-	spec := &universe.FilterProcedureSpec{
-		Fn: interpreter.ResolvedFunction{
-			Fn:    fn,
-			Scope: values.NewScope(),
-		},
-	}
-	executetest.ProcessBenchmarkHelper(b,
-		func(alloc *memory.Allocator) (flux.TableIterator, error) {
-			schema := gen.Schema{
-				NumPoints: n,
-				Alloc:     alloc,
-				Tags: []gen.Tag{
-					{Name: "_measurement", Cardinality: 1},
-					{Name: "_field", Cardinality: 6},
-					{Name: "t0", Cardinality: 100},
-					{Name: "t1", Cardinality: 50},
-				},
-			}
-			return gen.Input(context.Background(), schema)
-		},
-		func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
-			t, d, err := universe.NewFilterTransformation(context.Background(), spec, id, alloc)
-			if err != nil {
-				b.Fatal(err)
-			}
-			return t, d
-		},
-	)
 }

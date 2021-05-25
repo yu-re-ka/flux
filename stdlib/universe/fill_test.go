@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/influxdata/flux/dependencies/dependenciestest"
-	"github.com/influxdata/flux/internal/gen"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
@@ -564,41 +563,4 @@ func TestFill_Process(t *testing.T) {
 			)
 		})
 	}
-}
-
-func BenchmarkFill_Values(b *testing.B) {
-	b.Run("1000000", func(b *testing.B) {
-		benchmarkFill(b, 1000000)
-	})
-}
-
-func benchmarkFill(b *testing.B, n int) {
-	b.ReportAllocs()
-	spec := &universe.FillProcedureSpec{
-		Column: "_value",
-		Value:  values.NewFloat(0),
-	}
-	executetest.ProcessBenchmarkHelper(b,
-		func(alloc *memory.Allocator) (flux.TableIterator, error) {
-			schema := gen.Schema{
-				NumPoints: n,
-				Alloc:     alloc,
-				Tags: []gen.Tag{
-					{Name: "_measurement", Cardinality: 1},
-					{Name: "_field", Cardinality: 1},
-					{Name: "t0", Cardinality: 1},
-					{Name: "t1", Cardinality: 1},
-					{Name: "t2", Cardinality: 1},
-					{Name: "t3", Cardinality: 1},
-					{Name: "t4", Cardinality: 1},
-					{Name: "t5", Cardinality: 1},
-				},
-				Nulls: 0.4,
-			}
-			return gen.Input(context.Background(), schema)
-		},
-		func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
-			return universe.NewFillTransformation(context.Background(), spec, id, alloc)
-		},
-	)
 }

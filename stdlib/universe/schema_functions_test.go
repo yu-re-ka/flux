@@ -8,7 +8,6 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/internal/gen"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
@@ -1550,69 +1549,3 @@ func TestRenameDrop_PushDown(t *testing.T) {
 	plantest.PhysicalPlan_PushDown_TestHelper(t, spec, root, false, want)
 }
 */
-
-func BenchmarkKeep_Values(b *testing.B) {
-	b.Run("1000", func(b *testing.B) {
-		benchmarkSchemaMutator(b, 1000, &universe.KeepOpSpec{
-			Columns: []string{"_measurement", "t0"},
-		})
-	})
-}
-
-func BenchmarkDrop_Values(b *testing.B) {
-	b.Run("1000", func(b *testing.B) {
-		benchmarkSchemaMutator(b, 1000, &universe.DropOpSpec{
-			Columns: []string{"_measurement", "_field"},
-		})
-	})
-}
-
-func BenchmarkRename_Values(b *testing.B) {
-	b.Run("1000", func(b *testing.B) {
-		benchmarkSchemaMutator(b, 1000, &universe.RenameOpSpec{
-			Columns: map[string]string{
-				"_measurement": "m",
-				"_field":       "f",
-			},
-		})
-	})
-}
-
-func BenchmarkDuplicate_Values(b *testing.B) {
-	b.Run("1000", func(b *testing.B) {
-		benchmarkSchemaMutator(b, 1000, &universe.DuplicateOpSpec{
-			Column: "_value",
-			As:     "_prev_value",
-		})
-	})
-}
-
-func benchmarkSchemaMutator(b *testing.B, n int, m universe.SchemaMutation) {
-	b.ReportAllocs()
-	spec := &universe.SchemaMutationProcedureSpec{
-		Mutations: []universe.SchemaMutation{m},
-	}
-	executetest.ProcessBenchmarkHelper(b,
-		func(alloc *memory.Allocator) (flux.TableIterator, error) {
-			schema := gen.Schema{
-				NumPoints: n,
-				Alloc:     alloc,
-				Tags: []gen.Tag{
-					{Name: "_measurement", Cardinality: 1},
-					{Name: "_field", Cardinality: 6},
-					{Name: "t0", Cardinality: 100},
-					{Name: "t1", Cardinality: 50},
-				},
-				Nulls: 0.1,
-			}
-			return gen.Input(context.Background(), schema)
-		},
-		func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
-			t, d, err := universe.NewSchemaMutationTransformation(context.Background(), spec, id, alloc)
-			if err != nil {
-				b.Fatal(err)
-			}
-			return t, d
-		},
-	)
-}
