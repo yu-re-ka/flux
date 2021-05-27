@@ -524,7 +524,7 @@ impl Formatter {
         let multiline = n.params.len() > 6 && n.base.is_multiline();
         self.write_rune('(');
         let sep ;
-        if multiline  && n.params.len() > 1 {
+        if multiline {
             sep = ",\n";
             self.write_string("\n");
             self.indent();
@@ -543,13 +543,13 @@ impl Formatter {
             self.format_function_argument(property);
             self.format_comments(&property.comma);
         }
-        if multiline {
-            self.unindent();
-        }
         self.format_comments(&n.rparen);
         self.write_string(") ");
         self.format_comments(&n.arrow);
         self.write_string("=>");
+        if multiline {
+            self.unindent();
+        }
 
         // must wrap body with parenthesis in order to discriminate between:
         //  - returning a record: (x) => ({foo: x})
@@ -564,7 +564,12 @@ impl Formatter {
                 match b {
                     ast::Expression::Object(_) => {
                         // Add parens because we have an object literal for the body
-                        self.write_rune('\n');
+                        println!("This is an expression!");
+                        if n.base.is_multiline() {
+                            self.write_rune('\n');
+                        } else {
+                            self.write_rune(' ');
+                        }
                         self.write_rune('(');
                         self.format_node(&Node::from_expr(&b));
                         self.write_rune(')')
@@ -577,6 +582,7 @@ impl Formatter {
                 }
             }
             ast::FunctionBody::Block(b) => {
+                println!("This is a funciton body!");
                 self.write_rune(' ');
                 self.format_block(&b);
             }
