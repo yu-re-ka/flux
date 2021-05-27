@@ -203,7 +203,8 @@ impl Formatter {
 
     /// Format a file.
     pub fn format_file(&mut self, n: &File, include_pkg: bool) {
-        let multiline = n.parameters.len() > 4 || n.base.is_multiline();
+        //let multiline = n.parameters.len() > 4 || n.base.is_multiline();
+        let multiline = n.base.is_multiline();
         let sep = '\n';
         if let Some(pkg) = &n.package {
             if include_pkg && !pkg.name.name.is_empty() {
@@ -230,7 +231,7 @@ impl Formatter {
         self.format_statement_list(&n.body);
 
         if !n.eof.is_empty() {
-            if !multiline{
+            if !multiline {
                 self.write_rune(' ');
             }
             //self.write_rune(sep);
