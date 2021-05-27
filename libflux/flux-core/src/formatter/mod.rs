@@ -521,15 +521,30 @@ impl Formatter {
 
     fn format_function_expression(&mut self, n: &ast::FunctionExpr) {
         self.format_comments(&n.lparen);
+        let multiline = n.params.len() > 6 && n.base.is_multiline();
         self.write_rune('(');
-        let sep = ", ";
+        let sep ;
+        if multiline  && n.params.len() > 1 {
+            sep = ",\n";
+            self.write_string("\n");
+            self.indent();
+            self.write_indent();
+        } else {
+            sep = ", ";
+        }
         for (i, property) in (&n.params).iter().enumerate() {
             if i != 0 {
-                self.write_string(sep)
+                self.write_string(sep);
+                if multiline {
+                    self.write_indent();
+                }
             }
             // treat properties differently than in general case
             self.format_function_argument(property);
             self.format_comments(&property.comma);
+        }
+        if multiline {
+            self.unindent();
         }
         self.format_comments(&n.rparen);
         self.write_string(") ");
@@ -549,7 +564,7 @@ impl Formatter {
                 match b {
                     ast::Expression::Object(_) => {
                         // Add parens because we have an object literal for the body
-                        self.write_rune(' ');
+                        self.write_rune('\n');
                         self.write_rune('(');
                         self.format_node(&Node::from_expr(&b));
                         self.write_rune(')')

@@ -1169,16 +1169,32 @@ test2 = 2",
     );
 }
 #[test]
-fn comment_new_line() {
-//Make sure that if a user puts his comments in line with his text that it is not deleted.
-    assert_unchanged("option foo = {a: 1} //Hello my name is \
-    joe and I like to eat my toe");
-//     assert_unchanged(
-//         "if x then //Hello
-//     y //Hello 2
-// else if g then//Hello 3
-//     7 //Hello 4
-// else
-//     z",
-    //);
+fn preserve_multiline_test() {
+// ensure functions given preserve their structure
+//    assert_unchanged("test _convariance_missing_column_2 = () =>
+//({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: covariance_missing_column_2})");
+
+    assert_unchanged("event = () =>
+({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: covariance_missing_column_2})");
+
+    assert_unchanged(r#"event = (
+    url,
+    username,
+    password,
+    action="EventsRouter",
+    methods="add_event",
+    type="rpc",
+    tid=1,
+    summary="",
+    device="",
+    component="",
+    severity,
+    eventClass="",
+    eventClassKey="",
+    collector="",
+    message="") => {
+    body = json.encode(v: payload)
+
+    return http.post(headers: headers, url: url, data: body)
+}"#);
 }
