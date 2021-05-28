@@ -564,12 +564,7 @@ impl Formatter {
                 match b {
                     ast::Expression::Object(_) => {
                         // Add parens because we have an object literal for the body
-                        println!("This is an expression!");
-                        if n.base.is_multiline() {
-                            self.write_rune('\n');
-                        } else {
-                            self.write_rune(' ');
-                        }
+                        self.write_rune(' ');
                         self.write_rune('(');
                         self.format_node(&Node::from_expr(&b));
                         self.write_rune(')')
@@ -582,7 +577,6 @@ impl Formatter {
                 }
             }
             ast::FunctionBody::Block(b) => {
-                println!("This is a funciton body!");
                 self.write_rune(' ');
                 self.format_block(&b);
             }
