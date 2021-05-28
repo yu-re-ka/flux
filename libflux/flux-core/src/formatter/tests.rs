@@ -1171,11 +1171,17 @@ test2 = 2",
 #[test]
 fn preserve_multiline_test() {
 // ensure functions given preserve their structure
-    assert_unchanged("test _convariance_missing_column_2 = () =>
-({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: covariance_missing_column_2})");
+//    assert_unchanged("test _convariance_missing_column_2 = () =>
+//({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: covariance_missing_column_2})");
 
-    assert_unchanged("event = () =>
-({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: covariance_missing_column_2})");
+    //assert_unchanged("event = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: covariance_missing_column_2})");
+
+    assert_unchanged(
+        "event = () => ({
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    fn: covariance_missing_column_2,
+})");
 
     assert_unchanged(r#"event = (
     url,
@@ -1193,8 +1199,22 @@ fn preserve_multiline_test() {
     eventClassKey="",
     collector="",
     message="") => {
-    body = json.encode(v: payload)
+        body = json.encode(v: payload)
 
-    return http.post(headers: headers, url: url, data: body)
-}"#);
+        return http.post(
+            headers: headers,
+            url: url,
+            data: body,
+        )
+    }"#);
+
+//    assert_format(
+//        "event = () => ({input: testing.loadStore(csv: inData), want: testing.loadMem(csv: outData), fn: covariance_missing_column_2})", 
+//        "event = () => (
+//    {
+//        input: testing.loadStore(csv: inData),
+//        want: testing.loadMem(csv: outData),
+//        fn: covariance_missing_column_2,
+//    }
+//)");
 }

@@ -521,7 +521,7 @@ impl Formatter {
 
     fn format_function_expression(&mut self, n: &ast::FunctionExpr) {
         self.format_comments(&n.lparen);
-        let multiline = n.params.len() > 6 && n.base.is_multiline();
+        let multiline = n.params.len() > 4 && n.base.is_multiline();
         self.write_rune('(');
         let sep ;
         if multiline {
@@ -578,6 +578,10 @@ impl Formatter {
             }
             ast::FunctionBody::Block(b) => {
                 self.write_rune(' ');
+                // new
+                if multiline {
+                    self.indent();
+                }
                 self.format_block(&b);
             }
         }
@@ -912,9 +916,14 @@ impl Formatter {
         tabstops: bool,
     ) {
         // tabstops force single line formatting
-        let multiline = !tabstops && (n.properties.len() > 4 || n.base.is_multiline());
+        let multiline = !tabstops && (n.properties.len() > 2 || n.base.is_multiline());
         self.format_comments(&n.lbrace);
         if braces {
+            //if multiline { // NEW
+            //    self.write_rune('\n');
+            //    self.indent();
+            //    self.write_indent();
+            //} // END OF NEW
             self.write_rune('{');
         }
         if let Some(with) = &n.with {
@@ -958,6 +967,14 @@ impl Formatter {
         if braces {
             self.write_rune('}');
         }
+        // new
+        //if multiline && braces{
+        //    self.write_rune('\n');
+        //    self.unindent();
+        //} //else if multiline {
+        //    self.write_rune('\n');
+        //}
+        // end new
     }
 
     fn format_identifier(&mut self, n: &ast::Identifier) {
