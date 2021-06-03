@@ -10,10 +10,15 @@ option units = {
     distance: "km",
 }
 
+// geo.stContains is a function that tests if the specified region
+// contains the specified geographic information system (GIS) geometry
+// and returns either true or false.
 //
-// Builtin GIS functions
+// - `region` is the region to test. Specify record properties for the
+//	shape.
+// - `geometry` is the GIS geometry to test. Can be either point or
+//	linestring geometry.
 //
-// Returns boolean whether the region contains specified geometry.
 builtin stContains : (region: A, geometry: B, units: {distance: string}) => bool where A: Record, B: Record
 
 // Returns distance from given region to specified geometry.
