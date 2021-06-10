@@ -1273,7 +1273,7 @@ func (param *FunctionType) UnmarshalJSON(data []byte) error {
 	type Alias FunctionType
 	raw := struct {
 		*Alias
-		Return json.RawMessage `json:"monotype"`
+		Return json.RawMessage `json:"retn"`
 	}{}
 	if err := json.Unmarshal(data, &raw); err != nil {
 		return err

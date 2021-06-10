@@ -188,21 +188,58 @@ fn convert_monotype(
             let val = convert_monotype(dict.val, tvars, f)?;
             Ok(MonoType::Dict(Box::new(types::Dictionary { key, val })))
         }
-        ast::MonoType::Function(mut func) => {
-            let positional = func
-                .parameters
-                .drain(..)
-                .map(|p| -> Result<types::Parameter> {
-                    Ok(types::Parameter {
-                        name: match p.name {
-                            Some(id) => Some(id.name),
-                            None => None,
-                        },
-                        typ: convert_monotype(p.monotype, tvars, f)?,
-                        required: p.required,
-                    })
-                })
-                .collect::<Result<Vec<types::Parameter>>>()?;
+        ast::MonoType::Function(func) => {
+            let mut positional: Vec<types::Parameter> = Vec::new();
+            let mut piped = false;
+            for p in func.parameters {
+                let mut is_pipe = false;
+                let tp = match p {
+                    ast::ParameterType::Required {
+                        base: _,
+                        name,
+                        monotype,
+                    } => types::Parameter {
+                        name: Some(name.name),
+                        typ: convert_monotype(monotype, tvars, f)?,
+                        required: true,
+                    },
+                    ast::ParameterType::Optional {
+                        base: _,
+                        name,
+                        monotype,
+                    } => types::Parameter {
+                        name: Some(name.name),
+                        typ: convert_monotype(monotype, tvars, f)?,
+                        required: false,
+                    },
+                    ast::ParameterType::Pipe {
+                        base: _,
+                        name,
+                        monotype,
+                    } => {
+                        if piped {
+                            return Err("only a single argument may be piped".to_string());
+                        } else {
+                            piped = true;
+                            is_pipe = true;
+                        }
+                        types::Parameter {
+                            name: match name {
+                                Some(id) => Some(id.name),
+                                None => None,
+                            },
+                            typ: convert_monotype(monotype, tvars, f)?,
+                            required: true,
+                        }
+                    }
+                };
+                if is_pipe {
+                    // Insert pipe parameter as first positional argument
+                    positional.insert(0, tp)
+                } else {
+                    positional.push(tp)
+                }
+            }
             Ok(MonoType::Fun(Box::new(types::Function {
                 positional,
                 named: SemanticMap::<String, types::Parameter>::new(),
@@ -368,7 +405,9 @@ fn convert_function_params(
 ) -> Result<Vec<FunctionParameter>> {
     // The iteration here is complex, cannot use iter().map()..., better to write it explicitly.
     let mut params: Vec<FunctionParameter> = Vec::new();
+    let mut piped = false;
     for prop in props {
+        let mut is_pipe = false;
         let id = match prop.key {
             ast::PropertyKey::Identifier(id) => Ok(id),
             _ => Err("function params must be identifiers".to_string()),
@@ -376,13 +415,31 @@ fn convert_function_params(
         let key = convert_identifier(id, fresher)?;
         let mut default: Option<Expression> = None;
         if let Some(expr) = prop.value {
-            default = Some(convert_expression(expr, fresher)?)
+            match expr {
+                ast::Expression::PipeLit(_) => {
+                    if piped {
+                        return Err("only a single argument may be piped".to_string());
+                    } else {
+                        piped = true;
+                        is_pipe = true;
+                    };
+                }
+                e => default = Some(convert_expression(e, fresher)?),
+            }
         };
-        params.push(FunctionParameter {
+        let fp = FunctionParameter {
             loc: prop.base.location,
             key,
             default,
-        });
+        };
+
+        if is_pipe {
+            // Insert pipe arguments at the beginning of the params list as pipe arguments are
+            // considered to always be the first positional argument.
+            params.insert(0, fp);
+        } else {
+            params.push(fp);
+        }
     }
     Ok(params)
 }
@@ -2343,128 +2400,124 @@ mod tests {
 
     #[test]
     fn test_function_expression_simple() {
-        // TODO
-        //let b = ast::BaseNode::default();
-        //let f = FunctionExpr {
-        //    loc: b.location.clone(),
-        //    typ: type_info(),
-        //    params: vec![
-        //        FunctionParameter {
-        //            loc: b.location.clone(),
-        //            key: Identifier {
-        //                loc: b.location.clone(),
-        //                name: "a".to_string(),
-        //            },
-        //            default: None,
-        //        },
-        //        FunctionParameter {
-        //            loc: b.location.clone(),
-        //            key: Identifier {
-        //                loc: b.location.clone(),
-        //                name: "b".to_string(),
-        //            },
-        //            default: None,
-        //        },
-        //    ],
-        //    body: Block::Return(ReturnStmt {
-        //        loc: b.location.clone(),
-        //        argument: Expression::Binary(Box::new(BinaryExpr {
-        //            loc: b.location.clone(),
-        //            typ: type_info(),
-        //            operator: ast::Operator::AdditionOperator,
-        //            left: Expression::Identifier(IdentifierExpr {
-        //                loc: b.location.clone(),
-        //                typ: type_info(),
-        //                name: "a".to_string(),
-        //            }),
-        //            right: Expression::Identifier(IdentifierExpr {
-        //                loc: b.location.clone(),
-        //                typ: type_info(),
-        //                name: "b".to_string(),
-        //            }),
-        //        })),
-        //    }),
-        //};
-        //assert_eq!(Vec::<&FunctionParameter>::new(), f.defaults());
-        //assert_eq!(None, f.pipe());
+        let b = ast::BaseNode::default();
+        let f = FunctionExpr {
+            loc: b.location.clone(),
+            typ: type_info(),
+            params: vec![
+                FunctionParameter {
+                    loc: b.location.clone(),
+                    key: Identifier {
+                        loc: b.location.clone(),
+                        name: "a".to_string(),
+                    },
+                    default: None,
+                },
+                FunctionParameter {
+                    loc: b.location.clone(),
+                    key: Identifier {
+                        loc: b.location.clone(),
+                        name: "b".to_string(),
+                    },
+                    default: None,
+                },
+            ],
+            body: Block::Return(ReturnStmt {
+                loc: b.location.clone(),
+                argument: Expression::Binary(Box::new(BinaryExpr {
+                    loc: b.location.clone(),
+                    typ: type_info(),
+                    operator: ast::Operator::AdditionOperator,
+                    left: Expression::Identifier(IdentifierExpr {
+                        loc: b.location.clone(),
+                        typ: type_info(),
+                        name: "a".to_string(),
+                    }),
+                    right: Expression::Identifier(IdentifierExpr {
+                        loc: b.location.clone(),
+                        typ: type_info(),
+                        name: "b".to_string(),
+                    }),
+                })),
+            }),
+        };
+        assert_eq!(Vec::<&FunctionParameter>::new(), f.defaults());
     }
 
     #[test]
     fn test_function_expression_defaults_and_pipes() {
-        // TODO
-        //let b = ast::BaseNode::default();
-        //let piped = FunctionParameter {
-        //    loc: b.location.clone(),
-        //    key: Identifier {
-        //        loc: b.location.clone(),
-        //        name: "a".to_string(),
-        //    },
-        //    default: Some(Expression::Integer(IntegerLit {
-        //        loc: b.location.clone(),
-        //        value: 0,
-        //    })),
-        //};
-        //let default1 = FunctionParameter {
-        //    loc: b.location.clone(),
-        //    key: Identifier {
-        //        loc: b.location.clone(),
-        //        name: "b".to_string(),
-        //    },
-        //    default: Some(Expression::Integer(IntegerLit {
-        //        loc: b.location.clone(),
-        //        value: 1,
-        //    })),
-        //};
-        //let default2 = FunctionParameter {
-        //    loc: b.location.clone(),
-        //    key: Identifier {
-        //        loc: b.location.clone(),
-        //        name: "c".to_string(),
-        //    },
-        //    default: Some(Expression::Integer(IntegerLit {
-        //        loc: b.location.clone(),
-        //        value: 2,
-        //    })),
-        //};
-        //let no_default = FunctionParameter {
-        //    loc: b.location.clone(),
-        //    key: Identifier {
-        //        loc: b.location.clone(),
-        //        name: "d".to_string(),
-        //    },
-        //    default: None,
-        //};
-        //let defaults = vec![&piped, &default1, &default2];
-        //let f = FunctionExpr {
-        //    loc: b.location.clone(),
-        //    typ: type_info(),
-        //    params: vec![
-        //        piped.clone(),
-        //        default1.clone(),
-        //        default2.clone(),
-        //        no_default.clone(),
-        //    ],
-        //    body: Block::Return(ReturnStmt {
-        //        loc: b.location.clone(),
-        //        argument: Expression::Binary(Box::new(BinaryExpr {
-        //            loc: b.location.clone(),
-        //            typ: type_info(),
-        //            operator: ast::Operator::AdditionOperator,
-        //            left: Expression::Identifier(IdentifierExpr {
-        //                loc: b.location.clone(),
-        //                typ: type_info(),
-        //                name: "a".to_string(),
-        //            }),
-        //            right: Expression::Identifier(IdentifierExpr {
-        //                loc: b.location.clone(),
-        //                typ: type_info(),
-        //                name: "b".to_string(),
-        //            }),
-        //        })),
-        //    }),
-        //};
-        //assert_eq!(defaults, f.defaults());
-        //assert_eq!(Some(&piped), f.pipe());
+        let b = ast::BaseNode::default();
+        let piped = FunctionParameter {
+            loc: b.location.clone(),
+            key: Identifier {
+                loc: b.location.clone(),
+                name: "a".to_string(),
+            },
+            default: Some(Expression::Integer(IntegerLit {
+                loc: b.location.clone(),
+                value: 0,
+            })),
+        };
+        let default1 = FunctionParameter {
+            loc: b.location.clone(),
+            key: Identifier {
+                loc: b.location.clone(),
+                name: "b".to_string(),
+            },
+            default: Some(Expression::Integer(IntegerLit {
+                loc: b.location.clone(),
+                value: 1,
+            })),
+        };
+        let default2 = FunctionParameter {
+            loc: b.location.clone(),
+            key: Identifier {
+                loc: b.location.clone(),
+                name: "c".to_string(),
+            },
+            default: Some(Expression::Integer(IntegerLit {
+                loc: b.location.clone(),
+                value: 2,
+            })),
+        };
+        let no_default = FunctionParameter {
+            loc: b.location.clone(),
+            key: Identifier {
+                loc: b.location.clone(),
+                name: "d".to_string(),
+            },
+            default: None,
+        };
+        let defaults = vec![&piped, &default1, &default2];
+        let f = FunctionExpr {
+            loc: b.location.clone(),
+            typ: type_info(),
+            params: vec![
+                piped.clone(),
+                default1.clone(),
+                default2.clone(),
+                no_default.clone(),
+            ],
+            body: Block::Return(ReturnStmt {
+                loc: b.location.clone(),
+                argument: Expression::Binary(Box::new(BinaryExpr {
+                    loc: b.location.clone(),
+                    typ: type_info(),
+                    operator: ast::Operator::AdditionOperator,
+                    left: Expression::Identifier(IdentifierExpr {
+                        loc: b.location.clone(),
+                        typ: type_info(),
+                        name: "a".to_string(),
+                    }),
+                    right: Expression::Identifier(IdentifierExpr {
+                        loc: b.location.clone(),
+                        typ: type_info(),
+                        name: "b".to_string(),
+                    }),
+                })),
+            }),
+        };
+        assert_eq!(defaults, f.defaults());
     }
 
     #[test]
@@ -2942,225 +2995,358 @@ mod tests {
     }
     #[test]
     fn test_convert_monotype_function() {
-        // TODO
-        //let b = ast::BaseNode::default();
-        //let monotype_ex = ast::MonoType::Function(Box::new(ast::FunctionType {
-        //    base: b.clone(),
-        //    parameters: vec![ast::ParameterType::Optional {
-        //        base: b.clone(),
-        //        name: ast::Identifier {
-        //            base: b.clone(),
-        //            name: "A".to_string(),
-        //        },
-        //        monotype: ast::MonoType::Basic(ast::NamedType {
-        //            base: b.clone(),
-        //            name: ast::Identifier {
-        //                base: b.clone(),
-        //                name: "int".to_string(),
-        //            },
-        //        }),
-        //    }],
-        //    monotype: ast::MonoType::Basic(ast::NamedType {
-        //        base: b.clone(),
-        //        name: ast::Identifier {
-        //            base: b.clone(),
-        //            name: "int".to_string(),
-        //        },
-        //    }),
-        //}));
-        //let mut m = BTreeMap::<String, types::Tvar>::new();
-        //let got = convert_monotype(monotype_ex, &mut m, &mut fresh::Fresher::default()).unwrap();
-        //let mut opt = MonoTypeMap::new();
-        //opt.insert(String::from("A"), MonoType::Int);
-        //let want = MonoType::Fun(Box::new(types::Function {
-        //    req: MonoTypeMap::new(),
-        //    opt,
-        //    pipe: None,
-        //    retn: MonoType::Int,
-        //}));
-        //assert_eq!(want, got);
+        let b = ast::BaseNode::default();
+        let monotype_ex = ast::MonoType::Function(Box::new(ast::FunctionType {
+            base: b.clone(),
+            parameters: vec![ast::ParameterType::Optional {
+                base: b.clone(),
+                name: ast::Identifier {
+                    base: b.clone(),
+                    name: "A".to_string(),
+                },
+                monotype: ast::MonoType::Basic(ast::NamedType {
+                    base: b.clone(),
+                    name: ast::Identifier {
+                        base: b.clone(),
+                        name: "int".to_string(),
+                    },
+                }),
+            }],
+            retn: ast::MonoType::Basic(ast::NamedType {
+                base: b.clone(),
+                name: ast::Identifier {
+                    base: b.clone(),
+                    name: "int".to_string(),
+                },
+            }),
+        }));
+        let mut m = BTreeMap::<String, types::Tvar>::new();
+        let got = convert_monotype(monotype_ex, &mut m, &mut fresh::Fresher::default()).unwrap();
+        let want = MonoType::Fun(Box::new(types::Function {
+            positional: vec![types::Parameter {
+                name: Some("A".to_string()),
+                typ: MonoType::Int,
+                required: false,
+            }],
+            named: SemanticMap::<String, types::Parameter>::new(),
+            retn: MonoType::Int,
+        }));
+        assert_eq!(want, got);
     }
 
     #[test]
     fn test_convert_polytype() {
-        // TODO
-        //// (A: T, B: S) => T where T: Addable, S: Divisible
-        //let b = ast::BaseNode::default();
-        //let type_exp = ast::TypeExpression {
-        //    base: b.clone(),
-        //    monotype: ast::MonoType::Function(Box::new(ast::FunctionType {
-        //        base: b.clone(),
-        //        parameters: vec![
-        //            ast::ParameterType::Required {
-        //                base: b.clone(),
-        //                name: ast::Identifier {
-        //                    base: b.clone(),
-        //                    name: "A".to_string(),
-        //                },
-        //                monotype: ast::MonoType::Tvar(ast::TvarType {
-        //                    base: b.clone(),
-        //                    name: ast::Identifier {
-        //                        base: b.clone(),
-        //                        name: "T".to_string(),
-        //                    },
-        //                }),
-        //            },
-        //            ast::ParameterType::Required {
-        //                base: b.clone(),
-        //                name: ast::Identifier {
-        //                    base: b.clone(),
-        //                    name: "B".to_string(),
-        //                },
-        //                monotype: ast::MonoType::Tvar(ast::TvarType {
-        //                    base: b.clone(),
-        //                    name: ast::Identifier {
-        //                        base: b.clone(),
-        //                        name: "S".to_string(),
-        //                    },
-        //                }),
-        //            },
-        //        ],
-        //        monotype: ast::MonoType::Tvar(ast::TvarType {
-        //            base: b.clone(),
-        //            name: ast::Identifier {
-        //                base: b.clone(),
-        //                name: "T".to_string(),
-        //            },
-        //        }),
-        //    })),
-        //    constraints: vec![
-        //        ast::TypeConstraint {
-        //            base: b.clone(),
-        //            tvar: ast::Identifier {
-        //                base: b.clone(),
-        //                name: "T".to_string(),
-        //            },
-        //            kinds: vec![ast::Identifier {
-        //                base: b.clone(),
-        //                name: "Addable".to_string(),
-        //            }],
-        //        },
-        //        ast::TypeConstraint {
-        //            base: b.clone(),
-        //            tvar: ast::Identifier {
-        //                base: b.clone(),
-        //                name: "S".to_string(),
-        //            },
-        //            kinds: vec![ast::Identifier {
-        //                base: b.clone(),
-        //                name: "Divisible".to_string(),
-        //            }],
-        //        },
-        //    ],
-        //};
-        //let got = convert_polytype(type_exp, &mut fresh::Fresher::default()).unwrap();
-        //let mut vars = Vec::<types::Tvar>::new();
-        //vars.push(types::Tvar(0));
-        //vars.push(types::Tvar(1));
-        //let mut cons = types::TvarKinds::new();
-        //let mut kind_vector_1 = Vec::<types::Kind>::new();
-        //kind_vector_1.push(types::Kind::Addable);
-        //cons.insert(types::Tvar(0), kind_vector_1);
+        // (A: T, B: S) => T where T: Addable, S: Divisible
+        let b = ast::BaseNode::default();
+        let type_exp = ast::TypeExpression {
+            base: b.clone(),
+            monotype: ast::MonoType::Function(Box::new(ast::FunctionType {
+                base: b.clone(),
+                parameters: vec![
+                    ast::ParameterType::Required {
+                        base: b.clone(),
+                        name: ast::Identifier {
+                            base: b.clone(),
+                            name: "A".to_string(),
+                        },
+                        monotype: ast::MonoType::Tvar(ast::TvarType {
+                            base: b.clone(),
+                            name: ast::Identifier {
+                                base: b.clone(),
+                                name: "T".to_string(),
+                            },
+                        }),
+                    },
+                    ast::ParameterType::Required {
+                        base: b.clone(),
+                        name: ast::Identifier {
+                            base: b.clone(),
+                            name: "B".to_string(),
+                        },
+                        monotype: ast::MonoType::Tvar(ast::TvarType {
+                            base: b.clone(),
+                            name: ast::Identifier {
+                                base: b.clone(),
+                                name: "S".to_string(),
+                            },
+                        }),
+                    },
+                ],
+                retn: ast::MonoType::Tvar(ast::TvarType {
+                    base: b.clone(),
+                    name: ast::Identifier {
+                        base: b.clone(),
+                        name: "T".to_string(),
+                    },
+                }),
+            })),
+            constraints: vec![
+                ast::TypeConstraint {
+                    base: b.clone(),
+                    tvar: ast::Identifier {
+                        base: b.clone(),
+                        name: "T".to_string(),
+                    },
+                    kinds: vec![ast::Identifier {
+                        base: b.clone(),
+                        name: "Addable".to_string(),
+                    }],
+                },
+                ast::TypeConstraint {
+                    base: b.clone(),
+                    tvar: ast::Identifier {
+                        base: b.clone(),
+                        name: "S".to_string(),
+                    },
+                    kinds: vec![ast::Identifier {
+                        base: b.clone(),
+                        name: "Divisible".to_string(),
+                    }],
+                },
+            ],
+        };
+        let got = convert_polytype(type_exp, &mut fresh::Fresher::default()).unwrap();
+        let mut vars = Vec::<types::Tvar>::new();
+        vars.push(types::Tvar(0));
+        vars.push(types::Tvar(1));
+        let mut cons = types::TvarKinds::new();
+        let mut kind_vector_1 = Vec::<types::Kind>::new();
+        kind_vector_1.push(types::Kind::Addable);
+        cons.insert(types::Tvar(0), kind_vector_1);
 
-        //let mut kind_vector_2 = Vec::<types::Kind>::new();
-        //kind_vector_2.push(types::Kind::Divisible);
-        //cons.insert(types::Tvar(1), kind_vector_2);
+        let mut kind_vector_2 = Vec::<types::Kind>::new();
+        kind_vector_2.push(types::Kind::Divisible);
+        cons.insert(types::Tvar(1), kind_vector_2);
 
-        //let mut req = MonoTypeMap::new();
-        //req.insert("A".to_string(), MonoType::Var(Tvar(0)));
-        //req.insert("B".to_string(), MonoType::Var(Tvar(1)));
-        //let expr = MonoType::Fun(Box::new({
-        //    types::Function {
-        //        req,
-        //        opt: MonoTypeMap::new(),
-        //        pipe: None,
-        //        retn: MonoType::Var(Tvar(0)),
-        //    }
-        //}));
-        //let want = types::PolyType { vars, cons, expr };
-        //assert_eq!(want, got);
+        let expr = MonoType::Fun(Box::new({
+            types::Function {
+                positional: vec![
+                    types::Parameter {
+                        name: Some("A".to_string()),
+                        typ: MonoType::Var(Tvar(0)),
+                        required: true,
+                    },
+                    types::Parameter {
+                        name: Some("B".to_string()),
+                        typ: MonoType::Var(Tvar(1)),
+                        required: true,
+                    },
+                ],
+                named: SemanticMap::<String, types::Parameter>::new(),
+                retn: MonoType::Var(Tvar(0)),
+            }
+        }));
+        let want = types::PolyType { vars, cons, expr };
+        assert_eq!(want, got);
     }
 
     #[test]
     fn test_convert_polytype_2() {
-        // TODO
-        //// (A: T, B: S) => T where T: Addable
-        //let b = ast::BaseNode::default();
-        //let type_exp = ast::TypeExpression {
-        //    base: b.clone(),
-        //    monotype: ast::MonoType::Function(Box::new(ast::FunctionType {
-        //        base: b.clone(),
-        //        parameters: vec![
-        //            ast::ParameterType::Required {
-        //                base: b.clone(),
-        //                name: ast::Identifier {
-        //                    base: b.clone(),
-        //                    name: "A".to_string(),
-        //                },
-        //                monotype: ast::MonoType::Tvar(ast::TvarType {
-        //                    base: b.clone(),
-        //                    name: ast::Identifier {
-        //                        base: b.clone(),
-        //                        name: "T".to_string(),
-        //                    },
-        //                }),
-        //            },
-        //            ast::ParameterType::Required {
-        //                base: b.clone(),
-        //                name: ast::Identifier {
-        //                    base: b.clone(),
-        //                    name: "B".to_string(),
-        //                },
-        //                monotype: ast::MonoType::Tvar(ast::TvarType {
-        //                    base: b.clone(),
-        //                    name: ast::Identifier {
-        //                        base: b.clone(),
-        //                        name: "S".to_string(),
-        //                    },
-        //                }),
-        //            },
-        //        ],
-        //        monotype: ast::MonoType::Tvar(ast::TvarType {
-        //            base: b.clone(),
-        //            name: ast::Identifier {
-        //                base: b.clone(),
-        //                name: "T".to_string(),
-        //            },
-        //        }),
-        //    })),
-        //    constraints: vec![ast::TypeConstraint {
-        //        base: b.clone(),
-        //        tvar: ast::Identifier {
-        //            base: b.clone(),
-        //            name: "T".to_string(),
-        //        },
-        //        kinds: vec![ast::Identifier {
-        //            base: b.clone(),
-        //            name: "Addable".to_string(),
-        //        }],
-        //    }],
-        //};
-        //let got = convert_polytype(type_exp, &mut fresh::Fresher::default()).unwrap();
-        //let mut vars = Vec::<types::Tvar>::new();
-        //vars.push(types::Tvar(0));
-        //vars.push(types::Tvar(1));
-        //let mut cons = types::TvarKinds::new();
-        //let mut kind_vector_1 = Vec::<types::Kind>::new();
-        //kind_vector_1.push(types::Kind::Addable);
-        //cons.insert(types::Tvar(0), kind_vector_1);
+        // (A: T, B: S) => T where T: Addable
+        let b = ast::BaseNode::default();
+        let type_exp = ast::TypeExpression {
+            base: b.clone(),
+            monotype: ast::MonoType::Function(Box::new(ast::FunctionType {
+                base: b.clone(),
+                parameters: vec![
+                    ast::ParameterType::Required {
+                        base: b.clone(),
+                        name: ast::Identifier {
+                            base: b.clone(),
+                            name: "A".to_string(),
+                        },
+                        monotype: ast::MonoType::Tvar(ast::TvarType {
+                            base: b.clone(),
+                            name: ast::Identifier {
+                                base: b.clone(),
+                                name: "T".to_string(),
+                            },
+                        }),
+                    },
+                    ast::ParameterType::Required {
+                        base: b.clone(),
+                        name: ast::Identifier {
+                            base: b.clone(),
+                            name: "B".to_string(),
+                        },
+                        monotype: ast::MonoType::Tvar(ast::TvarType {
+                            base: b.clone(),
+                            name: ast::Identifier {
+                                base: b.clone(),
+                                name: "S".to_string(),
+                            },
+                        }),
+                    },
+                ],
+                retn: ast::MonoType::Tvar(ast::TvarType {
+                    base: b.clone(),
+                    name: ast::Identifier {
+                        base: b.clone(),
+                        name: "T".to_string(),
+                    },
+                }),
+            })),
+            constraints: vec![ast::TypeConstraint {
+                base: b.clone(),
+                tvar: ast::Identifier {
+                    base: b.clone(),
+                    name: "T".to_string(),
+                },
+                kinds: vec![ast::Identifier {
+                    base: b.clone(),
+                    name: "Addable".to_string(),
+                }],
+            }],
+        };
+        let got = convert_polytype(type_exp, &mut fresh::Fresher::default()).unwrap();
+        let mut vars = Vec::<types::Tvar>::new();
+        vars.push(types::Tvar(0));
+        vars.push(types::Tvar(1));
+        let mut cons = types::TvarKinds::new();
+        let mut kind_vector_1 = Vec::<types::Kind>::new();
+        kind_vector_1.push(types::Kind::Addable);
+        cons.insert(types::Tvar(0), kind_vector_1);
 
-        //let mut req = MonoTypeMap::new();
-        //req.insert("A".to_string(), MonoType::Var(Tvar(0)));
-        //req.insert("B".to_string(), MonoType::Var(Tvar(1)));
-        //let expr = MonoType::Fun(Box::new({
-        //    types::Function {
-        //        req,
-        //        opt: MonoTypeMap::new(),
-        //        pipe: None,
-        //        retn: MonoType::Var(Tvar(0)),
-        //    }
-        //}));
-        //let want = types::PolyType { vars, cons, expr };
-        //assert_eq!(want, got);
+        let expr = MonoType::Fun(Box::new({
+            types::Function {
+                positional: vec![
+                    types::Parameter {
+                        name: Some("A".to_string()),
+                        typ: MonoType::Var(Tvar(0)),
+                        required: true,
+                    },
+                    types::Parameter {
+                        name: Some("B".to_string()),
+                        typ: MonoType::Var(Tvar(1)),
+                        required: true,
+                    },
+                ],
+                named: SemanticMap::<String, types::Parameter>::new(),
+                retn: MonoType::Var(Tvar(0)),
+            }
+        }));
+        let want = types::PolyType { vars, cons, expr };
+        assert_eq!(want, got);
+    }
+    #[test]
+    fn test_convert_builtin() {
+        // builtin a : (A: T, B: S) => T where T: Addable, S: Divisible
+        let b = ast::BaseNode::default();
+        let type_exp = ast::TypeExpression {
+            base: b.clone(),
+            monotype: ast::MonoType::Function(Box::new(ast::FunctionType {
+                base: b.clone(),
+                parameters: vec![
+                    ast::ParameterType::Required {
+                        base: b.clone(),
+                        name: ast::Identifier {
+                            base: b.clone(),
+                            name: "A".to_string(),
+                        },
+                        monotype: ast::MonoType::Tvar(ast::TvarType {
+                            base: b.clone(),
+                            name: ast::Identifier {
+                                base: b.clone(),
+                                name: "T".to_string(),
+                            },
+                        }),
+                    },
+                    ast::ParameterType::Required {
+                        base: b.clone(),
+                        name: ast::Identifier {
+                            base: b.clone(),
+                            name: "B".to_string(),
+                        },
+                        monotype: ast::MonoType::Tvar(ast::TvarType {
+                            base: b.clone(),
+                            name: ast::Identifier {
+                                base: b.clone(),
+                                name: "S".to_string(),
+                            },
+                        }),
+                    },
+                ],
+                retn: ast::MonoType::Tvar(ast::TvarType {
+                    base: b.clone(),
+                    name: ast::Identifier {
+                        base: b.clone(),
+                        name: "T".to_string(),
+                    },
+                }),
+            })),
+            constraints: vec![
+                ast::TypeConstraint {
+                    base: b.clone(),
+                    tvar: ast::Identifier {
+                        base: b.clone(),
+                        name: "T".to_string(),
+                    },
+                    kinds: vec![ast::Identifier {
+                        base: b.clone(),
+                        name: "Addable".to_string(),
+                    }],
+                },
+                ast::TypeConstraint {
+                    base: b.clone(),
+                    tvar: ast::Identifier {
+                        base: b.clone(),
+                        name: "S".to_string(),
+                    },
+                    kinds: vec![ast::Identifier {
+                        base: b.clone(),
+                        name: "Divisible".to_string(),
+                    }],
+                },
+            ],
+        };
+        let builtin = ast::BuiltinStmt {
+            base: b.clone(),
+            colon: vec![],
+            id: ast::Identifier {
+                base: b.clone(),
+                name: "a".to_string(),
+            },
+            ty: type_exp,
+        };
+        let got = convert_builtin_statement(builtin, &mut fresh::Fresher::default()).unwrap();
+        let mut vars = Vec::<types::Tvar>::new();
+        vars.push(types::Tvar(0));
+        vars.push(types::Tvar(1));
+        let mut cons = types::TvarKinds::new();
+        let mut kind_vector_1 = Vec::<types::Kind>::new();
+        kind_vector_1.push(types::Kind::Addable);
+        cons.insert(types::Tvar(0), kind_vector_1);
+
+        let mut kind_vector_2 = Vec::<types::Kind>::new();
+        kind_vector_2.push(types::Kind::Divisible);
+        cons.insert(types::Tvar(1), kind_vector_2);
+
+        let expr = MonoType::Fun(Box::new({
+            types::Function {
+                positional: vec![
+                    types::Parameter {
+                        name: Some("A".to_string()),
+                        typ: MonoType::Var(Tvar(0)),
+                        required: true,
+                    },
+                    types::Parameter {
+                        name: Some("B".to_string()),
+                        typ: MonoType::Var(Tvar(1)),
+                        required: true,
+                    },
+                ],
+                named: SemanticMap::<String, types::Parameter>::new(),
+                retn: MonoType::Var(Tvar(0)),
+            }
+        }));
+        let want = BuiltinStmt {
+            loc: b.location.clone(),
+            id: Identifier {
+                loc: b.location.clone(),
+                name: "a".to_string(),
+            },
+            typ_expr: types::PolyType { vars, cons, expr },
+        };
+        assert_eq!(want, got);
     }
 }

@@ -1082,6 +1082,7 @@ pub struct Function {
 // as equal.
 impl cmp::PartialEq for Function {
     fn eq(&self, other: &Self) -> bool {
+        println!("PartialEq");
         println!("self:  {:?}", self);
         println!("other: {:?}", other);
         if self.retn != other.retn {
@@ -1117,7 +1118,12 @@ impl cmp::PartialEq for Function {
                 return false;
             }
         }
-        println!("self: {:?}, other: {:?}", self_named, other_named);
+        println!(
+            "self: {:?}, other: {:?} equal: {}",
+            self_named,
+            other_named,
+            self_named == other_named
+        );
         self_named == other_named
     }
 }
@@ -1260,7 +1266,7 @@ impl Function {
         // 3. All remaining required named arguments must unify with corresponding named arguments
         // either required or optional.
         for (name, exp) in f.named.iter().filter(|(_, v)| v.required) {
-            println!("required name {}, exp: {:?}", &name, &exp);
+            println!("required named {}, exp: {:?}", &name, &exp);
             if let Some(act) = g.named.remove(name) {
                 sub = match apply_then_unify(exp.typ.clone(), act.typ.clone(), sub, cons, fresh) {
                     Err(e) => Err(Error::CannotUnifyArgument(name.clone(), Box::new(e))),
@@ -1271,7 +1277,7 @@ impl Function {
             }
         }
         for (name, act) in g.named.iter().filter(|(_, v)| v.required) {
-            println!("required name {}, act: {:?}", &name, &act);
+            println!("required named {}, act: {:?}", &name, &act);
             if let Some(exp) = f.named.remove(name) {
                 sub = match apply_then_unify(exp.typ.clone(), act.typ.clone(), sub, cons, fresh) {
                     Err(e) => Err(Error::CannotUnifyArgument(name.clone(), Box::new(e))),
@@ -1284,7 +1290,7 @@ impl Function {
         // 4. All remaining optional named arguments must unify with corresponding named arguments
         //    if present.
         for (name, exp) in f.named.iter().filter(|(_, v)| !v.required) {
-            println!("optional name {}, exp: {:?}", &name, &exp);
+            println!("optional named {}, exp: {:?}", &name, &exp);
             if let Some(act) = g.named.remove(name) {
                 sub = match apply_then_unify(exp.typ.clone(), act.typ.clone(), sub, cons, fresh) {
                     Err(e) => Err(Error::CannotUnifyArgument(name.clone(), Box::new(e))),
@@ -1293,7 +1299,7 @@ impl Function {
             }
         }
         for (name, act) in g.named.iter().filter(|(_, v)| !v.required) {
-            println!("optional name {}, act: {:?}", &name, &act);
+            println!("optional named {}, act: {:?}", &name, &act);
             if let Some(exp) = f.named.remove(name) {
                 sub = match apply_then_unify(exp.typ.clone(), act.typ.clone(), sub, cons, fresh) {
                     Err(e) => Err(Error::CannotUnifyArgument(name.clone(), Box::new(e))),
@@ -1326,14 +1332,23 @@ impl Function {
     }
 }
 
+/// Parameter represents the type of an argument to a function.
+/// Both function expressions and call expressions use this Parameter type during analysis..
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct Parameter {
+    /// The name of the parameter which may not be known in the case of call expressions and pipe
+    /// parameters.
     pub name: Option<String>,
+    /// The type of the parameter.
     pub typ: MonoType,
+    /// Whether the parameter is required.
     pub required: bool,
 }
 impl fmt::Display for Parameter {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        if !self.required {
+            write!(f, "?")?;
+        }
         if let Some(name) = &self.name {
             write!(f, "{}:{}", name, self.typ)
         } else {
@@ -2136,6 +2151,8 @@ mod tests {
     }
     #[test]
     fn cannot_unify_functions() {
+        // TODO(nathanielc): These now unify because you could call f with g's type.
+        // Is this correct? is it valid to use g as an instance of f?
         // g-required and g-optional arguments do not contain a f-required argument (and viceversa).
         let f = polytype("(a: A, b: A, ?c: B) => A where A: Addable, B: Divisible ");
         let g = polytype("(d: C, ?e: C) => C where C: Addable ");
@@ -2157,7 +2174,7 @@ mod tests {
             let res = f
                 .clone()
                 .unify(*g.clone(), &mut cons, &mut Fresher::default());
-            assert!(res.is_err());
+            assert!(res.is_err(), "result {:?}", res);
             let res = g
                 .clone()
                 .unify(*f.clone(), &mut cons, &mut Fresher::default());

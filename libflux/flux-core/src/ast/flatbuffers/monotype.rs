@@ -292,21 +292,83 @@ fn build_parameter_type<'a>(
     builder: &mut flatbuffers::FlatBufferBuilder<'a>,
     p: ParameterType,
 ) -> flatbuffers::WIPOffset<fb::ParameterType<'a>> {
-    // TODO update to handle new ParameterType struct
-    // REMOVE unwrap
-    let base_node = build_base_node(builder, p.base);
-    let id = build_identifier(builder, p.name.unwrap());
-    let (offset, t) = build_monotype(builder, p.monotype);
-    fb::ParameterType::create(
-        builder,
-        &fb::ParameterTypeArgs {
-            base_node: Some(base_node),
-            id: Some(id),
-            monotype: Some(offset),
-            monotype_type: t,
-            kind: fb::ParameterKind::Required,
-        },
-    )
+    match p {
+        ParameterType::Required {
+            base,
+            name,
+            monotype,
+        } => {
+            let base_node = build_base_node(builder, base);
+            let id = build_identifier(builder, name);
+            let (offset, t) = build_monotype(builder, monotype);
+            fb::ParameterType::create(
+                builder,
+                &fb::ParameterTypeArgs {
+                    base_node: Some(base_node),
+                    id: Some(id),
+                    monotype: Some(offset),
+                    monotype_type: t,
+                    kind: fb::ParameterKind::Required,
+                },
+            )
+        }
+        ParameterType::Optional {
+            base,
+            name,
+            monotype,
+        } => {
+            let base_node = build_base_node(builder, base);
+            let id = build_identifier(builder, name);
+            let (offset, t) = build_monotype(builder, monotype);
+            fb::ParameterType::create(
+                builder,
+                &fb::ParameterTypeArgs {
+                    base_node: Some(base_node),
+                    id: Some(id),
+                    monotype: Some(offset),
+                    monotype_type: t,
+                    kind: fb::ParameterKind::Optional,
+                },
+            )
+        }
+        ParameterType::Pipe {
+            base,
+            name: Some(id),
+            monotype,
+        } => {
+            let base_node = build_base_node(builder, base);
+            let id = build_identifier(builder, id);
+            let (offset, t) = build_monotype(builder, monotype);
+            fb::ParameterType::create(
+                builder,
+                &fb::ParameterTypeArgs {
+                    base_node: Some(base_node),
+                    id: Some(id),
+                    monotype: Some(offset),
+                    monotype_type: t,
+                    kind: fb::ParameterKind::Pipe,
+                },
+            )
+        }
+        ParameterType::Pipe {
+            base,
+            name: None,
+            monotype,
+        } => {
+            let base_node = build_base_node(builder, base);
+            let (offset, t) = build_monotype(builder, monotype);
+            fb::ParameterType::create(
+                builder,
+                &fb::ParameterTypeArgs {
+                    base_node: Some(base_node),
+                    id: None,
+                    monotype: Some(offset),
+                    monotype_type: t,
+                    kind: fb::ParameterKind::Pipe,
+                },
+            )
+        }
+    }
 }
 
 #[cfg(test)]
@@ -402,25 +464,24 @@ mod tests {
     }
     impl From<fb::ParameterType<'_>> for ParameterType {
         fn from(p: fb::ParameterType) -> ParameterType {
-            // TODO update for new ParameterType struct
             match p.kind() {
-                fb::ParameterKind::Required => ParameterType {
+                fb::ParameterKind::Required => ParameterType::Required {
                     base: BaseNode::default(),
-                    name: Some(p.id().unwrap().into()),
+                    name: p.id().unwrap().into(),
                     monotype: monotype_from_table(p.monotype().unwrap(), p.monotype_type()),
-                    required: true,
                 },
-                fb::ParameterKind::Optional => ParameterType {
+                fb::ParameterKind::Optional => ParameterType::Optional {
                     base: BaseNode::default(),
-                    name: Some(p.id().unwrap().into()),
+                    name: p.id().unwrap().into(),
                     monotype: monotype_from_table(p.monotype().unwrap(), p.monotype_type()),
-                    required: false,
                 },
-                fb::ParameterKind::Pipe => ParameterType {
+                fb::ParameterKind::Pipe => ParameterType::Pipe {
                     base: BaseNode::default(),
-                    name: Some(p.id().unwrap().into()),
+                    name: match p.id() {
+                        None => None,
+                        Some(id) => Some(id.into()),
+                    },
                     monotype: monotype_from_table(p.monotype().unwrap(), p.monotype_type()),
-                    required: false,
                 },
             }
         }
@@ -731,12 +792,29 @@ mod tests {
         let want = FunctionType {
             base: BaseNode::default(),
             parameters: vec![
-                ParameterType {
+                ParameterType::Pipe {
                     base: BaseNode::default(),
                     name: Some(Identifier {
                         base: BaseNode::default(),
-                        name: "x".to_string(),
+                        name: "tables".to_string(),
                     }),
+                    monotype: MonoType::Array(Box::new(ArrayType {
+                        base: BaseNode::default(),
+                        element: MonoType::Basic(NamedType {
+                            base: BaseNode::default(),
+                            name: Identifier {
+                                base: BaseNode::default(),
+                                name: "int".to_string(),
+                            },
+                        }),
+                    })),
+                },
+                ParameterType::Required {
+                    base: BaseNode::default(),
+                    name: Identifier {
+                        base: BaseNode::default(),
+                        name: "x".to_string(),
+                    },
                     monotype: MonoType::Basic(NamedType {
                         base: BaseNode::default(),
                         name: Identifier {
@@ -744,14 +822,13 @@ mod tests {
                             name: "int".to_string(),
                         },
                     }),
-                    required: true,
                 },
-                ParameterType {
+                ParameterType::Optional {
                     base: BaseNode::default(),
-                    name: Some(Identifier {
+                    name: Identifier {
                         base: BaseNode::default(),
                         name: "y".to_string(),
-                    }),
+                    },
                     monotype: MonoType::Basic(NamedType {
                         base: BaseNode::default(),
                         name: Identifier {
@@ -759,9 +836,47 @@ mod tests {
                             name: "bool".to_string(),
                         },
                     }),
-                    required: false,
                 },
             ],
+            retn: MonoType::Basic(NamedType {
+                base: BaseNode::default(),
+                name: Identifier {
+                    base: BaseNode::default(),
+                    name: "int".to_string(),
+                },
+            }),
+        };
+
+        let mut builder = flatbuffers::FlatBufferBuilder::new();
+
+        assert_eq!(
+            want,
+            flatbuffers::get_root::<fb::FunctionType>(serialize(
+                &mut builder,
+                want.clone(),
+                build_function_type,
+            ))
+            .into()
+        );
+    }
+    #[test]
+    fn test_function_type_pipe_param() {
+        let want = FunctionType {
+            base: BaseNode::default(),
+            parameters: vec![ParameterType::Pipe {
+                base: BaseNode::default(),
+                name: None,
+                monotype: MonoType::Array(Box::new(ArrayType {
+                    base: BaseNode::default(),
+                    element: MonoType::Basic(NamedType {
+                        base: BaseNode::default(),
+                        name: Identifier {
+                            base: BaseNode::default(),
+                            name: "int".to_string(),
+                        },
+                    }),
+                })),
+            }],
             retn: MonoType::Basic(NamedType {
                 base: BaseNode::default(),
                 name: Identifier {
@@ -807,12 +922,12 @@ mod tests {
             monotype: MonoType::Function(Box::new(FunctionType {
                 base: BaseNode::default(),
                 parameters: vec![
-                    ParameterType {
+                    ParameterType::Required {
                         base: BaseNode::default(),
-                        name: Some(Identifier {
+                        name: Identifier {
                             base: BaseNode::default(),
                             name: "a".to_string(),
-                        }),
+                        },
                         monotype: MonoType::Tvar(TvarType {
                             base: BaseNode::default(),
                             name: Identifier {
@@ -820,14 +935,13 @@ mod tests {
                                 name: "T".to_string(),
                             },
                         }),
-                        required: true,
                     },
-                    ParameterType {
+                    ParameterType::Required {
                         base: BaseNode::default(),
-                        name: Some(Identifier {
+                        name: Identifier {
                             base: BaseNode::default(),
                             name: "b".to_string(),
-                        }),
+                        },
                         monotype: MonoType::Tvar(TvarType {
                             base: BaseNode::default(),
                             name: Identifier {
@@ -835,7 +949,6 @@ mod tests {
                                 name: "T".to_string(),
                             },
                         }),
-                        required: true,
                     },
                 ],
                 retn: MonoType::Tvar(TvarType {

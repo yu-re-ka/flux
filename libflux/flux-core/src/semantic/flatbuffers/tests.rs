@@ -683,7 +683,7 @@ fn compare_param(
     semantic_param: &semantic::nodes::FunctionParameter,
     fb_param: &fbsemantic::FunctionParameter,
 ) -> Result<(), String> {
-    Err("todo".to_string())
+    Err("todo implement compare_param".to_string())
     //    compare_loc(&semantic_param.loc, &fb_param.loc())?;
     //    if semantic_param.is_pipe != fb_param.is_pipe() {
     //        return Err(format!(

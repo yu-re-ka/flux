@@ -375,7 +375,7 @@ func (c *PropertyType) Copy() Node {
 type FunctionType struct {
 	BaseNode
 	Parameters []*ParameterType `json:"parameters"`
-	Return     MonoType         `json:"monotype"`
+	Return     MonoType         `json:"retn"`
 }
 
 func (FunctionType) Type() string {

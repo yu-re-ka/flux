@@ -633,14 +633,32 @@ pub struct FunctionType {
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[serde(tag = "type")]
 #[allow(missing_docs)]
-pub struct ParameterType {
-    #[serde(skip_serializing_if = "BaseNode::is_empty")]
-    #[serde(default)]
-    #[serde(flatten)]
-    pub base: BaseNode,
-    pub name: Option<Identifier>,
-    pub monotype: MonoType,
-    pub required: bool,
+pub enum ParameterType {
+    Required {
+        #[serde(skip_serializing_if = "BaseNode::is_empty")]
+        #[serde(default)]
+        #[serde(flatten)]
+        base: BaseNode,
+        name: Identifier,
+        monotype: MonoType,
+    },
+    Optional {
+        #[serde(skip_serializing_if = "BaseNode::is_empty")]
+        #[serde(default)]
+        #[serde(flatten)]
+        base: BaseNode,
+        name: Identifier,
+        monotype: MonoType,
+    },
+    Pipe {
+        #[serde(skip_serializing_if = "BaseNode::is_empty")]
+        #[serde(default)]
+        #[serde(flatten)]
+        base: BaseNode,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        name: Option<Identifier>,
+        monotype: MonoType,
+    },
 }
 
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
@@ -739,17 +757,55 @@ fn get_err_parameters(prs: Vec<ParameterType>) -> String {
     "".to_string()
 }
 fn get_err_parameter(pr: ParameterType) -> String {
-    let e = get_err_basenode(pr.base);
-    if !e.is_empty() {
-        return e;
-    }
-    if let Some(name) = pr.name {
-        let e = get_err_identifier(name);
-        if !e.is_empty() {
-            return e;
+    match pr {
+        ParameterType::Required {
+            base,
+            name,
+            monotype,
+        } => {
+            let e = get_err_basenode(base);
+            if !e.is_empty() {
+                return e;
+            }
+            let e = get_err_identifier(name);
+            if !e.is_empty() {
+                return e;
+            }
+            get_err_monotype(monotype)
+        }
+        ParameterType::Pipe {
+            base,
+            name,
+            monotype,
+        } => {
+            let e = get_err_basenode(base);
+            if !e.is_empty() {
+                return e;
+            }
+            if let Some(i) = name {
+                let e = get_err_identifier(i);
+                if !e.is_empty() {
+                    return e;
+                }
+            }
+            get_err_monotype(monotype)
+        }
+        ParameterType::Optional {
+            base,
+            name,
+            monotype,
+        } => {
+            let e = get_err_basenode(base);
+            if !e.is_empty() {
+                return e;
+            }
+            let e = get_err_identifier(name);
+            if !e.is_empty() {
+                return e;
+            }
+            get_err_monotype(monotype)
         }
     }
-    get_err_monotype(pr.monotype)
 }
 fn get_err_properties(ps: Vec<PropertyType>) -> String {
     for p in ps {

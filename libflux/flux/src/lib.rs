@@ -632,14 +632,11 @@ mod tests {
                     }
                 }
                 MonoType::Fun(f) => {
-                    for (_, mut v) in f.req.iter_mut() {
-                        self.normalize(&mut v);
+                    for v in f.positional.iter_mut() {
+                        self.normalize(&mut v.typ);
                     }
-                    for (_, mut v) in f.opt.iter_mut() {
-                        self.normalize(&mut v);
-                    }
-                    if let Some(p) = &mut f.pipe {
-                        self.normalize(&mut p.v);
+                    for (_, v) in f.named.iter_mut() {
+                        self.normalize(&mut v.typ);
                     }
                     self.normalize(&mut f.retn);
                 }

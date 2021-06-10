@@ -890,15 +890,6 @@ impl FunctionExpr {
         Ok((env, cons))
     }
     #[allow(missing_docs)]
-    pub fn pipe(&self) -> Option<&FunctionParameter> {
-        for p in &self.params {
-            if p.is_pipe {
-                return Some(p);
-            }
-        }
-        None
-    }
-    #[allow(missing_docs)]
     pub fn defaults(&self) -> Vec<&FunctionParameter> {
         let mut ds = Vec::new();
         for p in &self.params {

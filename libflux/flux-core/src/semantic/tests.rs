@@ -2803,11 +2803,15 @@ fn call_expr() {
         ]
     }
     // pipe args have different names
-    test_infer_err! {
+    test_infer! {
         src: r#"
-            f = (arg=(x=<-) => x, w) => w |> arg()
-            f(arg: (v=<-) => v, w: 0)
+            f = (fn=(x=<-) => x, w) => w |> fn()
+            r = f(fn: (v=<-) => v, w: "hi")
         "#,
+        exp: map![
+            "f" => "(?fn:(x:E) => E, w:E) => E",
+            "r" => "string",
+        ]
     }
     // Seems like it might fail because of pipe arg mismatch,
     // but it's okay.
@@ -3296,6 +3300,7 @@ fn function_instantiation_and_generalization() {
 }
 #[test]
 fn function_positional_arguments() {
+    // TODO update parser to allow positional args in call expressions
     test_infer! {
         src: r#"
             f = (a, b=1) => a + b
@@ -3548,6 +3553,8 @@ fn test_error_messages() {
         // Location points to the identifier a
         err: "error @3:13-3:14: undefined identifier a",
     }
+    // TODO update parser to allow positional arguments
+    // This would then be a valid Flux script as r would be the positional arg for o
     test_error_msg! {
         src: r#"
             match = (o) => o.name =~ /^a/

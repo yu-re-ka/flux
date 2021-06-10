@@ -370,19 +370,33 @@ impl Formatter {
     }
     fn format_parameter_type(&mut self, n: &ast::ParameterType) {
         match &n {
-            ast::ParameterType {
+            ast::ParameterType::Required {
                 base: _,
                 name,
                 monotype,
-                required,
             } => {
-                if !required {
-                    self.write_rune('?');
-                }
+                self.format_identifier(name);
+                self.write_string(": ");
+                self.format_monotype(&monotype);
+            }
+            ast::ParameterType::Optional {
+                base: _,
+                name,
+                monotype,
+            } => {
+                self.write_rune('?');
+                self.format_identifier(name);
+                self.write_string(": ");
+                self.format_monotype(&monotype);
+            }
+            ast::ParameterType::Pipe {
+                base: _,
+                name,
+                monotype,
+            } => {
+                self.write_string("<-");
                 if let Some(name) = &name {
                     self.format_identifier(name);
-                } else {
-                    self.write_string("<-");
                 }
                 self.write_string(": ");
                 self.format_monotype(&monotype);
