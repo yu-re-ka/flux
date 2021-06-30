@@ -465,10 +465,80 @@ builtin window : (
 // ```
 builtin integral : (<-tables: [{T with _time: time, _value: B}], ?unit: duration, ?interpolate: string) => [{T with _value: B}]
 
-// An experimental version of count.
+// count is a function that outputs the number of records in each input table
+//  and returns the count in the _value column.
+//
+//  This function counts both null and non-null records.
+//
+//  count function is subject to change at any time. By using this function,
+//  you accept the risks of experimental functions.
+//
+// ## Empty tables
+// experimental.count() returns 0 for empty tables. to keep empty tables in
+// your data, set the following parameters for the following functions:
+//
+// Function | Parameters
+// --- | ---
+// filter() | onEmpty: "keep"
+// window() | createEmpty: true
+// aggregateWindow() | createEmpty: true
+//
+// ## Example
+//
+// ```
+// import "experimental"
+//
+// from(bucket: "example-bucket")
+//   |> range(start: -5m)
+//   |> experimental.count()
+// ```
 builtin count : (<-tables: [{T with _value: A}]) => [{T with _value: int}]
 
-// An experimental version of histogramQuantile
+// histogramQuantile is a function that approximates a quantile given a histogram
+//  with the cumulative distribution of the dataset.
+//
+//  Each input table represents a single histogram. Input tables must have two
+//  columns - a count column (_value) and an upper bound column (le), and neither
+//  column can be part of the group key.
+//
+//  The count is the number of values that are less than or equal to the upper
+//  bound value (le). Input tables can have an unlimited number of records; each
+//  record represents an entry in the histogram. The count must be monotonically
+//  increasing when sorted by upper bound (le). If any values in the _value or le
+//  columns are null, the function returns an error.
+//
+//  Linear interpolation between the two closest bounds is used to compute the
+//  quantile. If either of the bounds used in interpolation are infinite, then
+//  the other finite bound is used and no interpolation is performed.
+//
+//  The output table has the same group key as the input table. The function returns
+//  the value of the specified quantile from the histogram in the _value column and
+//  drops all columns not part of the group key.
+//
+//  histogramQuantile function is subject to change at any time. By using this function,
+//  you accept the risks of experimental functions.
+//
+// ## Parameters
+// - `quantile` is a value between 0 and 1 indicating the desired quantile to compute.
+// - `minValue` is the asumed minimum value of the dataset.
+//
+//   When the quantile falls below the lowest upper bound, interpolation is performed
+//   between minValue and the lowest upper bound. When minValue is equal to negative
+//   infinity, the lowest upper bound is used. Defaults to 0.0
+//
+// ## Compute the 90th quantile
+//
+// ```
+// import "experimental"
+//
+// from(bucket: "example-bucket")
+//   |> range(start: -1d)
+//   |> filter(fn: (r) =>
+//     r._meausrement == "example-measurement" and
+//     r._field == "example-field"
+//   )
+//   |> experimental.histogramQuantile(quantile: 0.9)
+// ```
 builtin histogramQuantile : (<-tables: [{T with _value: float, le: float}], ?quantile: float, ?minValue: float) => [{T with _value: float}]
 
 // An experimental version of mean.
