@@ -8,6 +8,7 @@ import (
 	"github.com/influxdata/flux/dependencies/testing"
 	"github.com/influxdata/flux/memory"
 	"github.com/opentracing/opentracing-go"
+	"github.com/opentracing/opentracing-go/log"
 )
 
 // query implements the flux.Query interface.
@@ -32,6 +33,10 @@ func (q *query) Done() {
 	q.stats.MaxAllocated = q.alloc.MaxAllocated()
 	q.stats.TotalAllocated = q.alloc.TotalAllocated()
 	if q.span != nil {
+		q.span.LogFields(
+			log.Int64("maxAllocated", q.stats.MaxAllocated),
+			log.Int64("totalAllocated", q.stats.TotalAllocated),
+		)
 		q.span.Finish()
 		q.span = nil
 	}
