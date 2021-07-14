@@ -2,10 +2,14 @@ package universe
 
 import (
 	"github.com/apache/arrow/go/arrow/array"
+	"github.com/apache/arrow/go/arrow/memory"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/internal/execute/execkit"
+	"github.com/influxdata/flux/internal/execute/table"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
 )
@@ -89,8 +93,69 @@ func createCountTransformation(id execute.DatasetID, mode execute.AccumulationMo
 		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
 	}
 
-	t, d := execute.NewAggregateTransformationAndDataset(id, mode, new(CountAgg), s.AggregateConfig, a.Allocator())
-	return t, d, nil
+	return execkit.NewAggregateTransformation(id, &countTransformation{
+		columns: s.Columns,
+	}, a.Allocator())
+}
+
+type countTransformation struct {
+	columns []string
+}
+
+func (c *countTransformation) Aggregate(view table.View, state interface{}, mem memory.Allocator) (interface{}, bool, error) {
+	var counts []int64
+	if state != nil {
+		counts = state.([]int64)
+	} else {
+		counts = make([]int64, len(c.columns))
+	}
+
+	for i, label := range c.columns {
+		idx := execute.ColIdx(label, view.Cols())
+		if idx >= 0 {
+			arr := view.Borrow(idx)
+			counts[i] += int64(arr.Len() - arr.NullN())
+		} else {
+			return nil, false, errors.Newf(codes.FailedPrecondition, "column %q does not exist", label)
+		}
+	}
+	return counts, true, nil
+}
+
+func (c *countTransformation) Compute(key flux.GroupKey, state interface{}, d *execkit.Dataset, mem memory.Allocator) error {
+	if state == nil {
+		return nil
+	}
+
+	cols := make([]flux.ColMeta, len(key.Cols()), len(key.Cols())+len(c.columns))
+	copy(cols, key.Cols())
+	for _, label := range c.columns {
+		cols = append(cols, flux.ColMeta{
+			Type:  flux.TInt,
+			Label: label,
+		})
+	}
+
+	b := table.NewArrowBuilder(key, mem)
+	b.Init(cols)
+	for j := range key.Cols() {
+		if err := arrow.AppendValue(b.Builders[j], key.Value(j)); err != nil {
+			return err
+		}
+	}
+
+	counts := state.([]int64)
+	for j, count := range counts {
+		if err := arrow.AppendInt(b.Builders[j+len(key.Cols())], count); err != nil {
+			return err
+		}
+	}
+
+	out, err := b.Buffer()
+	if err != nil {
+		return err
+	}
+	return d.Process(table.ViewFromBuffer(out))
 }
 
 func (a *CountAgg) NewBoolAgg() execute.DoBoolAgg {
