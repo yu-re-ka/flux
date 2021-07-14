@@ -36,11 +36,20 @@ func NewGroupTransformation(id DatasetID, t GroupTransformation, mem memory.Allo
 
 // ProcessMessage will process the incoming message.
 func (n *groupTransformation) ProcessMessage(m execute.Message) error {
-	if _, ok := m.(execute.FlushKeyMsg); ok {
-		m.Ack()
+	defer m.Ack()
+
+	switch m := m.(type) {
+	case execute.FinishMsg:
+		n.Finish(m.SrcDatasetID(), m.Error())
 		return nil
+	case execute.ProcessViewMsg:
+		return n.t.Process(m.View(), n.d, n.d.mem)
+	case execute.FlushKeyMsg:
+		// Swallow this message.
+	case execute.ProcessMsg:
+		return n.Process(m.SrcDatasetID(), m.Table())
 	}
-	return n.narrowTransformation.ProcessMessage(m)
+	return nil
 }
 
 // Process is implemented to remain compatible with legacy upstreams.
