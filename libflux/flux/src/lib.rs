@@ -25,7 +25,7 @@ pub use fluxcore::*;
 use crate::semantic::bootstrap::PackageDoc;
 use crate::semantic::flatbuffers::semantic_generated::fbsemantic::MonoTypeHolderArgs;
 use fluxcore::semantic::types::{MonoType, PolyType, TvarKinds};
-use inflate::inflate_bytes;
+//use inflate::inflate_bytes;
 use std::error;
 use std::ffi::*;
 use std::os::raw::c_char;
@@ -46,7 +46,7 @@ pub fn imports() -> Option<Environment> {
 
 pub fn docs() -> Vec<PackageDoc> {
     let buf = include_bytes!(concat!(env!("OUT_DIR"), "/docs.json"));
-    serde_json::from_slice(&inflate_bytes(buf).unwrap()).unwrap()
+    serde_json::from_slice(buf).unwrap()
 }
 
 pub fn fresher() -> Fresher {

@@ -78,7 +78,7 @@ pub fn get_json_documentation(flux_path: &str) -> JsValue {
         // look for the given identifier
         if flux_path == i.path {
             // return that doc package
-            let param = format!("{:?}", i);
+            let param = serde_json::to_string(i)?;
             doc = JsValue::from_serde(&param).unwrap();
             break;
         }

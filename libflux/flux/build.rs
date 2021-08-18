@@ -2,7 +2,7 @@ extern crate fluxcore;
 
 use std::{env, fs, io, io::Write, path};
 
-use deflate::deflate_bytes;
+//use deflate::deflate_bytes;
 use fluxcore::semantic::bootstrap;
 use fluxcore::semantic::bootstrap::stdlib_docs;
 use fluxcore::semantic::env::Environment;
@@ -72,10 +72,8 @@ fn main() -> Result<(), Error> {
     }
     let new_docs = stdlib_docs(&lib, &file_map).unwrap();
     let json_docs = serde_json::to_vec(&new_docs).unwrap();
-    let comp_docs = deflate_bytes(&json_docs);
-    let path = dir.join("docs.json");
-    let mut file = fs::File::create(path)?;
-    file.write_all(&comp_docs)?;
+    let mut file = fs::File::create("docs.json")?;
+    file.write_all(&json_docs)?;
 
     let path = dir.join("prelude.data");
     serialize(Environment::from(pre), fb::build_env, &path)?;
