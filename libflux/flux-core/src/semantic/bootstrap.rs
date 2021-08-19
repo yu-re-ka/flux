@@ -377,9 +377,9 @@ fn generate_values(
                 if let MonoType::Record(r) = &pkgtype.expr {
                     let typ = r.find_prop(&name);
                     if let Some(typ) = typ {
-                        match typ {
+                        match &typ {
                             MonoType::Fun(_f) => {
-                                funcdoc.flux_type = "Fun".to_string();
+                                funcdoc.flux_type = format!("{}", &typ);
                                 members.insert(name.clone(), Doc::Function(Box::new(funcdoc)));
                             }
                             _ => {
@@ -405,9 +405,9 @@ fn generate_values(
                 if let MonoType::Record(r) = &pkgtype.expr {
                     let typ = r.find_prop(&name);
                     if let Some(typ) = typ {
-                        match typ {
+                        match &typ {
                             MonoType::Fun(_f) => {
-                                funcdoc.flux_type = "Fun".to_string();
+                                funcdoc.flux_type = format!("{}", &typ);
                                 members.insert(name.clone(), Doc::Function(Box::new(funcdoc)));
                             }
                             _ => {
@@ -434,9 +434,9 @@ fn generate_values(
                     if let MonoType::Record(r) = &pkgtype.expr {
                         let typ = r.find_prop(&name);
                         if let Some(typ) = typ {
-                            match typ {
+                            match &typ {
                                 MonoType::Fun(_f) => {
-                                    funcdoc.flux_type = "Fun".to_string();
+                                    funcdoc.flux_type = format!("{}", &typ);
                                     members.insert(name.clone(), Doc::Function(Box::new(funcdoc)));
                                 }
                                 _ => {
