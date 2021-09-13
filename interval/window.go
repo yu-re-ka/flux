@@ -3,6 +3,7 @@ package interval
 import (
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/internal/zoneinfo"
 	"github.com/influxdata/flux/values"
 )
 
@@ -34,6 +35,7 @@ type Window struct {
 	period     values.Duration
 	zero       values.Time
 	zeroMonths int64
+	loc        *zoneinfo.Location
 }
 
 // NewWindow creates a window which can be used to determine the boundaries for a given point.
@@ -42,12 +44,17 @@ type Window struct {
 // Each window's length is the start boundary plus the period.
 // Every must not be a mix of months and nanoseconds in order to preserve constant time bounds lookup.
 func NewWindow(every, period, offset values.Duration) (Window, error) {
+	return NewWindowWithLocation(every, period, offset, zoneinfo.UTC)
+}
+
+func NewWindowWithLocation(every, period, offset values.Duration, loc *zoneinfo.Location) (Window, error) {
 	zero := epoch.Add(offset)
 	w := Window{
 		every:      every,
 		period:     period,
 		zero:       zero,
 		zeroMonths: monthsSince(zero),
+		loc:        loc,
 	}
 	if err := w.isValid(); err != nil {
 		return Window{}, err
@@ -89,10 +96,10 @@ func (w Window) GetLatestBounds(t values.Time) Bounds {
 	// Get the latest index that should contain the time t
 	index := w.lastIndex(t)
 	// Construct the bounds from the index
-	start := w.zero.Add(w.every.Mul(index))
+	start := w.zero.AddIn(w.every.Mul(index), w.loc)
 	b := Bounds{
 		start: start,
-		stop:  start.Add(w.period),
+		stop:  start.AddIn(w.period, w.loc),
 		index: index,
 	}
 	// If the period is negative its possible future bounds can still contain this point
@@ -156,8 +163,8 @@ func (w Window) GetOverlappingBounds(start, stop values.Time) []Bounds {
 // NextBounds returns the next boundary in sequence from the given boundary.
 func (w Window) NextBounds(b Bounds) Bounds {
 	index := b.index + 1
-	start := w.zero.Add(w.every.Mul(index))
-	stop := start.Add(w.period)
+	start := w.zero.AddIn(w.every.Mul(index), w.loc)
+	stop := start.AddIn(w.period, w.loc)
 	if w.period.IsNegative() {
 		start, stop = stop, start
 	}
@@ -171,8 +178,8 @@ func (w Window) NextBounds(b Bounds) Bounds {
 // PrevBounds returns the previous boundary in sequence from the given boundary.
 func (w Window) PrevBounds(b Bounds) Bounds {
 	index := b.index - 1
-	start := w.zero.Add(w.every.Mul(index))
-	stop := start.Add(w.period)
+	start := w.zero.AddIn(w.every.Mul(index), w.loc)
+	stop := start.AddIn(w.period, w.loc)
 	if w.period.IsNegative() {
 		start, stop = stop, start
 	}

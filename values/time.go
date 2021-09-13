@@ -10,6 +10,7 @@ import (
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/internal/parser"
+	"github.com/influxdata/flux/internal/zoneinfo"
 )
 
 type Time int64
@@ -133,6 +134,54 @@ func (t Time) Add(d Duration) Time {
 		nsecs = -nsecs
 	}
 	return newT + Time(nsecs)
+}
+
+func (t Time) AddIn(d Duration, loc *zoneinfo.Location) Time {
+	// Determine if the number of months is positive or negative.
+	months := d.months
+	if d.negative {
+		months = -months
+	}
+
+	// Retrieve the current date and increment the values
+	// based on the number of months.
+	ts := t.Time()
+	year, month, day := ts.Date()
+	year += int(months / 12)
+	month += time.Month(months % 12)
+	// If the month overflowed or underflowed, adjust the year
+	// accordingly. Because we add the modulo for the months,
+	// the year will only adjust by one.
+	if month > 12 {
+		year += 1
+		month -= 12
+	} else if month <= 0 {
+		year -= 1
+		month += 12
+	}
+
+	// Normalize the day if we are past the end of the month.
+	lastDayOfMonth := lastDayOfMonths[month]
+	if month == time.February && isLeapYear(year) {
+		lastDayOfMonth++
+	}
+
+	if day > lastDayOfMonth {
+		day = lastDayOfMonth
+	}
+
+	// Retrieve the original time and construct a date
+	// with the new year, month, and day.
+	hour, min, sec := ts.Clock()
+	nsec := ts.Nanosecond()
+
+	// Add the number of nanoseconds to the time.
+	nsecs := d.nsecs
+	if d.negative {
+		nsecs = -nsecs
+	}
+	nsec += int(nsecs)
+	return Time(zoneinfo.Date(year, month, day, hour, min, sec, nsec, loc))
 }
 
 // Sub takes another time and returns a duration giving the duration

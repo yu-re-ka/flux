@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/influxdata/flux/internal/zoneinfo"
 	"github.com/influxdata/flux/interval"
 	"github.com/influxdata/flux/values"
 )
@@ -1040,4 +1041,191 @@ func transformBounds(b []interval.Bounds) []testBounds {
 		})
 	}
 	return bs
+}
+
+func ConvertTime(local time.Time, loc *zoneinfo.Location) (utc time.Time) {
+	year, month, day := local.Date()
+	hour, min, sec := local.Clock()
+	nsec := local.Nanosecond()
+	ts := zoneinfo.Date(year, month, day, hour, min, sec, nsec, loc)
+	return time.Unix(0, ts)
+}
+
+// func AddDuration(t time.Time, d values.Duration, loc *zoneinfo.Location) time.Time {
+// 	year, month, day := t.Date()
+// 	hour, min, sec := t.Clock()
+// 	nsec := t.Nanosecond()
+//
+// 	sec += int(d.Nanoseconds() / 1e9)
+// 	nsec += int(d.Nanoseconds() % 1e9)
+// 	newTS := zoneinfo.Date(year, month, day, hour, min, sec, nsec, loc)
+// 	return time.Unix(0, newTS).In(t.Location())
+// }
+
+func AddDuration(t values.Time, d values.Duration, loc *zoneinfo.Location) values.Time {
+	utc := loc.ToUTC(int64(t) / 1e9)
+	ts := time.Unix(utc, int64(t)%1e9).In(time.UTC)
+	year, month, day := ts.Date()
+	hour, min, sec := ts.Clock()
+	nsec := ts.Nanosecond()
+
+	sec += int(d.Nanoseconds() / 1e9)
+	nsec += int(d.Nanoseconds() % 1e9)
+	newTS := time.Date(year, month, day, hour, min, sec, nsec, time.UTC)
+
+	utc = loc.FromUTC(newTS.Unix())
+	return values.Time(utc*1e9 + int64(newTS.Nanosecond()))
+}
+
+func TestWindow_ZoneInfo_Australia(t *testing.T) {
+	const locname = "Australia/West"
+	goloc, _ := time.LoadLocation(locname)
+	loc, err := zoneinfo.LoadLocation(locname)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	timestamps := []string{
+		"2008-10-26T09:00:00+09:00",
+		"2008-03-30T09:00:00+08:00",
+		"2008-10-26T01:45:00+08:00",
+		"2008-10-26T03:15:00+09:00",
+		"2008-03-30T02:45:00+09:00",
+		"2008-03-30T02:45:00+08:00",
+	}
+
+	const (
+		every  = "1h"
+		period = "1h"
+		offset = "30m"
+	)
+
+	window, _ := interval.NewWindow(
+		mustDuration(every),
+		mustDuration(period),
+		mustDuration(offset),
+	)
+
+	for _, tss := range timestamps {
+		ts, err := time.Parse(time.RFC3339, tss)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		utc := loc.ToUTC(ts.Unix())
+		t.Log("Timestamp:", ts.In(goloc), time.Unix(utc, 0).UTC())
+		bounds := window.GetLatestBounds(values.Time(utc * int64(time.Second)))
+		for i := 1; ; i++ {
+			start := loc.FromUTC(int64(bounds.Start()) / int64(time.Second))
+			stop := loc.FromUTC(int64(bounds.Stop()) / int64(time.Second))
+			if start > ts.Unix() || stop <= ts.Unix() {
+				break
+			}
+			t.Logf("Window %2d: %s %s %s", i, time.Unix(start, 0).In(goloc), time.Unix(stop, 0).In(goloc), time.Duration(stop-start)*time.Second)
+
+			bounds = window.PrevBounds(bounds)
+		}
+	}
+}
+
+func TestWindow_ZoneInfo_America(t *testing.T) {
+	const locname = "America/Chicago"
+	goloc, _ := time.LoadLocation(locname)
+	loc, err := zoneinfo.LoadLocation(locname)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	timestamps := []string{
+		"2008-03-09T09:00:00-05:00",
+		"2008-03-08T09:00:00-06:00",
+		"2008-03-10T09:00:00-05:00",
+		"2008-11-02T09:00:00-06:00",
+		"2008-03-09T01:45:00-06:00",
+		"2008-03-09T03:15:00-05:00",
+		"2008-11-02T01:45:00-05:00",
+		"2008-11-02T01:45:00-06:00",
+	}
+
+	const (
+		every  = "1h"
+		period = "1h"
+		offset = "30m"
+	)
+
+	window, _ := interval.NewWindow(
+		mustDuration(every),
+		mustDuration(period),
+		mustDuration(offset),
+	)
+
+	for _, tss := range timestamps {
+		ts, err := time.Parse(time.RFC3339, tss)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		utc := loc.ToUTC(ts.Unix())
+		t.Log("Timestamp:", ts.In(goloc), time.Unix(utc, 0).UTC())
+		bounds := window.GetLatestBounds(values.Time(utc * int64(time.Second)))
+		for i := 1; ; i++ {
+			start := loc.FromUTC(int64(bounds.Start()) / int64(time.Second))
+			stop := loc.FromUTC(int64(bounds.Stop()) / int64(time.Second))
+			if start > ts.Unix() || stop <= ts.Unix() {
+				break
+			}
+			t.Logf("Window %2d: %s %s %s", i, time.Unix(start, 0).In(goloc), time.Unix(stop, 0).In(goloc), time.Duration(stop-start)*time.Second)
+
+			bounds = window.PrevBounds(bounds)
+		}
+	}
+}
+
+func TestWindow_ZoneInfo_Samoa(t *testing.T) {
+	const locname = "Pacific/Apia"
+	goloc, _ := time.LoadLocation(locname)
+	loc, err := zoneinfo.LoadLocation(locname)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	timestamps := []string{
+		"2011-12-27T23:30:00-10:00",
+		"2011-12-28T23:30:00-10:00",
+		"2011-12-29T23:30:00-10:00",
+		"2011-12-31T09:00:00+14:00",
+	}
+
+	const (
+		every  = "2d"
+		period = "2d"
+		offset = "12h"
+	)
+
+	window, _ := interval.NewWindow(
+		mustDuration(every),
+		mustDuration(period),
+		mustDuration(offset),
+	)
+
+	for _, tss := range timestamps {
+		ts, err := time.Parse(time.RFC3339, tss)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		utc := loc.ToUTC(ts.Unix())
+		t.Log("Timestamp:", ts.In(goloc), time.Unix(utc, 0).UTC())
+		bounds := window.GetLatestBounds(values.Time(utc * int64(time.Second)))
+		for i := 1; ; i++ {
+			start := loc.FromUTC(int64(bounds.Start()) / int64(time.Second))
+			stop := loc.FromUTC(int64(bounds.Stop()) / int64(time.Second))
+			if start > ts.Unix() || stop <= ts.Unix() {
+				break
+			}
+			t.Logf("Window %2d: %s %s %s", i, time.Unix(start, 0).In(goloc), time.Unix(stop, 0).In(goloc), time.Duration(stop-start)*time.Second)
+
+			bounds = window.PrevBounds(bounds)
+		}
+	}
 }
