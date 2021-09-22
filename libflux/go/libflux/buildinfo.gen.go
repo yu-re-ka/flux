@@ -274,7 +274,7 @@ var sourceHashes = map[string]string{
 	"stdlib/kafka/kafka.flux":                                                                     "214fb699bcde2db9ecb9a6673bf9f29c481ec51306bcf6316cec23324431ea3d",
 	"stdlib/math/math.flux":                                                                       "8bd66b62ba1f27f353622aed751a99bbbbc42bda0ebd5cbea6b3ee9cdc388a74",
 	"stdlib/math/math_test.flux":                                                                  "c3332c3cf8cbd00d64ee0cf36cb58bd156511aa16ec6356023c304e63553241d",
-	"stdlib/pagerduty/pagerduty.flux":                                                             "ea8f481ed8766ca6355a505b2b90cf3e55954bfe0dfa8850a8a13eabdee24544",
+	"stdlib/pagerduty/pagerduty.flux":                                                             "241a5f7a5bb6f0b1501bab76386e72acb9298099dfc3b6c4f52262ba743b1db7",
 	"stdlib/pagerduty/pagerduty_test.flux":                                                        "d8f9bd6ffe2de7af4270aa51a2adbaeb77405bc52310fb3fc4f77090362b77c4",
 	"stdlib/planner/aggregate_window_max_eval_test.flux":                                          "207ffcee32ec5933fb6e2fcbccd65513b40b97f01dc590b63995be70ec35ee8d",
 	"stdlib/planner/aggregate_window_max_push_test.flux":                                          "801b39ec4a6665a4a2808fe6e5b0f21df53b9fe4b7440c966ca51607ff83b899",

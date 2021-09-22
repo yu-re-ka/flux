@@ -344,7 +344,7 @@ fn convert_expression(expr: ast::Expression, fresher: &mut Fresher) -> Result<Ex
         ast::Expression::Index(expr) => Ok(Expression::Index(Box::new(convert_index_expression(*expr, fresher)?))),
         ast::Expression::PipeExpr(expr) => Ok(Expression::Call(Box::new(convert_pipe_expression(*expr, fresher)?))),
         ast::Expression::Binary(expr) => Ok(Expression::Binary(Box::new(convert_binary_expression(*expr, fresher)?))),
-        ast::Expression::Unary(expr) => Ok(Expression::Unary(Box::new(convert_unary_expression(*expr, fresher)?))),
+        ast::Expression::Unary(expr) => convert_unary_expression(*expr, fresher),
         ast::Expression::Logical(expr) => Ok(Expression::Logical(Box::new(convert_logical_expression(*expr, fresher)?))),
         ast::Expression::Conditional(expr) => Ok(Expression::Conditional(Box::new(convert_conditional_expression(*expr, fresher)?))),
         ast::Expression::Object(expr) => Ok(Expression::Object(Box::new(convert_object_expression(*expr, fresher)?))),
@@ -529,14 +529,20 @@ fn convert_binary_expression(expr: ast::BinaryExpr, fresher: &mut Fresher) -> Re
     })
 }
 
-fn convert_unary_expression(expr: ast::UnaryExpr, fresher: &mut Fresher) -> Result<UnaryExpr> {
+fn convert_unary_expression(expr: ast::UnaryExpr, fresher: &mut Fresher) -> Result<Expression> {
     let argument = convert_expression(expr.argument, fresher)?;
-    Ok(UnaryExpr {
-        loc: expr.base.location,
-        typ: MonoType::Var(fresher.fresh()),
-        operator: expr.operator,
-        argument,
-    })
+    match expr.operator {
+        ast::Operator::ExistsOperator => Ok(Expression::Exists(Box::new(ExistsExpr {
+            loc: expr.base.location,
+            argument,
+        }))),
+        _ => Ok(Expression::Unary(Box::new(UnaryExpr {
+            loc: expr.base.location,
+            typ: MonoType::Var(fresher.fresh()),
+            operator: expr.operator,
+            argument,
+        }))),
+    }
 }
 
 fn convert_logical_expression(

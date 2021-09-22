@@ -118,6 +118,7 @@ pub enum Expression {
     Index(Box<IndexExpr>),
     Binary(Box<BinaryExpr>),
     Unary(Box<UnaryExpr>),
+    Exists(Box<ExistsExpr>),
     Call(Box<CallExpr>),
     Conditional(Box<ConditionalExpr>),
     StringExpr(Box<StringExpr>),
@@ -146,6 +147,7 @@ impl Expression {
             Expression::Index(e) => e.typ.clone(),
             Expression::Binary(e) => e.typ.clone(),
             Expression::Unary(e) => e.typ.clone(),
+            Expression::Exists(_) => MonoType::Bool,
             Expression::Call(e) => e.typ.clone(),
             Expression::Conditional(e) => e.alternate.type_of(),
             Expression::StringExpr(_) => MonoType::String,
@@ -172,6 +174,7 @@ impl Expression {
             Expression::Index(e) => &e.loc,
             Expression::Binary(e) => &e.loc,
             Expression::Unary(e) => &e.loc,
+            Expression::Exists(e) => &e.loc,
             Expression::Call(e) => &e.loc,
             Expression::Conditional(e) => &e.loc,
             Expression::StringExpr(e) => &e.loc,
@@ -197,6 +200,7 @@ impl Expression {
             Expression::Index(e) => e.infer(env, f),
             Expression::Binary(e) => e.infer(env, f),
             Expression::Unary(e) => e.infer(env, f),
+            Expression::Exists(e) => e.infer(env, f),
             Expression::Call(e) => e.infer(env, f),
             Expression::Conditional(e) => e.infer(env, f),
             Expression::StringExpr(e) => e.infer(env, f),
@@ -222,6 +226,7 @@ impl Expression {
             Expression::Index(e) => Expression::Index(Box::new(e.apply(sub))),
             Expression::Binary(e) => Expression::Binary(Box::new(e.apply(sub))),
             Expression::Unary(e) => Expression::Unary(Box::new(e.apply(sub))),
+            Expression::Exists(e) => Expression::Exists(Box::new(e.apply(sub))),
             Expression::Call(e) => Expression::Call(Box::new(e.apply(sub))),
             Expression::Conditional(e) => Expression::Conditional(Box::new(e.apply(sub))),
             Expression::StringExpr(e) => Expression::StringExpr(Box::new(e.apply(sub))),
@@ -1408,22 +1413,51 @@ impl ConditionalExpr {
         let (env, tcons) = self.test.infer(env, f)?;
         let (env, ccons) = self.consequent.infer(env, f)?;
         let (env, acons) = self.alternate.infer(env, f)?;
-        let cons = tcons
-            + ccons
-            + acons
-            + Constraints::from(vec![
-                Constraint::Equal {
+        match &mut self.test {
+            // Statically evaluate exists as its a type question
+            Expression::Exists(e) => {
+                let (pass, env) = e.solve(env, f)?;
+                // TODO apply second pass that removes this entirely
+                self.test = Expression::Boolean(BooleanLit {
+                    loc: self.test.loc().clone(),
+                    value: pass,
+                });
+                let mut cons = Constraints::from(Constraint::Equal {
                     exp: MonoType::Bool,
                     act: self.test.type_of(),
                     loc: self.test.loc().clone(),
-                },
-                Constraint::Equal {
-                    exp: self.consequent.type_of(),
-                    act: self.alternate.type_of(),
-                    loc: self.alternate.loc().clone(),
-                },
-            ]);
-        Ok((env, cons))
+                });
+                // Only use constraints from the branch that matters
+                if pass {
+                    cons = cons + ccons
+                } else {
+                    cons = cons + acons
+                }
+                // Note we do not add a constraint that the consequent and alternate are equal
+                // because they do not need to be for compile time evaluation of the conditional.
+                // This is because we know that only one branch is used the other can be removed
+                // entirely.
+                Ok((env, cons))
+            }
+            _ => {
+                let cons = tcons
+                    + ccons
+                    + acons
+                    + Constraints::from(vec![
+                        Constraint::Equal {
+                            exp: MonoType::Bool,
+                            act: self.test.type_of(),
+                            loc: self.test.loc().clone(),
+                        },
+                        Constraint::Equal {
+                            exp: self.consequent.type_of(),
+                            act: self.alternate.type_of(),
+                            loc: self.alternate.loc().clone(),
+                        },
+                    ]);
+                Ok((env, cons))
+            }
+        }
     }
     fn apply(mut self, sub: &Substitution) -> Self {
         self.test = self.test.apply(sub);
@@ -1680,6 +1714,51 @@ impl UnaryExpr {
         self.typ = self.typ.apply(sub);
         self.argument = self.argument.apply(sub);
         self
+    }
+}
+
+#[derive(Derivative)]
+#[derivative(Debug, PartialEq, Clone)]
+#[allow(missing_docs)]
+pub struct ExistsExpr {
+    pub loc: ast::SourceLocation,
+    pub argument: Expression,
+}
+
+impl ExistsExpr {
+    fn infer(&mut self, env: Environment, f: &mut Fresher) -> Result {
+        //self.argument.infer(env, f)
+        let (env, _cons) = self.argument.infer(env, f)?;
+        Ok((env, Constraints::empty()))
+    }
+    fn apply(mut self, sub: &Substitution) -> Self {
+        self.argument = self.argument.apply(sub);
+        self
+    }
+    fn solve(
+        &mut self,
+        env: Environment,
+        f: &mut Fresher,
+    ) -> std::result::Result<(bool, Environment), Error> {
+        let (env, cons) = self.infer(env, f)?;
+        let mut kinds = TvarKinds::new();
+        let sub = infer::solve(&cons, &mut kinds, f)?;
+        let t = self.argument.type_of().apply(&sub);
+        println!("type of arg: {:?}", t);
+        // TODO
+        // We can't determine here wether the exists evals to true or false
+        // because we may be inside a function body
+        // In that case we would need to do a pass to evaluate the exists after understanding
+        // the specific instance that has been passed to the function.
+        //
+        // Seems like we should inline functions first and then run type inference?
+        // Seems like that would defeat the purpose of let-polymorphism
+        let pass = match t {
+            MonoType::Var(_) => false,
+            _ => true,
+        };
+
+        Ok((pass, env))
     }
 }
 

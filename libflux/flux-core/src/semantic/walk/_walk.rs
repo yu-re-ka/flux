@@ -28,6 +28,7 @@ pub enum Node<'a> {
     IndexExpr(&'a IndexExpr),
     BinaryExpr(&'a BinaryExpr),
     UnaryExpr(&'a UnaryExpr),
+    ExistsExpr(&'a ExistsExpr),
     CallExpr(&'a CallExpr),
     ConditionalExpr(&'a ConditionalExpr),
     StringExpr(&'a StringExpr),
@@ -76,6 +77,7 @@ impl<'a> fmt::Display for Node<'a> {
             Node::IndexExpr(_) => write!(f, "IndexExpr"),
             Node::BinaryExpr(_) => write!(f, "BinaryExpr"),
             Node::UnaryExpr(_) => write!(f, "UnaryExpr"),
+            Node::ExistsExpr(_) => write!(f, "ExistsExpr"),
             Node::CallExpr(_) => write!(f, "CallExpr"),
             Node::ConditionalExpr(_) => write!(f, "ConditionalExpr"),
             Node::StringExpr(_) => write!(f, "StringExpr"),
@@ -127,6 +129,7 @@ impl<'a> Node<'a> {
             Node::IndexExpr(n) => &n.loc,
             Node::BinaryExpr(n) => &n.loc,
             Node::UnaryExpr(n) => &n.loc,
+            Node::ExistsExpr(n) => &n.loc,
             Node::CallExpr(n) => &n.loc,
             Node::ConditionalExpr(n) => &n.loc,
             Node::StringExpr(n) => &n.loc,
@@ -165,6 +168,7 @@ impl<'a> Node<'a> {
             Node::IndexExpr(n) => Some(Expression::Index(Box::new((*n).clone())).type_of()),
             Node::BinaryExpr(n) => Some(Expression::Binary(Box::new((*n).clone())).type_of()),
             Node::UnaryExpr(n) => Some(Expression::Unary(Box::new((*n).clone())).type_of()),
+            Node::ExistsExpr(n) => Some(Expression::Exists(Box::new((*n).clone())).type_of()),
             Node::CallExpr(n) => Some(Expression::Call(Box::new((*n).clone())).type_of()),
             Node::ConditionalExpr(n) => {
                 Some(Expression::Conditional(Box::new((*n).clone())).type_of())
@@ -198,6 +202,7 @@ impl<'a> Node<'a> {
             Expression::Index(ref e) => Node::IndexExpr(e),
             Expression::Binary(ref e) => Node::BinaryExpr(e),
             Expression::Unary(ref e) => Node::UnaryExpr(e),
+            Expression::Exists(ref e) => Node::ExistsExpr(e),
             Expression::Call(ref e) => Node::CallExpr(e),
             Expression::Conditional(ref e) => Node::ConditionalExpr(e),
             Expression::StringExpr(ref e) => Node::StringExpr(e),
@@ -407,6 +412,9 @@ where
                 walk(v, Rc::new(Node::from_expr(&n.right)));
             }
             Node::UnaryExpr(n) => {
+                walk(v, Rc::new(Node::from_expr(&n.argument)));
+            }
+            Node::ExistsExpr(n) => {
                 walk(v, Rc::new(Node::from_expr(&n.argument)));
             }
             Node::CallExpr(n) => {

@@ -11,6 +11,7 @@ use std::rc::Rc;
 use crate::ast;
 
 use crate::semantic;
+use crate::semantic::types::MonoType;
 use crate::semantic::walk;
 use flatbuffers::{UnionWIPOffset, WIPOffset};
 use semantic_generated::fbsemantic;
@@ -241,6 +242,29 @@ impl<'a> semantic::walk::Visitor<'_> for SerializingVisitor<'a> {
                 let (argument, argument_type) = v.pop_expr();
 
                 let unary_typ = unary.typ.clone();
+                let (typ, typ_type) = types::build_type(&mut v.builder, unary_typ);
+                let unary = fbsemantic::UnaryExpression::create(
+                    &mut v.builder,
+                    &fbsemantic::UnaryExpressionArgs {
+                        loc,
+                        operator,
+                        argument,
+                        argument_type,
+                        typ: Some(typ),
+                        typ_type,
+                    },
+                );
+                v.expr_stack.push((
+                    unary.as_union_value(),
+                    fbsemantic::Expression::UnaryExpression,
+                ));
+            }
+            walk::Node::ExistsExpr(unary) => {
+                //TODO encode as real exists node
+                let operator = fb_operator(&ast::Operator::ExistsOperator);
+                let (argument, argument_type) = v.pop_expr();
+
+                let unary_typ = MonoType::Bool;
                 let (typ, typ_type) = types::build_type(&mut v.builder, unary_typ);
                 let unary = fbsemantic::UnaryExpression::create(
                     &mut v.builder,

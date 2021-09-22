@@ -28,6 +28,7 @@ pub enum NodeMut<'a> {
     IndexExpr(&'a mut IndexExpr),
     BinaryExpr(&'a mut BinaryExpr),
     UnaryExpr(&'a mut UnaryExpr),
+    ExistsExpr(&'a mut ExistsExpr),
     CallExpr(&'a mut CallExpr),
     ConditionalExpr(&'a mut ConditionalExpr),
     StringExpr(&'a mut StringExpr),
@@ -76,6 +77,7 @@ impl<'a> fmt::Display for NodeMut<'a> {
             NodeMut::IndexExpr(_) => write!(f, "IndexExpr"),
             NodeMut::BinaryExpr(_) => write!(f, "BinaryExpr"),
             NodeMut::UnaryExpr(_) => write!(f, "UnaryExpr"),
+            NodeMut::ExistsExpr(_) => write!(f, "ExistsExpr"),
             NodeMut::CallExpr(_) => write!(f, "CallExpr"),
             NodeMut::ConditionalExpr(_) => write!(f, "ConditionalExpr"),
             NodeMut::StringExpr(_) => write!(f, "StringExpr"),
@@ -126,6 +128,7 @@ impl<'a> NodeMut<'a> {
             NodeMut::IndexExpr(n) => &n.loc,
             NodeMut::BinaryExpr(n) => &n.loc,
             NodeMut::UnaryExpr(n) => &n.loc,
+            NodeMut::ExistsExpr(n) => &n.loc,
             NodeMut::CallExpr(n) => &n.loc,
             NodeMut::ConditionalExpr(n) => &n.loc,
             NodeMut::StringExpr(n) => &n.loc,
@@ -167,6 +170,7 @@ impl<'a> NodeMut<'a> {
             NodeMut::IndexExpr(n) => Some(Expression::Index(Box::new((*n).clone())).type_of()),
             NodeMut::BinaryExpr(n) => Some(Expression::Binary(Box::new((*n).clone())).type_of()),
             NodeMut::UnaryExpr(n) => Some(Expression::Unary(Box::new((*n).clone())).type_of()),
+            NodeMut::ExistsExpr(n) => Some(Expression::Exists(Box::new((*n).clone())).type_of()),
             NodeMut::CallExpr(n) => Some(Expression::Call(Box::new((*n).clone())).type_of()),
             NodeMut::ConditionalExpr(n) => {
                 Some(Expression::Conditional(Box::new((*n).clone())).type_of())
@@ -205,6 +209,7 @@ impl<'a> NodeMut<'a> {
             NodeMut::IndexExpr(ref mut n) => n.loc = loc,
             NodeMut::BinaryExpr(ref mut n) => n.loc = loc,
             NodeMut::UnaryExpr(ref mut n) => n.loc = loc,
+            NodeMut::ExistsExpr(ref mut n) => n.loc = loc,
             NodeMut::CallExpr(ref mut n) => n.loc = loc,
             NodeMut::ConditionalExpr(ref mut n) => n.loc = loc,
             NodeMut::StringExpr(ref mut n) => n.loc = loc,
@@ -246,6 +251,7 @@ impl<'a> NodeMut<'a> {
             Expression::Index(ref mut e) => NodeMut::IndexExpr(e),
             Expression::Binary(ref mut e) => NodeMut::BinaryExpr(e),
             Expression::Unary(ref mut e) => NodeMut::UnaryExpr(e),
+            Expression::Exists(ref mut e) => NodeMut::ExistsExpr(e),
             Expression::Call(ref mut e) => NodeMut::CallExpr(e),
             Expression::Conditional(ref mut e) => NodeMut::ConditionalExpr(e),
             Expression::StringExpr(ref mut e) => NodeMut::StringExpr(e),
@@ -414,6 +420,9 @@ where
                 walk_mut(v, &mut NodeMut::from_expr(&mut n.right));
             }
             NodeMut::UnaryExpr(ref mut n) => {
+                walk_mut(v, &mut NodeMut::from_expr(&mut n.argument));
+            }
+            NodeMut::ExistsExpr(ref mut n) => {
                 walk_mut(v, &mut NodeMut::from_expr(&mut n.argument));
             }
             NodeMut::CallExpr(ref mut n) => {

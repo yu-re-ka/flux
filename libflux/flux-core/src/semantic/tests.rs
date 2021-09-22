@@ -2566,6 +2566,25 @@ fn exists() {
     }
 }
 #[test]
+fn exists_does_not_force_constraints() {
+    test_infer! {
+        env: map![
+            "a" => "{x:int,y:int}",
+        ],
+        src: "
+            f = (r) => if exists r.a then r.b else r.c
+            g = (r) => {
+                r.a
+                return if exists r.a then r.b else r.c
+            }
+        ",
+        exp: map![
+            "f" => "(r:A) => int ",
+            "g" => "(r:{A with a:X, b: Y) => Y",
+        ],
+    }
+}
+#[test]
 fn logical_not() {
     test_infer! {
         env: map![
