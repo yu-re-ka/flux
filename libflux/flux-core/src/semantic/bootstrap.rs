@@ -27,6 +27,9 @@ use pulldown_cmark::{Event, Parser};
 use walkdir::WalkDir;
 use wasm_bindgen::__rt::std::collections::HashMap;
 
+use serde::{Serialize, Serializer};
+use std::collections::BTreeMap;
+
 const PRELUDE: [&str; 3] = ["internal/boolean", "universe", "influxdata/influxdb"];
 
 type AstFileMap = SemanticMap<String, ast::File>;
@@ -81,6 +84,7 @@ pub struct PackageDoc {
     /// the description of the package
     pub description: Option<String>,
     /// the members are the values and funcitons of a package
+    #[serde(serialize_with = "ordered_members")]
     pub members: HashMap<String, Doc>,
     /// the docs site link for a package
     pub link: String,
@@ -220,6 +224,7 @@ pub fn stdlib_docs(
         let pkg = generate_docs(lib, file, pkgpath)?;
         docs.push(pkg);
     }
+    docs.sort_by(|a, b| b.path.cmp(&a.path));
     Ok(docs)
 }
 
@@ -284,6 +289,14 @@ fn separate_description(all_comment: &str) -> (String, Option<String>) {
     } else {
         (headline, Option::None)
     }
+}
+
+fn ordered_members<S>(value: &HashMap<String, Doc>, serializer: S) -> Result<S::Ok, S::Error>
+where
+    S: Serializer,
+{
+    let ordered: BTreeMap<_, _> = value.iter().collect();
+    ordered.serialize(serializer)
 }
 
 // Separates function document parameters and returns a newly generated FuncDoc struct

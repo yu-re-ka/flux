@@ -1,5 +1,3 @@
-#![cfg_attr(feature = "strict", deny(warnings, missing_docs))]
-
 //! This crate performs parsing and semantic analysis of Flux source
 //! code. It forms the core of the compiler for the [Flux language].
 //! It is made up of five modules. Four of these handle the analysis

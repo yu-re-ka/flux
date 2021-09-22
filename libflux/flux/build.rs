@@ -85,6 +85,10 @@ fn main() -> Result<(), Error> {
     let mut file = fs::File::create(path)?;
     file.write_all(&comp_docs)?;
 
+    let pt = dir.join("ptdocs.json");
+    let mut ptfile = fs::File::create(pt)?;
+    ptfile.write_all(&json_docs)?;
+
     let path = dir.join("prelude.data");
     serialize(Environment::from(pre), fb::build_env, &path)?;
 
