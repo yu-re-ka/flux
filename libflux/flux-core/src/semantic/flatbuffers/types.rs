@@ -126,16 +126,16 @@ fn from_table(table: flatbuffers::Table, t: fb::MonoType) -> Option<MonoType> {
         }
         fb::MonoType::Arr => {
             let opt: Option<Array> = fb::Arr::init_from_table(table).into();
-            Some(MonoType::Arr(Box::new(opt?)))
+            Some(MonoType::arr(opt?))
         }
         fb::MonoType::Fun => {
             let opt: Option<Function> = fb::Fun::init_from_table(table).into();
-            Some(MonoType::Fun(Box::new(opt?)))
+            Some(MonoType::fun(opt?))
         }
         fb::MonoType::Record => fb::Record::init_from_table(table).into(),
         fb::MonoType::Dict => {
             let opt: Option<Dictionary> = fb::Dict::init_from_table(table).into();
-            Some(MonoType::Dict(Box::new(opt?)))
+            Some(MonoType::dict(opt?))
         }
         fb::MonoType::NONE => None,
         _ => unreachable!("Unknown type from table"),
@@ -183,16 +183,16 @@ impl From<fb::Dict<'_>> for Option<Dictionary> {
 impl From<fb::Record<'_>> for Option<MonoType> {
     fn from(t: fb::Record) -> Option<MonoType> {
         let mut r = match t.extends() {
-            None => MonoType::Record(Box::new(Record::Empty)),
+            None => MonoType::from(Record::Empty),
             Some(tv) => MonoType::Var(tv.into()),
         };
         let p = t.props()?;
         for value in p.iter().rev() {
             let prop: Option<Property> = value.into();
-            r = MonoType::Record(Box::new(Record::Extension {
+            r = MonoType::from(Record::Extension {
                 head: prop?,
                 tail: r,
-            }));
+            });
         }
         Some(r)
     }
