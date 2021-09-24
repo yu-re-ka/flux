@@ -81,13 +81,6 @@ impl PartialEq for PolyType {
 }
 
 impl Substitutable for PolyType {
-    fn apply(self, sub: &Substitution) -> Self {
-        PolyType {
-            vars: self.vars,
-            cons: self.cons,
-            expr: self.expr.apply(sub),
-        }
-    }
     fn apply_ref(&self, sub: &Substitution) -> Option<Self> {
         self.expr.apply_ref(sub).map(|expr| PolyType {
             vars: self.vars.clone(),
@@ -314,24 +307,6 @@ pub type MonoTypeVecMap = SemanticMap<String, Vec<MonoType>>;
 type RefMonoTypeVecMap<'a> = HashMap<&'a String, Vec<&'a MonoType>>;
 
 impl Substitutable for MonoType {
-    fn apply(self, sub: &Substitution) -> Self {
-        match self {
-            MonoType::Bool
-            | MonoType::Int
-            | MonoType::Uint
-            | MonoType::Float
-            | MonoType::String
-            | MonoType::Duration
-            | MonoType::Time
-            | MonoType::Regexp
-            | MonoType::Bytes => self,
-            MonoType::Var(tvr) => sub.apply(tvr),
-            MonoType::Arr(arr) => MonoType::Arr(Ptr::new(arr.apply(sub))),
-            MonoType::Dict(dict) => MonoType::Dict(Ptr::new(dict.apply(sub))),
-            MonoType::Record(obj) => MonoType::Record(Ptr::new(obj.apply(sub))),
-            MonoType::Fun(fun) => MonoType::Fun(Ptr::new(fun.apply(sub))),
-        }
-    }
     fn apply_ref(&self, sub: &Substitution) -> Option<Self> {
         match self {
             MonoType::Bool
@@ -712,9 +687,6 @@ impl Tvar {
 pub struct Array(pub MonoType);
 
 impl Substitutable for Array {
-    fn apply(self, sub: &Substitution) -> Self {
-        Array(self.0.apply(sub))
-    }
     fn apply_ref(&self, sub: &Substitution) -> Option<Self> {
         self.0.apply_ref(sub).map(Array)
     }
@@ -766,12 +738,6 @@ pub struct Dictionary {
 }
 
 impl Substitutable for Dictionary {
-    fn apply(self, sub: &Substitution) -> Self {
-        Dictionary {
-            key: self.key.apply(sub),
-            val: self.val.apply(sub),
-        }
-    }
     fn apply_ref(&self, sub: &Substitution) -> Option<Self> {
         apply2(&self.key, &self.val, sub).map(|(key, val)| Dictionary { key, val })
     }
@@ -895,15 +861,6 @@ impl cmp::PartialEq for Record {
 }
 
 impl Substitutable for Record {
-    fn apply(self, sub: &Substitution) -> Self {
-        match self {
-            Record::Empty => Record::Empty,
-            Record::Extension { head, tail } => Record::Extension {
-                head: head.apply(sub),
-                tail: tail.apply(sub),
-            },
-        }
-    }
     fn apply_ref(&self, sub: &Substitution) -> Option<Self> {
         match self {
             Record::Empty => None,
@@ -1121,12 +1078,6 @@ pub struct Property {
 }
 
 impl Substitutable for Property {
-    fn apply(self, sub: &Substitution) -> Self {
-        Property {
-            k: self.k,
-            v: self.v.apply(sub),
-        }
-    }
     fn apply_ref(&self, sub: &Substitution) -> Option<Self> {
         self.v.apply_ref(sub).map(|v| Property {
             k: self.k.clone(),
@@ -1216,9 +1167,6 @@ impl fmt::Display for Function {
 
 #[allow(clippy::implicit_hasher)]
 impl<T: Substitutable + Clone> Substitutable for SemanticMap<String, T> {
-    fn apply(self, sub: &Substitution) -> Self {
-        self.into_iter().map(|(k, v)| (k, v.apply(sub))).collect()
-    }
     fn apply_ref(&self, sub: &Substitution) -> Option<Self> {
         merge_collect(
             &mut (),
@@ -1234,9 +1182,6 @@ impl<T: Substitutable + Clone> Substitutable for SemanticMap<String, T> {
 }
 
 impl<T: Substitutable> Substitutable for Option<T> {
-    fn apply(self, sub: &Substitution) -> Self {
-        self.map(|t| t.apply(sub))
-    }
     fn apply_ref(&self, sub: &Substitution) -> Option<Self> {
         match self {
             None => None,
@@ -1252,14 +1197,6 @@ impl<T: Substitutable> Substitutable for Option<T> {
 }
 
 impl Substitutable for Function {
-    fn apply(self, sub: &Substitution) -> Self {
-        Function {
-            req: self.req.apply(sub),
-            opt: self.opt.apply(sub),
-            pipe: self.pipe.apply(sub),
-            retn: self.retn.apply(sub),
-        }
-    }
     fn apply_ref(&self, sub: &Substitution) -> Option<Self> {
         let Function {
             req,
