@@ -2,7 +2,7 @@ package runtime
 
 import (
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/libflux/go/libflux"
+	"github.com/influxdata/flux/libflux"
 	"github.com/influxdata/flux/semantic"
 )
 

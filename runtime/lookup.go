@@ -7,7 +7,7 @@ import (
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/internal/fbsemantic"
-	"github.com/influxdata/flux/libflux/go/libflux"
+	"github.com/influxdata/flux/libflux"
 	"github.com/influxdata/flux/semantic"
 )
 

@@ -9,7 +9,7 @@ import (
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
-	"github.com/influxdata/flux/libflux/go/libflux"
+	"github.com/influxdata/flux/libflux"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )

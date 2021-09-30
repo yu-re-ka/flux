@@ -6,7 +6,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux/interpreter"
-	"github.com/influxdata/flux/libflux/go/libflux"
+	"github.com/influxdata/flux/libflux"
 	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/semantic/semantictest"

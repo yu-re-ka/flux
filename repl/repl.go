@@ -19,7 +19,7 @@ import (
 	"github.com/influxdata/flux/internal/spec"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/lang"
-	"github.com/influxdata/flux/libflux/go/libflux"
+	"github.com/influxdata/flux/libflux"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
