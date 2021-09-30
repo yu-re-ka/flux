@@ -101,9 +101,9 @@ impl From<&str> for Error {
 
 fn stdlib_relative_path() -> &'static str {
     if consts::OS == "windows" {
-        "..\\..\\stdlib"
+        "..\\..\\..\\stdlib"
     } else {
-        "../../stdlib"
+        "../../../stdlib"
     }
 }
 
@@ -115,7 +115,12 @@ pub fn infer_stdlib() -> Result<StdlibReturnValues, Error> {
 
     let path = stdlib_relative_path();
     let files = file_map(parse_flux_files(path)?);
-    let rerun_if_changed = compute_file_dependencies(path);
+    let rerun_if_changed = compute_file_dependencies(path).map_err(|err| {
+        format!(
+            "`{:?}`: While computing file dependencies for `{}`",
+            err, path
+        )
+    })?;
 
     let (prelude, importer) = infer_pre(&mut f, &files)?;
     let (importer, importermap) = infer_std(&mut f, &files, prelude.clone(), importer)?;
@@ -143,21 +148,17 @@ pub fn stdlib_docs(
     Ok(docs)
 }
 
-fn compute_file_dependencies(root: &str) -> Vec<String> {
+fn compute_file_dependencies(root: &str) -> Result<Vec<String>, Error> {
     // Iterate through each ast file and canonicalize the
     // file path to an absolute path.
     // Canonicalize the root path to the absolute directory.
-    let rootpath = std::env::current_dir()
-        .unwrap()
-        .join(root)
-        .canonicalize()
-        .unwrap();
-    WalkDir::new(rootpath)
+    let rootpath = std::env::current_dir()?.join(root).canonicalize()?;
+    Ok(WalkDir::new(rootpath)
         .into_iter()
         .filter_map(|r| r.ok())
         .filter(|r| r.path().is_dir() || (r.path().is_file() && r.path().ends_with(".flux")))
         .map(|r| path_to_string(r.path()))
-        .collect()
+        .collect())
 }
 
 fn path_to_string(path: &Path) -> String {

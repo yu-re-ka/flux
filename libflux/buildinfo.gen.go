@@ -6,7 +6,7 @@ package libflux
 
 import "embed"
 
-//go:embed rust
+//go:embed rust/flux-core/src rust/flux/src rust/Cargo.lock rust/Cargo.toml include
 var f embed.FS
 
 // sourceHashes is the hash of the build sources for
