@@ -1,6 +1,7 @@
 package zoneinfo_test
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -208,4 +209,27 @@ func mustParseTimeInLocation(t *testing.T, s, loc string) int64 {
 		t.Fatalf("unexpected output from time parse -want/+got:\n\t- %s\n\t+ %s", want, got)
 	}
 	return ts.UnixNano()
+}
+
+func ExampleToLocalClock() {
+	//Using FromLocalClock and ToLocalClock allows for doing duration math in a specific location.
+	loc, _ := zoneinfo.LoadLocation("America/Denver")
+	// Create a date at midnight on the day daylight savings ends in the location.
+	tloc, _ := time.LoadLocation("America/Denver")
+	date := time.Date(2021, 11, 7, 0, 0, 0, 0, tloc)
+	fmt.Println("Date:", date.Format(time.RFC3339))
+
+	// If we want to find out what time the clock will be one day later we first
+	// from local clock add 24 hours and then convert back to local clock time.
+	utc := loc.FromLocalClock(date.UnixNano())
+
+	// Notice here we can add 24 hours since we are in this special UTC time
+	utc += int64(24 * time.Hour)
+
+	newDate := time.Unix(0, loc.ToLocalClock(utc))
+
+	fmt.Println("Next Day:", newDate.Format(time.RFC3339))
+	//Output:
+	// Date: 2021-11-07T00:00:00-06:00
+	// Next Day: 2021-11-08T00:00:00-07:00
 }
