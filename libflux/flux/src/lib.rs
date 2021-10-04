@@ -2,17 +2,31 @@
 
 extern crate fluxcore;
 extern crate serde_aux;
-
 extern crate serde_derive;
 
-use fluxcore::parser::Parser;
-use fluxcore::semantic::check;
-use fluxcore::semantic::env::Environment;
-use fluxcore::semantic::flatbuffers::semantic_generated::fbsemantic as fb;
-use fluxcore::semantic::flatbuffers::types::{build_env, build_type};
-use fluxcore::semantic::fresh::Fresher;
-use fluxcore::semantic::nodes::{infer_pkg_types, inject_pkg_types, Package};
-use fluxcore::semantic::sub::Substitution;
+use crate::{
+    parser::Parser,
+    semantic::check,
+    semantic::env::Environment,
+    semantic::fresh::Fresher,
+    semantic::nodes::Package,
+    semantic::nodes::{infer_pkg_types, inject_pkg_types},
+};
+
+#[cfg(feature = "stdlib")]
+use crate::{
+    semantic::flatbuffers::{
+        semantic_generated::fbsemantic as fb,
+        types::{build_env, build_type},
+    },
+    semantic::sub::Substitution,
+    semantic::types::{MonoType, PolyType, TvarKinds},
+};
+
+#[cfg(feature = "docs")]
+use crate::semantic::doc::{nest_docs, PackageDoc};
+#[cfg(feature = "docs")]
+use inflate::inflate_bytes;
 
 pub use fluxcore::ast;
 pub use fluxcore::formatter;
@@ -20,14 +34,11 @@ pub use fluxcore::scanner;
 pub use fluxcore::semantic;
 pub use fluxcore::*;
 
-use crate::semantic::doc::{nest_docs, PackageDoc};
-use crate::semantic::flatbuffers::semantic_generated::fbsemantic::MonoTypeHolderArgs;
-use fluxcore::semantic::types::{MonoType, PolyType, TvarKinds};
-use inflate::inflate_bytes;
 use std::error;
 use std::ffi::*;
 use std::os::raw::c_char;
 
+#[cfg(feature = "stdlib")]
 pub fn prelude() -> Option<Environment> {
     let buf = include_bytes!(concat!(env!("OUT_DIR"), "/prelude.data"));
     flatbuffers::root::<fb::TypeEnvironment>(buf)
@@ -35,6 +46,7 @@ pub fn prelude() -> Option<Environment> {
         .into()
 }
 
+#[cfg(feature = "stdlib")]
 pub fn imports() -> Option<Environment> {
     let buf = include_bytes!(concat!(env!("OUT_DIR"), "/stdlib.data"));
     flatbuffers::root::<fb::TypeEnvironment>(buf)
@@ -42,11 +54,13 @@ pub fn imports() -> Option<Environment> {
         .into()
 }
 
+#[cfg(feature = "docs")]
 pub fn docs() -> Vec<PackageDoc> {
     let buf = include_bytes!(concat!(env!("OUT_DIR"), "/docs.json"));
     serde_json::from_slice(&inflate_bytes(buf).unwrap()).unwrap()
 }
 
+#[cfg(feature = "docs")]
 pub fn docs_json() -> Result<Vec<u8>, String> {
     let buf = include_bytes!(concat!(env!("OUT_DIR"), "/docs.json"));
     inflate_bytes(buf)
@@ -54,6 +68,7 @@ pub fn docs_json() -> Result<Vec<u8>, String> {
 
 /// Restructures the Vector of PackageDocs into a hierarchical format where subpackages are in the member section
 /// of their parent packages. Ex: monitor.flux docs are in the members section of influxdb docs which are in the members of InfluxData docs.
+#[cfg(feature = "docs")]
 pub fn nested_json() -> Vec<u8> {
     let original_docs = docs();
     let nested_docs = nest_docs(original_docs);
@@ -357,6 +372,7 @@ pub fn merge_packages(out_pkg: &mut ast::Package, in_pkg: &mut ast::Package) -> 
 /// This function is unsafe because it dereferences a raw pointer.
 #[no_mangle]
 #[allow(clippy::boxed_local)]
+#[cfg(feature = "stdlib")]
 pub unsafe extern "C" fn flux_analyze(
     ast_pkg: Box<ast::Package>,
     out_sem_pkg: *mut Option<Box<semantic::nodes::Package>>,
@@ -379,6 +395,7 @@ pub unsafe extern "C" fn flux_analyze(
 /// This function is unsafe because it dereferences a raw pointer.
 #[no_mangle]
 #[allow(clippy::boxed_local)]
+#[cfg(feature = "stdlib")]
 pub unsafe extern "C" fn flux_find_var_type(
     ast_pkg: Box<ast::Package>,
     var_name: *const c_char,
@@ -393,7 +410,7 @@ pub unsafe extern "C" fn flux_find_var_type(
             let (fb_mono_type, typ_type) = build_type(&mut builder, t);
             let fb_mono_type_holder = fb::MonoTypeHolder::create(
                 &mut builder,
-                &MonoTypeHolderArgs {
+                &fb::MonoTypeHolderArgs {
                     typ_type,
                     typ: Some(fb_mono_type),
                 },
@@ -415,19 +432,29 @@ pub struct SemanticAnalyzer {
     imports: Environment,
 }
 
-fn new_semantic_analyzer() -> Result<SemanticAnalyzer, fluxcore::Error> {
-    let env = match prelude() {
-        Some(prelude) => Environment::new(prelude),
-        None => return Err(fluxcore::Error::from("missing prelude")),
-    };
-    let imports = match imports() {
-        Some(imports) => imports,
-        None => return Err(fluxcore::Error::from("missing stdlib imports")),
-    };
-    Ok(SemanticAnalyzer { env, imports })
+impl Default for SemanticAnalyzer {
+    fn default() -> Self {
+        SemanticAnalyzer {
+            env: Environment::empty(false),
+            ..Default::default()
+        }
+    }
 }
 
 impl SemanticAnalyzer {
+    // Creates a new SemanticAnalyzer that is aware of the stdlib
+    #[cfg(feature = "stdlib")]
+    fn with_stdlib() -> Result<SemanticAnalyzer, fluxcore::Error> {
+        let env = match prelude() {
+            Some(prelude) => Environment::new(prelude),
+            None => return Err(fluxcore::Error::from("missing prelude")),
+        };
+        let imports = match imports() {
+            Some(imports) => imports,
+            None => return Err(fluxcore::Error::from("missing stdlib imports")),
+        };
+        Ok(SemanticAnalyzer { env, imports })
+    }
     fn analyze(
         &mut self,
         ast_pkg: ast::Package,
@@ -472,13 +499,15 @@ impl SemanticAnalyzer {
 ///
 /// Ths function is unsafe because it dereferences a raw pointer.
 #[no_mangle]
+#[cfg(feature = "stdlib")]
 pub unsafe extern "C" fn flux_new_semantic_analyzer(
 ) -> Box<Result<SemanticAnalyzer, fluxcore::Error>> {
-    Box::new(new_semantic_analyzer())
+    Box::new(SemanticAnalyzer::with_stdlib())
 }
 
 /// Free a previously allocated semantic analyzer
 #[no_mangle]
+#[cfg(feature = "stdlib")]
 pub extern "C" fn flux_free_semantic_analyzer(
     _: Option<Box<Result<SemanticAnalyzer, fluxcore::Error>>>,
 ) {
@@ -489,6 +518,7 @@ pub extern "C" fn flux_free_semantic_analyzer(
 /// Ths function is unsafe because it dereferences a raw pointer.
 #[no_mangle]
 #[allow(clippy::boxed_local)]
+#[cfg(feature = "stdlib")]
 pub unsafe extern "C" fn flux_analyze_with(
     analyzer: *mut Result<SemanticAnalyzer, fluxcore::Error>,
     ast_pkg: Box<ast::Package>,
@@ -516,15 +546,25 @@ pub unsafe extern "C" fn flux_analyze_with(
 /// analyze consumes the given AST package and returns a semantic package
 /// that has been type-inferred.  This function is aware of the standard library
 /// and prelude.
+#[cfg(feature = "stdlib")]
 pub fn analyze(ast_pkg: ast::Package) -> Result<Package, Error> {
-    let (sem_pkg, _, sub) = infer_with_env(ast_pkg, fresher(), None)?;
-    Ok(inject_pkg_types(sem_pkg, &sub))
+    let mut analyzer = SemanticAnalyzer::with_stdlib()?;
+    analyzer.analyze(ast_pkg)
+}
+
+/// bare_analyze consumes the given AST package and returns a semantic package
+/// that has been type-inferred.  This function is NOT aware of the standard library
+/// and prelude.
+pub fn bare_analyze(ast_pkg: ast::Package) -> Result<Package, Error> {
+    let mut analyzer = SemanticAnalyzer::default();
+    analyzer.analyze(ast_pkg)
 }
 
 /// infer_with_env consumes the given AST package, inject the type bindings from the given
 /// type environment, and returns a semantic package that has not been type-injected and an
 /// inferred type environment and substitution.
 /// This function is aware of the standard library and prelude.
+#[cfg(feature = "stdlib")]
 pub fn infer_with_env(
     ast_pkg: ast::Package,
     mut f: Fresher,
@@ -561,6 +601,7 @@ pub fn infer_with_env(
 /// will be used in semantic analysis. The Flux source code itself should not contain any definition
 /// for that variable.
 /// This version of find_var_type is aware of the prelude and builtins.
+#[cfg(feature = "stdlib")]
 pub fn find_var_type(ast_pkg: ast::Package, var_name: String) -> Result<MonoType, Error> {
     let mut f = fresher();
     let tvar = f.fresh();
@@ -581,6 +622,7 @@ pub fn find_var_type(ast_pkg: ast::Package, var_name: String) -> Result<MonoType
 ///
 /// This function is unsafe because it dereferences a raw pointer.
 #[no_mangle]
+#[cfg(feature = "stdlib")]
 pub unsafe extern "C" fn flux_get_env_stdlib(buf: *mut flux_buffer_t) {
     let env = imports().unwrap();
     let mut builder = flatbuffers::FlatBufferBuilder::new();

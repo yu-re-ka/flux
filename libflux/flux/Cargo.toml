@@ -12,10 +12,13 @@ crate-type = ["rlib", "staticlib", "cdylib"]
 name = "flux-dump-docs"
 test = false
 bench = false
+required-features = ["docs"]
 
 [features]
 default = ["strict"]
 strict = []
+stdlib = []
+docs = ["stdlib"]
 
 [dependencies]
 comrak = "0.10.1"
