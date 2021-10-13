@@ -1,7 +1,6 @@
 package universe
 
 import (
-	"context"
 	"math"
 	"sort"
 
@@ -235,7 +234,7 @@ func createQuantileTransformation(id execute.DatasetID, mode execute.Accumulatio
 	// state information to keep track of.
 	//
 	// See https://github.com/influxdata/flux/issues/4042 for more details.
-	return execute.NewSimpleAggregateTransformation(context.Background(), id, agg, ps.SimpleAggregateConfig, a.Allocator())
+	return execute.NewSimpleAggregateTransformation(a.Context(), id, agg, ps.SimpleAggregateConfig, a.Allocator())
 }
 
 func (a *QuantileAgg) Recycle() *QuantileAgg {
