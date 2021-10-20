@@ -222,12 +222,14 @@ impl Expr {
 pub fn test() {
     let int_expr = Expr::op(Expr::int(1), Op::Add, Expr::identifier("x"));
     let float_expr = Expr::op(Expr::float(1.), Op::Subtract, Expr::identifier("x"));
+    macro_rules! collect {
+        ($($expr: expr),* $(,)?) => {
+            std::array::IntoIter::new([$($expr),*]).collect()
+        }
+    }
     assert_eq!(
         int_expr
-            .eval(
-                &mut vec![("x".into(), Value::Int(2))].into_iter().collect(),
-                &()
-            )
+            .eval(&mut collect![("x".into(), Value::Int(2))], &())
             .unwrap(),
         Value::Int(3)
     );
