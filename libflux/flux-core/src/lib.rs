@@ -82,12 +82,15 @@ use std::{
     ops::{Add, Sub},
 };
 
+#[derive(Clone, Debug)]
 enum Expr {
     Literal(Value),
     Identifier(String),
     Op(Box<Expr>, Op, Box<Expr>),
+    Record(HashMap<String, Expr>),
 }
 
+#[derive(Clone, Debug)]
 enum Op {
     Add,
     Subtract,
@@ -97,6 +100,7 @@ enum Op {
 enum Value {
     Int(i64),
     Float(f64),
+    Record(HashMap<String, Value>),
 }
 
 impl Add for Value {
@@ -122,7 +126,11 @@ impl Sub for Value {
 }
 
 trait VectorValue:
-    Add<Output = anyhow::Result<Self>> + Sub<Output = anyhow::Result<Self>> + Sized + Clone
+    Add<Output = anyhow::Result<Self>>
+    + Sub<Output = anyhow::Result<Self>>
+    + Sized
+    + Clone
+    + std::iter::FromIterator<(String, Self)>
 {
     type Context;
     fn from_value(v: Value, context: &Self::Context) -> Self;
@@ -135,10 +143,20 @@ impl VectorValue for Value {
     }
 }
 
+impl std::iter::FromIterator<(String, Self)> for Value {
+    fn from_iter<I>(iter: I) -> Self
+    where
+        I: IntoIterator<Item = (String, Self)>,
+    {
+        Value::Record(iter.into_iter().collect())
+    }
+}
+
 #[derive(Clone, Debug, PartialEq)]
 enum Vector {
     Int(Vec<i64>),
     Float(Vec<f64>),
+    Record(Vec<HashMap<String, Value>>),
 }
 
 impl VectorValue for Vector {
@@ -149,7 +167,40 @@ impl VectorValue for Vector {
         match v {
             Value::Int(i) => Self::Int(vec![i; *len]),
             Value::Float(i) => Self::Float(vec![i; *len]),
+            Value::Record(r) => Self::Record(vec![r; *len]),
         }
+    }
+}
+
+impl std::iter::FromIterator<(String, Self)> for Vector {
+    fn from_iter<I>(iter: I) -> Self
+    where
+        I: IntoIterator<Item = (String, Self)>,
+    {
+        let mut record_vector = Vec::new();
+        for (key, vector) in iter {
+            match vector {
+                Self::Int(is) => {
+                    record_vector.resize(is.len(), HashMap::new());
+                    for (record, i) in record_vector.iter_mut().zip(is) {
+                        record.insert(key.clone(), Value::Int(i));
+                    }
+                }
+                Self::Float(fs) => {
+                    record_vector.resize(fs.len(), HashMap::new());
+                    for (record, f) in record_vector.iter_mut().zip(fs) {
+                        record.insert(key.clone(), Value::Float(f));
+                    }
+                }
+                Self::Record(rs) => {
+                    record_vector.resize(rs.len(), HashMap::new());
+                    for (record, r) in record_vector.iter_mut().zip(rs) {
+                        record.insert(key.clone(), Value::Record(r));
+                    }
+                }
+            }
+        }
+        Vector::Record(record_vector)
     }
 }
 
@@ -214,19 +265,29 @@ impl Expr {
                 Op::Add => (l.eval(env, context)? + r.eval(env, context)?)?,
                 Op::Subtract => (l.eval(env, context)? - r.eval(env, context)?)?,
             },
+            Expr::Record(ctor) => ctor
+                .iter()
+                .map(|(key, expr)| Ok((key.clone(), expr.eval(env, context)?)))
+                .collect::<anyhow::Result<V>>()?,
         })
     }
 }
 
 /// Test
 pub fn test() {
-    let int_expr = Expr::op(Expr::int(1), Op::Add, Expr::identifier("x"));
-    let float_expr = Expr::op(Expr::float(1.), Op::Subtract, Expr::identifier("x"));
     macro_rules! collect {
         ($($expr: expr),* $(,)?) => {
             std::array::IntoIter::new([$($expr),*]).collect()
         }
     }
+
+    let int_expr = Expr::op(Expr::int(1), Op::Add, Expr::identifier("x"));
+    let float_expr = Expr::op(Expr::float(1.), Op::Subtract, Expr::identifier("x"));
+    let record_expr = Expr::Record(collect![
+        ("a".into(), Expr::float(1.)),
+        ("b".into(), int_expr.clone())
+    ]);
+
     assert_eq!(
         int_expr
             .eval(&mut collect![("x".into(), Value::Int(2))], &())
@@ -266,6 +327,21 @@ pub fn test() {
             )
             .unwrap(),
         Vector::Float(vec![1. - 3., 1. - 4., 1. - 5.])
+    );
+
+    assert_eq!(
+        record_expr
+            .eval(
+                &mut vec![("x".into(), Vector::Int(vec![2, 3]))]
+                    .into_iter()
+                    .collect(),
+                &2
+            )
+            .unwrap(),
+        Vector::Record(collect![
+            collect![("a".into(), Value::Float(1.)), ("b".into(), Value::Int(3))],
+            collect![("a".into(), Value::Float(1.)), ("b".into(), Value::Int(4))]
+        ])
     );
 }
 
