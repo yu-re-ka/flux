@@ -454,6 +454,7 @@ dependencies = [
  "flatbuffers",
  "fnv",
  "libflate",
+ "log",
  "lsp-types",
  "maplit",
  "pretty_assertions 0.7.2",
