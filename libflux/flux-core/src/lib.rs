@@ -77,6 +77,63 @@ pub fn merge_packages(out_pkg: &mut ast::Package, in_pkg: &mut ast::Package) -> 
     Ok(())
 }
 
+use std::collections::HashMap;
+
+enum Expr {
+    Literal(Value),
+    Identifier(String),
+    Op(Box<Expr>, Op, Box<Expr>),
+}
+
+enum Op {
+    Add,
+    Subtract,
+}
+
+#[derive(Clone)]
+enum Value {
+    Int(i64),
+    Float(f64),
+}
+
+impl std::ops::Add for Value {
+    type Output = Result<Self, anyhow::Error>;
+    fn add(self, other: Self) -> Self::Output {
+        Ok(match (self, other) {
+            (Value::Int(l), Value::Int(r)) => Value::Int(l + r),
+            (Value::Float(l), Value::Float(r)) => Value::Float(l + r),
+            _ => return Err(anyhow::anyhow!("Typemismatch")),
+        })
+    }
+}
+
+impl std::ops::Sub for Value {
+    type Output = anyhow::Result<Self>;
+    fn sub(self, other: Self) -> Self::Output {
+        Ok(match (self, other) {
+            (Value::Int(l), Value::Int(r)) => Value::Int(l - r),
+            (Value::Float(l), Value::Float(r)) => Value::Float(l - r),
+            _ => return Err(anyhow::anyhow!("Typemismatch")),
+        })
+    }
+}
+
+impl Expr {
+    fn eval(&self, env: &mut HashMap<String, Value>) -> Result<Value, anyhow::Error> {
+        Ok(match self {
+            Expr::Literal(v) => v.clone(),
+            Expr::Identifier(i) => env
+                .get(i)
+                .ok_or_else(|| anyhow::anyhow!("Missing `{}`", i))?
+                .clone(),
+            Expr::Op(l, op, r) => match op {
+                Op::Add => (l.eval(env)? + r.eval(env)?)?,
+                Op::Subtract => (l.eval(env)? - r.eval(env)?)?,
+            },
+        })
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::merge_packages;
