@@ -77,7 +77,10 @@ pub fn merge_packages(out_pkg: &mut ast::Package, in_pkg: &mut ast::Package) -> 
     Ok(())
 }
 
-use std::collections::HashMap;
+use std::{
+    collections::HashMap,
+    ops::{Add, Sub},
+};
 
 enum Expr {
     Literal(Value),
@@ -90,14 +93,14 @@ enum Op {
     Subtract,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug, PartialEq)]
 enum Value {
     Int(i64),
     Float(f64),
 }
 
-impl std::ops::Add for Value {
-    type Output = Result<Self, anyhow::Error>;
+impl Add for Value {
+    type Output = anyhow::Result<Self>;
     fn add(self, other: Self) -> Self::Output {
         Ok(match (self, other) {
             (Value::Int(l), Value::Int(r)) => Value::Int(l + r),
@@ -107,7 +110,7 @@ impl std::ops::Add for Value {
     }
 }
 
-impl std::ops::Sub for Value {
+impl Sub for Value {
     type Output = anyhow::Result<Self>;
     fn sub(self, other: Self) -> Self::Output {
         Ok(match (self, other) {
@@ -118,26 +121,161 @@ impl std::ops::Sub for Value {
     }
 }
 
+trait VectorValue:
+    Add<Output = anyhow::Result<Self>> + Sub<Output = anyhow::Result<Self>> + Sized + Clone
+{
+    type Context;
+    fn from_value(v: Value, context: &Self::Context) -> Self;
+}
+
+impl VectorValue for Value {
+    type Context = ();
+    fn from_value(v: Value, _: &Self::Context) -> Self {
+        v
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+enum Vector {
+    Int(Vec<i64>),
+    Float(Vec<f64>),
+}
+
+impl VectorValue for Vector {
+    // Need to know the length to construct a vector (alternative we could have singleton variants
+    // in `Vector` which act as a vector of whatever the input length is)
+    type Context = usize;
+    fn from_value(v: Value, len: &Self::Context) -> Self {
+        match v {
+            Value::Int(i) => Self::Int(vec![i; *len]),
+            Value::Float(i) => Self::Float(vec![i; *len]),
+        }
+    }
+}
+
+impl Add for Vector {
+    type Output = anyhow::Result<Self>;
+    fn add(self, other: Self) -> Self::Output {
+        Ok(match (self, other) {
+            (Self::Int(l), Self::Int(r)) => {
+                Self::Int(l.into_iter().zip(r).map(|(l, r)| l + r).collect())
+            }
+            (Self::Float(l), Self::Float(r)) => {
+                Self::Float(l.into_iter().zip(r).map(|(l, r)| l + r).collect())
+            }
+            _ => return Err(anyhow::anyhow!("Typemismatch")),
+        })
+    }
+}
+
+impl Sub for Vector {
+    type Output = anyhow::Result<Self>;
+    fn sub(self, other: Self) -> Self::Output {
+        Ok(match (self, other) {
+            (Self::Int(l), Self::Int(r)) => {
+                Self::Int(l.into_iter().zip(r).map(|(l, r)| l - r).collect())
+            }
+            (Self::Float(l), Self::Float(r)) => {
+                Self::Float(l.into_iter().zip(r).map(|(l, r)| l - r).collect())
+            }
+            _ => return Err(anyhow::anyhow!("Typemismatch")),
+        })
+    }
+}
+
 impl Expr {
-    fn eval(&self, env: &mut HashMap<String, Value>) -> Result<Value, anyhow::Error> {
+    fn int(i: i64) -> Expr {
+        Expr::Literal(Value::Int(i))
+    }
+
+    fn float(f: f64) -> Expr {
+        Expr::Literal(Value::Float(f))
+    }
+
+    fn identifier(i: &str) -> Expr {
+        Expr::Identifier(i.to_owned())
+    }
+
+    fn op(l: impl Into<Box<Expr>>, op: Op, r: impl Into<Box<Expr>>) -> Expr {
+        Expr::Op(l.into(), op, r.into())
+    }
+
+    fn eval<V>(&self, env: &mut HashMap<String, V>, context: &V::Context) -> anyhow::Result<V>
+    where
+        V: VectorValue,
+    {
         Ok(match self {
-            Expr::Literal(v) => v.clone(),
+            Expr::Literal(v) => V::from_value(v.clone(), context),
             Expr::Identifier(i) => env
                 .get(i)
                 .ok_or_else(|| anyhow::anyhow!("Missing `{}`", i))?
                 .clone(),
             Expr::Op(l, op, r) => match op {
-                Op::Add => (l.eval(env)? + r.eval(env)?)?,
-                Op::Subtract => (l.eval(env)? - r.eval(env)?)?,
+                Op::Add => (l.eval(env, context)? + r.eval(env, context)?)?,
+                Op::Subtract => (l.eval(env, context)? - r.eval(env, context)?)?,
             },
         })
     }
+}
+
+/// Test
+pub fn test() {
+    let int_expr = Expr::op(Expr::int(1), Op::Add, Expr::identifier("x"));
+    let float_expr = Expr::op(Expr::float(1.), Op::Subtract, Expr::identifier("x"));
+    assert_eq!(
+        int_expr
+            .eval(
+                &mut vec![("x".into(), Value::Int(2))].into_iter().collect(),
+                &()
+            )
+            .unwrap(),
+        Value::Int(3)
+    );
+
+    assert_eq!(
+        float_expr
+            .eval(
+                &mut vec![("x".into(), Value::Float(3.))].into_iter().collect(),
+                &()
+            )
+            .unwrap(),
+        Value::Float(1. - 3.)
+    );
+
+    assert_eq!(
+        int_expr
+            .eval(
+                &mut vec![("x".into(), Vector::Int(vec![2, 3]))]
+                    .into_iter()
+                    .collect(),
+                &2
+            )
+            .unwrap(),
+        Vector::Int(vec![3, 4])
+    );
+
+    assert_eq!(
+        float_expr
+            .eval(
+                &mut vec![("x".into(), Vector::Float(vec![3., 4., 5.]))]
+                    .into_iter()
+                    .collect(),
+                &3
+            )
+            .unwrap(),
+        Vector::Float(vec![1. - 3., 1. - 4., 1. - 5.])
+    );
 }
 
 #[cfg(test)]
 mod tests {
     use super::merge_packages;
     use crate::ast;
+
+    #[test]
+    fn vectorize() {
+        super::test();
+    }
 
     #[test]
     fn ok_merge_multi_file() {
