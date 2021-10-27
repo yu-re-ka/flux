@@ -3670,6 +3670,7 @@ error @3:13-3:41: [A] is not Basic (argument v)",
     }
 }
 
+#[test]
 fn exists_operator() {
     // Usage of `r.a` inside the exists operator or the true branch should not bleed into the
     // surrounding code
@@ -3697,5 +3698,15 @@ fn exists_operator() {
             x = if exists r.a then r.a else r.a
         "#,
         err: "error @3:45-3:46: record is missing label a",
+    }
+
+    // Should be an error as `a` exists, but has the wrong type (or it should fail the exists check
+    // at runtime at least)
+    test_error_msg! {
+        src: r#"
+            f = (r) => if exists r.a then r.a else 0
+            x = f(r: { a: "" })
+        "#,
+        err: "error @3:45-3:46: TODO",
     }
 }
