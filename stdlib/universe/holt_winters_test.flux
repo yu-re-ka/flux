@@ -2,9 +2,11 @@ package universe_test
 
 
 import "testing"
+import "csv"
+import "array"
 
-inData =
-    "
+testcase holtWinters {
+    inData = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,dateTime:RFC3339,double
 #group,false,false,true,true,true,true,false,false
 #default,_result,,,,,,,
@@ -1259,8 +1261,7 @@ inData =
 ,,0,2015-08-22T22:12:00.000000000Z,2015-08-28T03:01:00.000000000Z,water_level,water,2015-08-28T02:54:00.000000000Z,6.89
 ,,0,2015-08-22T22:12:00.000000000Z,2015-08-28T03:01:00.000000000Z,water_level,water,2015-08-28T03:00:00.000000000Z,6.9
 "
-outData =
-    "
+    outData = "
 #datatype,string,long,dateTime:RFC3339,double
 #group,false,false,false,false
 #default,_result,,,
@@ -1276,8 +1277,10 @@ outData =
 ,,0,2015-08-30T07:04:00Z,2.7815982631565688
 ,,0,2015-08-30T13:23:00Z,0.5664788122687602
 "
-t_hw = (table=<-) =>
-    table
+
+    want = csv.from(csv: outData)
+    got = csv.from(csv: inData)
+        |> testing.load()
         |> range(start: 2015-08-22T22:12:00Z, stop: 2015-08-28T03:00:00Z)
         |> window(every: 379m, offset: 348m)
         |> first()
@@ -1290,4 +1293,64 @@ t_hw = (table=<-) =>
         |> holtWinters(n: 10, seasonality: 4, interval: 379m)
         |> keep(columns: ["_time", "_value"])
 
-test _holt_winters = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_hw})
+    testing.diff(want: want, got: got)
+}
+
+testcase holtWinters_slope {
+    data = array.from(
+        rows: [
+            {_time: 2021-11-17T21:07:40Z, _value: 2.4750000000057724},
+            {_time: 2021-11-17T21:08:00Z, _value: 3.5041666666582914},
+            {_time: 2021-11-17T21:08:20Z, _value: 2.2541666666724955},
+            {_time: 2021-11-17T21:08:40Z, _value: 1.9586597766247285},
+            {_time: 2021-11-17T21:09:00Z, _value: 2.1250000000035167},
+            {_time: 2021-11-17T21:09:20Z, _value: 1.5291029540443428},
+            {_time: 2021-11-17T21:09:40Z, _value: 3.204300179169086},
+            {_time: 2021-11-17T21:10:00Z, _value: 3.88317153452289},
+            {_time: 2021-11-17T21:10:20Z, _value: 2.1294328457749447},
+            {_time: 2021-11-17T21:10:40Z, _value: 2.212131311446779},
+            {_time: 2021-11-17T21:11:00Z, _value: 2.6789434213814647},
+            {_time: 2021-11-17T21:11:20Z, _value: 1.9212335903300701},
+            {_time: 2021-11-17T21:11:40Z, _value: 2.1872265966730393},
+            {_time: 2021-11-17T21:12:00Z, _value: 1.7298874531100965},
+            {_time: 2021-11-17T21:12:20Z, _value: 2.5666666666631417},
+            {_time: 2021-11-17T21:12:40Z, _value: 2.9506147113993393},
+            {_time: 2021-11-17T21:13:00Z, _value: 1.8538576903864667},
+            {_time: 2021-11-17T21:13:20Z, _value: 1.1666666666648478},
+            {_time: 2021-11-17T21:13:40Z, _value: 1.3835062716186677},
+            {_time: 2021-11-17T21:14:00Z, _value: 0.8625000000012369},
+        ],
+    )
+    got = data
+        |> holtWinters(n: 10, interval: 20s, seasonality: 0)
+    want = array.from(
+        rows: [
+            {_time: 2021-11-17T21:14:20Z, _value: 0.15788753424689228},
+            {_time: 2021-11-17T21:14:40Z, _value: -0.7799915747417391},
+            {_time: 2021-11-17T21:15:00Z, _value: -2.0884170385340113},
+            {_time: 2021-11-17T21:15:20Z, _value: -3.9138518779427898},
+            {_time: 2021-11-17T21:15:40Z, _value: -6.460646815371196},
+            {_time: 2021-11-17T21:16:00Z, _value: -10.013919881448576},
+            {_time: 2021-11-17T21:16:20Z, _value: -14.971478972807773},
+            {_time: 2021-11-17T21:16:40Z, _value: -21.888361504251364},
+            {_time: 2021-11-17T21:17:00Z, _value: -31.53897794557487},
+            {_time: 2021-11-17T21:17:20Z, _value: -45.0038170160562},
+        ],
+    )
+
+    // want = array.from(
+    //     rows: [
+    //         {_time: 2021-11-17T21:14:20Z, _value: 1.615233},
+    //         {_time: 2021-11-17T21:14:40Z, _value: 1.564648},
+    //         {_time: 2021-11-17T21:15:00Z, _value: 1.515647},
+    //         {_time: 2021-11-17T21:15:20Z, _value: 1.468181},
+    //         {_time: 2021-11-17T21:15:40Z, _value: 1.422201},
+    //         {_time: 2021-11-17T21:16:00Z, _value: 1.377662},
+    //         {_time: 2021-11-17T21:16:20Z, _value: 1.334517},
+    //         {_time: 2021-11-17T21:16:40Z, _value: 1.292723},
+    //         {_time: 2021-11-17T21:17:00Z, _value: 1.252238},
+    //         {_time: 2021-11-17T21:17:20Z, _value: 1.213021},
+    //     ],
+    // )
+    testing.diff(want: want, got: got)
+}
