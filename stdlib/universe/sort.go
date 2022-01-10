@@ -3,7 +3,6 @@ package universe
 import (
 	"container/heap"
 	"context"
-	"sort"
 
 	"github.com/apache/arrow/go/arrow/memory"
 	"github.com/influxdata/flux"
@@ -14,7 +13,6 @@ import (
 	"github.com/influxdata/flux/execute/table"
 	"github.com/influxdata/flux/internal/arrowutil"
 	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/internal/mutable"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
@@ -176,7 +174,7 @@ func (s *sortTransformation) processView(mh *sortTableMergeHeap, cr flux.ColRead
 	cr.Retain()
 	item := &sortTableMergeHeapItem{cr: cr}
 	if !s.isSorted(cr, mh.sortCols) {
-		item.indices = s.sort(cr, mh.sortCols)
+		item.indices = arrowutil.Sort(cr, mh.sortCols, s.compare, s.mem)
 		item.offset = int(item.indices.Value(0))
 	}
 	mh.items = append(mh.items, item)
@@ -210,33 +208,6 @@ func (s *sortTransformation) isSorted(cr flux.ColReader, cols []int) bool {
 
 	// If we get here, then the buffer is sorted.
 	return true
-}
-
-func (s *sortTransformation) sort(cr flux.ColReader, cols []int) *array.Int {
-	// Construct the indices.
-	indices := mutable.NewInt64Array(s.mem)
-	indices.Resize(cr.Len())
-
-	// Retrieve the raw slice and initialize the offsets.
-	offsets := indices.Int64Values()
-	for i := range offsets {
-		offsets[i] = int64(i)
-	}
-
-	// Sort the offsets by using the comparison method.
-	sort.SliceStable(offsets, func(i, j int) bool {
-		i, j = int(offsets[i]), int(offsets[j])
-		for _, col := range cols {
-			arr := table.Values(cr, col)
-			if cmp := s.compare(arr, arr, i, j); cmp != 0 {
-				return cmp < 0
-			}
-		}
-		return false
-	})
-
-	// Return the now sorted indices.
-	return indices.NewInt64Array()
 }
 
 func (s *sortTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey) error {

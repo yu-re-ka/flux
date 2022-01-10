@@ -6,6 +6,7 @@ import (
 	"github.com/apache/arrow/go/arrow"
 	"github.com/apache/arrow/go/arrow/array"
 	"github.com/apache/arrow/go/arrow/memory"
+	farray "github.com/influxdata/flux/array"
 )
 
 // Int64Array is an array of int64 values.
@@ -23,6 +24,9 @@ func NewInt64Array(mem memory.Allocator) *Int64Array {
 		refCount: 1,
 		mem:      mem,
 	}
+}
+func (b *Int64Array) DataType() farray.DataType {
+	return farray.IntType
 }
 
 // Append will append a value to the array. This will increase
@@ -51,7 +55,7 @@ func (b *Int64Array) Cap() int { return cap(b.rawData) }
 func (b *Int64Array) Len() int { return len(b.rawData) }
 
 // NewArray returns a new array from the data using NewInt64Array.
-func (b *Int64Array) NewArray() array.Interface {
+func (b *Int64Array) NewArray() farray.Interface {
 	return b.NewInt64Array()
 }
 

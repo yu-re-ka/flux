@@ -15,6 +15,8 @@ type Chunk struct {
 	buf arrow.TableBuffer
 }
 
+var _ flux.ColReader = (*Chunk)(nil)
+
 // ChunkFromBuffer will create a Chunk from the TableBuffer.
 //
 // This function takes ownership of the arrow.TableBuffer
@@ -110,7 +112,7 @@ func (v Chunk) Ints(j int) *array.Int {
 
 // Uints is a convenience function for retrieving an array
 // as a uint array.
-func (v Chunk) Uints(j int) *array.Uint {
+func (v Chunk) UInts(j int) *array.Uint {
 	return v.Values(j).(*array.Uint)
 }
 
@@ -124,6 +126,12 @@ func (v Chunk) Floats(j int) *array.Float {
 // as a string array.
 func (v Chunk) Strings(j int) *array.String {
 	return v.Values(j).(*array.String)
+}
+
+// Times is a convenience function for retrieving an array
+// as a int64 array.
+func (v Chunk) Times(j int) *array.Int {
+	return v.Values(j).(*array.Int)
 }
 
 // Retain will retain a reference to this Chunk.
