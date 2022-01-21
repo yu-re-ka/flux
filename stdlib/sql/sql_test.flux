@@ -2,6 +2,7 @@ package sql_test
 
 
 import "array"
+import "experimental"
 import "internal/debug"
 import "sql"
 import "testing"
@@ -124,15 +125,22 @@ testcase integration_pg_injection {
 }
 
 testcase integration_pg_write_to {
-    nonseed_want
-        |> sql.to(driverName: "postgres", dataSourceName: pgDsn, table: "pet info", batchSize: 1)
-        // The array.from() will be returned and will cause the test to fail.
-        // Filtering will mean the test can pass. Hopefully `sql.to()` will
-        // error if there's a problem.
-        |> filter(fn: (r) => false)
-        // Without the yield, the flux script can "finish", closing the db
-        // connection before the insert commits!
-        |> yield()
+    got = experimental.chain(
+        first: array.from(rows: [sophie])
+                    |> sql.to(
+                       driverName: "postgres",
+                       dataSourceName: pgDsn,
+                       table: "pet info",
+                       batchSize: 1
+                    ),
+        second: sql.from(
+            driverName: "postgres",
+            dataSourceName: pgDsn,
+            query: "SELECT name, age, \"fav food\" FROM \"pet info\" WHERE seeded = false",
+        )
+    )
+    want = array.from(rows: [sophie])
+    testing.diff(want: want, got: got) |> yield()
 }
 
 testcase integration_mysql_read_from_seed {

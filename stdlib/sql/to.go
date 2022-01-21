@@ -184,6 +184,7 @@ type idxType struct {
 }
 
 func (t *ToSQLTransformation) Process(id execute.DatasetID, tbl flux.Table) (err error) {
+	fmt.Println("sql.to")
 	colNames, valStrings, valArgs, err := CreateInsertComponents(t, tbl)
 	if err != nil {
 		return err
