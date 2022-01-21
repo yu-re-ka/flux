@@ -3,6 +3,7 @@ package sql
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
@@ -191,6 +192,7 @@ func (c *sqlIterator) Do(ctx context.Context, f func(flux.Table) error) error {
 
 // read will use the RowReader to construct a flux.Table.
 func read(ctx context.Context, reader execute.RowReader, alloc *memory.Allocator) (flux.Table, error) {
+	fmt.Println("SQLFROM")
 	// Ensure that the reader is always freed so the underlying
 	// cursor can be returned.
 	defer func() { _ = reader.Close() }()

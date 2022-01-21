@@ -111,13 +111,12 @@ func createChainTransformation(id execute.DatasetID, mode execute.AccumulationMo
 	}
 
 	cache := execute.NewTableBuilderCache(a.Allocator())
-	d := execute.NewDataset(id, mode, cache)
-	t, err := NewChainTransformation(a.Context(), id, s, d, cache, parents)
+	t, err := NewChainTransformation(a.Context(), id, s, cache, parents)
 
 	if err != nil {
 		return nil, nil, err
 	}
-	return t, d, nil
+	return t, t.d, nil
 }
 
 type mergeChainParentState struct {
@@ -133,9 +132,10 @@ type chainTable struct {
 
 type chainTransformation struct {
 	mu sync.Mutex
+	err         error
 
 	execute.ExecutionNode
-	d     execute.Dataset
+	d     * execute.PassthroughDataset
 	cache execute.TableBuilderCache
 	ctx   context.Context
 
@@ -144,14 +144,17 @@ type chainTransformation struct {
 	first  chainTable
 	second chainTable
 
-	passthrough *execute.PassthroughDataset
 }
 
-func NewChainTransformation(ctx context.Context, id execute.DatasetID, spec *ChainProcedureSpec, d execute.Dataset, cache execute.TableBuilderCache, parents []execute.DatasetID) (*chainTransformation, error) {
+func NewChainTransformation(ctx context.Context, id execute.DatasetID, spec *ChainProcedureSpec, cache execute.TableBuilderCache, parents []execute.DatasetID) (*chainTransformation, error) {
 	return &chainTransformation{
-		d:     d,
+		d: execute.NewPassthroughDataset(id),
 		cache: cache,
 		ctx:   ctx,
+		parentState: map[execute.DatasetID]*mergeChainParentState {
+			parents[0]: new(mergeChainParentState),
+			parents[1]: new(mergeChainParentState),
+		},
 
 		first: chainTable{
 			id: parents[0],
@@ -160,7 +163,6 @@ func NewChainTransformation(ctx context.Context, id execute.DatasetID, spec *Cha
 			id: parents[1],
 		},
 
-		passthrough: execute.NewPassthroughDataset(id),
 	}, nil
 }
 
@@ -169,13 +171,15 @@ func (t *chainTransformation) RetractTable(id execute.DatasetID, key flux.GroupK
 }
 
 func (t *chainTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
-	fmt.Printf("%v\n", id)
+	fmt.Println("chain")
+	// Don't evaluate the second table argument until we are done with the first
 	if t.first.table == nil && id == t.second.id {
 		t.second.table = tbl
 		return nil
 	}
 
 	if id == t.first.id {
+		fmt.Println("first")
 		err := tbl.Do(func(cr flux.ColReader) error {
 			return nil
 		})
@@ -186,11 +190,13 @@ func (t *chainTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 	}
 
 	if t.second.table != nil {
-		return t.passthrough.Process(t.second.table)
+		fmt.Println("second")
+		return t.d.Process(t.second.table)
 	}
 
 	if id == t.second.id {
-		return t.passthrough.Process(tbl)
+		fmt.Println("second")
+		return t.d.Process(tbl)
 	}
 
 	return nil
@@ -227,5 +233,21 @@ func (t *chainTransformation) UpdateProcessingTime(id execute.DatasetID, pt exec
 }
 
 func (t *chainTransformation) Finish(id execute.DatasetID, err error) {
-	t.d.Finish(err)
+	t.mu.Lock()
+	defer t.mu.Unlock()
+
+	// Only report the first error that occurs.
+	if t.err == nil && err != nil {
+		t.err = err
+	}
+
+	t.parentState[id].finished = true
+	finished := true
+	for _, state := range t.parentState {
+		finished = finished && state.finished
+	}
+
+	if finished {
+		t.d.Finish(t.err)
+	}
 }
