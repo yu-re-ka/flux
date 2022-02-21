@@ -17,6 +17,11 @@
 
 #[macro_use]
 extern crate serde_derive;
+#[macro_use]
+extern crate lalrpop_util;
+#[macro_use]
+#[cfg(test)]
+extern crate pretty_assertions;
 
 #[macro_use]
 #[cfg(test)]
@@ -35,6 +40,12 @@ pub mod semantic;
 
 mod errors;
 mod map;
+
+lalrpop_mod!(
+    #[cfg_attr(rustfmt, rustfmt_skip)]
+    #[allow(unused_parens)]
+    grammar
+);
 
 use std::hash::BuildHasherDefault;
 

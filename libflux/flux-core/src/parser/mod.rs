@@ -5,15 +5,51 @@ use std::{collections::HashMap, mem, str};
 use super::DefaultHasher;
 use crate::{ast, ast::*, scanner, scanner::*};
 
-mod strconv;
+pub(crate) mod strconv;
 
 /// Parses a string of Flux source code.
 ///
 /// Returns a [`File`] with the value of the `name` parameter
 /// as the file name.
 pub fn parse_string(name: String, s: &str) -> File {
-    let mut p = Parser::new(s);
-    p.parse_file(name)
+    if true {
+        parse_string_lalrpop(name, s)
+    } else {
+        let mut p = Parser::new(s);
+        p.parse_file(name)
+    }
+}
+
+pub(crate) fn parse_string_lalrpop(name: String, s: &str) -> File {
+    let mut scanner = crate::scanner::Scanner::new(s);
+    let mut eof = false;
+    let mut file = crate::grammar::FileParser::new()
+        .parse(std::iter::from_fn(|| {
+            if eof {
+                return None;
+            }
+            let token = scanner.scan();
+            let end_offset = token.end_offset;
+            eof |= token.tok == TokenType::Eof;
+            Some((token.start_offset, token, end_offset))
+        }))
+        .unwrap_or_else(|err| File {
+            base: BaseNode {
+                location: Default::default(),
+                comments: Default::default(),
+                errors: vec![err.to_string()],
+            },
+            name: Default::default(),
+            metadata: Default::default(),
+            package: Default::default(),
+            imports: Default::default(),
+            body: Default::default(),
+            eof: Default::default(),
+        });
+
+    file.name = name;
+
+    file
 }
 
 struct TokenError {
