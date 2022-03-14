@@ -1509,6 +1509,16 @@ impl<'input> Parser<'input> {
     }
     fn parse_float_literal(&mut self) -> Result<FloatLit, TokenError> {
         let t = self.expect(TokenType::Float);
+        let mut chars = t.lit.chars().peekable();
+        if let Some('0') = chars.peek() {
+            chars.next();
+            match chars.peek() {
+                Some('.') => (),
+                _ => {
+                    return  Err(TokenError { token: t })
+                }
+            }
+        }
 
         let value = (&t.lit).parse::<f64>();
 
