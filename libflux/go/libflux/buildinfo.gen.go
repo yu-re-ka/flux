@@ -182,7 +182,7 @@ var sourceHashes = map[string]string{
 	"stdlib/experimental/histogram_test.flux":                                                     "20d406b3a55cd011e2a467c50644f2fd0ea3a8b1bf4647a67b4df8a4408395b2",
 	"stdlib/experimental/http/http.flux":                                                          "23d7dfa82c31aff82b7c8ebd4b61d2f83881aa25df7d55079f9fe952f0589d92",
 	"stdlib/experimental/http/requests/requests.flux":                                             "f179972e824b6c9d951775f9e4c7a8174fdada992cd8e288f6196f742e990e32",
-	"stdlib/experimental/influxdb/influxdb.flux":                                                  "2d37fe7bca8a7404f6e9589462fb4e8ac851052a8efa90cbac29f9adc890f9c9",
+	"stdlib/experimental/influxdb/influxdb.flux":                                                  "f6319fb30e1487c4866a687a7e0451151f7387e4902e835aeb6d7ef4dff4de0f",
 	"stdlib/experimental/integral_test.flux":                                                      "7414a80441f483e702707feb608d3c43ce1b6998d0e49715b3e4dbbd10029c2b",
 	"stdlib/experimental/iox/iox.flux":                                                            "df0955aea72565da93814141bb172d90c7e0f37a74d27b745b407e905461a9d8",
 	"stdlib/experimental/join_right_side_more_cols_test.flux":                                     "5335d49b402bc1d45158924c62fdb8fc8ae00f6353cdce42f05d980f68780152",

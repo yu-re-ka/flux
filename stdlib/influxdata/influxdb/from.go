@@ -36,10 +36,11 @@ type (
 )
 
 type FromOpSpec struct {
-	Org    *NameOrID
-	Bucket NameOrID
-	Host   *string
-	Token  *string
+	Org     *NameOrID
+	Bucket  NameOrID
+	Host    *string
+	Token   *string
+	Preview bool
 }
 
 func init() {
@@ -117,10 +118,11 @@ var _ ProcedureSpec = (*FromProcedureSpec)(nil)
 type FromProcedureSpec struct {
 	plan.DefaultCost
 
-	Org    *NameOrID
-	Bucket NameOrID
-	Host   *string
-	Token  *string
+	Org     *NameOrID
+	Bucket  NameOrID
+	Host    *string
+	Token   *string
+	Preview bool
 }
 
 func newFromProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
@@ -130,10 +132,11 @@ func newFromProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.Proce
 	}
 
 	return &FromProcedureSpec{
-		Org:    spec.Org,
-		Bucket: spec.Bucket,
-		Host:   spec.Host,
-		Token:  spec.Token,
+		Org:     spec.Org,
+		Bucket:  spec.Bucket,
+		Host:    spec.Host,
+		Token:   spec.Token,
+		Preview: spec.Preview,
 	}, nil
 }
 
@@ -153,6 +156,7 @@ func (s *FromProcedureSpec) SetToken(token *string) { s.Token = token }
 func (s *FromProcedureSpec) GetOrg() *NameOrID      { return s.Org }
 func (s *FromProcedureSpec) GetHost() *string       { return s.Host }
 func (s *FromProcedureSpec) GetToken() *string      { return s.Token }
+func (s *FromProcedureSpec) IsPreview() bool        { return s.Preview }
 
 func (s *FromProcedureSpec) PostPhysicalValidate(id plan.NodeID) error {
 	// This condition should never be met.

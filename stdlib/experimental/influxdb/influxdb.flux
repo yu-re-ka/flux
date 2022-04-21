@@ -73,3 +73,12 @@ builtin api : (
         ?query: [string:string],
         ?timeout: duration,
     ) => {statusCode: int, body: bytes, headers: [string:string]}
+
+builtin preview : (
+        ?bucket: string,
+        ?bucketID: string,
+        ?org: string,
+        ?orgID: string,
+        ?host: string,
+        ?token: string,
+    ) => stream[{B with _measurement: string, _field: string, _time: time, _value: A}]
