@@ -26,6 +26,7 @@ pub struct SharedTokenizer<'a>(Rc<RefCell<Tokenizer<'a>>>);
 
 impl SharedTokenizer<'_> {
     pub(crate) fn set_mode(&self, mode: TokenizerMode) {
+        dbg!(&mode);
         self.0.borrow_mut().mode = mode;
     }
 }
@@ -37,6 +38,7 @@ struct Tokenizer<'a> {
 }
 
 #[allow(warnings)]
+#[derive(Debug)]
 pub(crate) enum TokenizerMode {
     Default,
     Regex,
@@ -61,6 +63,13 @@ impl Iterator for Tokenizer<'_> {
             TokenizerMode::Regex => self.scanner.scan_with_regex(),
             TokenizerMode::StringExpr => self.scanner.scan_string_expr(),
         };
+        if token.tok == TokenType::Quote {
+            match self.mode {
+                TokenizerMode::Default => self.mode = TokenizerMode::StringExpr,
+                TokenizerMode::Regex => (),
+                TokenizerMode::StringExpr => self.mode = TokenizerMode::Regex,
+            }
+        }
         let end_pos = token.end_pos;
         self.eof |= token.tok == TokenType::Eof;
         dbg!(&token.tok);

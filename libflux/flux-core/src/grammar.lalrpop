@@ -122,11 +122,11 @@ Body_<EXPR>: Vec<Statement> = {
 }
 
 Statement<EXPR>: Statement = {
-    <id: Identifier> "=" <init: Expression> => dbg!(Statement::Variable(Box::new(VariableAssgn {
+    <id: Identifier> "=" <init: Expression> => Statement::Variable(Box::new(VariableAssgn {
         base: Default::default(),
         id,
         init,
-    }))),
+    })),
 
     <ExprStatement> if EXPR == "expr" => <>
 }
@@ -203,10 +203,8 @@ AtomOpt<ID, PAREN>: Expression = {
 
     <StringLit> => Expression::StringLit(<>),
 
-    "\"" StringExprMode <parts: StringExprPart*> "\"" RegexMode => Expression::StringExpr(Box::new(StringExpr {
-        base: Default::default(),
-        parts,
-    })),
+
+    StringExpr,
 
     <t: "time literal"> =>? {
         let value = strconv::parse_time(t.lit.as_str())
@@ -255,6 +253,21 @@ AtomOpt<ID, PAREN>: Expression = {
         with: None,
         properties,
         rbrace,
+    })),
+}
+
+StringExpr: Expression = {
+    StringExprStart <StringExprTail>
+}
+
+StringExprStart: () = {
+    "\"" StringExprMode,
+}
+
+StringExprTail: Expression = {
+    StringExprMode <parts: StringExprPart*> "\"" RegexMode => Expression::StringExpr(Box::new(StringExpr {
+        base: Default::default(),
+        parts,
     })),
 }
 
