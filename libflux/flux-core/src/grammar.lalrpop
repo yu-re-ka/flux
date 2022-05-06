@@ -104,7 +104,11 @@ Import: ast::ImportDeclaration = {
 }
 
 Body: Vec<Statement> = {
-    <mut body: Body_<"expr">> => { body.reverse(); body }
+     <first: ExprStatement<"identifier", "paren">?> <mut body: Body_<"">> => {
+         body.extend(first);
+         body.reverse();
+         body
+    }
 }
 
 Body_<EXPR>: Vec<Statement> = {
@@ -116,7 +120,7 @@ Body_<EXPR>: Vec<Statement> = {
         b
     },
 
-    <s: ExprStatement> <mut b: Body_<"expr">> if EXPR == "expr" => {
+    <s: ExprStatement<"identifier", "">> <mut b: Body_<"expr">> if EXPR == "expr" => {
         dbg!("2");
         b.push(s);
         b
@@ -130,11 +134,11 @@ Statement<EXPR>: Statement = {
         init,
     })),
 
-    <ExprStatement> if EXPR == "expr" => <>
+    <ExprStatement<"identifier", "">> if EXPR == "expr" => <>
 }
 
-ExprStatement: Statement = {
-    <expression: ExpressionNoParen> => Statement::Expr(Box::new(ExprStmt {
+ExprStatement<ID, PAREN>: Statement = {
+    <expression: ExpressionOpt<ID, PAREN>> => Statement::Expr(Box::new(ExprStmt {
         base: Default::default(),
         expression,
     })),
@@ -341,7 +345,7 @@ StringExprPart: StringExprPart = {
 
 FunctionBody: FunctionBody = {
    // Block => FunctionBody::Block(<>),
-   ExpressionNoParen => FunctionBody::Expr(<>),
+   Expression => FunctionBody::Expr(<>),
 }
 
 FunctionParam: Property = {
