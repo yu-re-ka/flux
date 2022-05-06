@@ -363,6 +363,18 @@ FunctionParam: Property = {
 CallExpr<ID, PAREN>: Expression = {
     AtomOpt<ID, PAREN>,
 
+    "+" <argument: AtomOpt<ID, PAREN>> if PAREN == "paren" => Expression::Unary(Box::new(UnaryExpr {
+        base: Default::default(),
+        operator: Operator::AdditionOperator,
+        argument,
+    })),
+
+    "-" <argument: AtomOpt<ID, PAREN>> if PAREN == "paren" => Expression::Unary(Box::new(UnaryExpr {
+        base: Default::default(),
+        operator: Operator::SubtractionOperator,
+        argument,
+    })),
+
     CallExpr_<ID, PAREN> => Expression::Call(Box::new(<>)),
 }
 
