@@ -94,6 +94,8 @@ Body: Vec<Statement> = {
 }
 
 Body_<EXPR>: Vec<Statement> = {
+    => Vec::new(),
+
     <s: Statement<"">> <mut b: Body_<"expr">> => {
         b.push(s);
         b
@@ -194,12 +196,12 @@ AtomOpt<ID, PAREN>: Expression = {
         rparen,
     })),
 
-    <lbrack: "["> <elements: ArrayItems> <rbrack: "]"> => Expression::Array(Box::new(ArrayExpr {
+    <lbrack: "["> <elements: ArrayItems> <rbrack: "]"> => dbg!(Expression::Array(Box::new(ArrayExpr {
         lbrack: lbrack.comments,
         base: Default::default(),
         elements,
         rbrack: rbrack.comments,
-    })),
+    }))),
 
     <lbrace: Comments<"{">> <properties: CommaSep<Property>> <rbrace: Comments<"}">> => Expression::Object(Box::new(ObjectExpr {
         lbrace,
@@ -299,7 +301,7 @@ Property: Property = {
 }
 
 ArrayItems: Vec<ArrayItem> = {
-    => Vec::new(),
+    => dbg!(Vec::new()),
 
     <expression: Expression> => {
         vec![ArrayItem {

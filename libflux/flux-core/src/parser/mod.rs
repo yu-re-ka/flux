@@ -28,9 +28,10 @@ pub(crate) fn parse_string_lalrpop(name: String, s: &str) -> File {
             if eof {
                 return None;
             }
-            let token = scanner.scan();
+            let token = scanner.scan_with_regex();
             let end_offset = token.end_offset;
             eof |= token.tok == TokenType::Eof;
+            dbg!(&token.tok);
             Some((token.start_offset, token, end_offset))
         }))
         .unwrap_or_else(|err| File {
