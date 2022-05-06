@@ -361,6 +361,20 @@ ExpressionOpt<ID, PAREN>: Expression = {
         }))
     },
 
+    <tk_if: Comments<"if">> <test: Expression>
+        <tk_then: Comments<"then">> <consequent: Expression>
+        <tk_else: Comments<"else">> <alternate: Expression> =>
+    {
+        Expression::Conditional(Box::new(ConditionalExpr {
+            base: Default::default(),
+            tk_if,
+            test,
+            tk_then,
+            consequent,
+            tk_else,
+            alternate,
+        }))
+    }
 }
 
 PropertyItems: Vec<Property> = {
