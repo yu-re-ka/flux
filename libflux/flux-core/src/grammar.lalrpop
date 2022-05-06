@@ -272,7 +272,7 @@ StringExprTail: Expression = {
 }
 
 StringExprPart: StringExprPart = {
-    "string expr" <expression: Expression> =>  StringExprPart::Interpolated(InterpolatedPart {
+    "string expr" <expression: Expression> "}" =>  StringExprPart::Interpolated(InterpolatedPart {
         base: Default::default(),
         expression,
     }),
