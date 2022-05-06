@@ -34,6 +34,7 @@ impl SharedTokenizer<'_> {
 struct Tokenizer<'a> {
     scanner: crate::scanner::Scanner<'a>,
     mode: TokenizerMode,
+    inside_string_expr: bool,
     eof: bool,
 }
 
@@ -63,13 +64,24 @@ impl Iterator for Tokenizer<'_> {
             TokenizerMode::Regex => self.scanner.scan_with_regex(),
             TokenizerMode::StringExpr => self.scanner.scan_string_expr(),
         };
-        dbg!((&token.tok, &self.mode));
-        if token.tok == TokenType::Quote {
-            match self.mode {
-                TokenizerMode::Default => self.mode = TokenizerMode::StringExpr,
-                TokenizerMode::Regex => self.mode = TokenizerMode::StringExpr,
-                TokenizerMode::StringExpr => self.mode = TokenizerMode::Regex,
+        dbg!((&token.tok, &token.lit, &self.mode));
+        match token.tok {
+            TokenType::Quote => {
+                self.inside_string_expr = true;
+                match self.mode {
+                    TokenizerMode::Default => self.mode = TokenizerMode::StringExpr,
+                    TokenizerMode::Regex => self.mode = TokenizerMode::StringExpr,
+                    TokenizerMode::StringExpr => {
+                        self.inside_string_expr = false;
+                        self.mode = TokenizerMode::Regex
+                    }
+                }
             }
+            TokenType::StringExpr => self.mode = TokenizerMode::Regex,
+            TokenType::RBrace if self.inside_string_expr => {
+                self.mode = TokenizerMode::StringExpr;
+            }
+            _ => (),
         }
         let end_pos = token.end_pos;
         self.eof |= token.tok == TokenType::Eof;
@@ -82,6 +94,7 @@ pub(crate) fn parse_string_lalrpop(name: String, s: &str) -> File {
     let tokenizer = SharedTokenizer(Rc::new(RefCell::new(Tokenizer {
         scanner,
         mode: TokenizerMode::Regex,
+        inside_string_expr: false,
         eof: false,
     })));
     let mut file = crate::grammar::FileParser::new()
