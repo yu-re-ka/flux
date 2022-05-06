@@ -242,7 +242,7 @@ AtomOpt<ID, PAREN>: Expression = {
         rparen,
     })),
 
-    ArrayOrDict,
+    ArrayOrDict if PAREN == "paren",
 
     <lbrace: Comments<"{">> <properties: CommaSep<Property>> <rbrace: Comments<"}">> => Expression::Object(Box::new(ObjectExpr {
         lbrace,
@@ -382,6 +382,16 @@ CallExpr<ID, PAREN>: Expression = {
         operator: Operator::SubtractionOperator,
         argument,
     })),
+
+    <array: AtomOpt<ID, PAREN>> <lbrack: Comments<"[">> <index: Expression> <rbrack: Comments<"]">> => {
+        Expression::Index(Box::new(IndexExpr {
+            base: Default::default(),
+            array,
+            lbrack,
+            index,
+            rbrack,
+        }))
+    },
 
     CallExpr_<ID, PAREN> => Expression::Call(Box::new(<>)),
 }
