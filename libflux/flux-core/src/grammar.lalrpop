@@ -240,12 +240,7 @@ AtomOpt<ID, PAREN>: Expression = {
         rparen,
     })),
 
-    <lbrack: "["> <elements: ArrayItems> <rbrack: "]"> => Expression::Array(Box::new(ArrayExpr {
-        lbrack: lbrack.comments,
-        base: Default::default(),
-        elements,
-        rbrack: rbrack.comments,
-    })),
+    ArrayOrDict,
 
     <lbrace: Comments<"{">> <properties: CommaSep<Property>> <rbrace: Comments<"}">> => Expression::Object(Box::new(ObjectExpr {
         lbrace,
@@ -254,6 +249,63 @@ AtomOpt<ID, PAREN>: Expression = {
         properties,
         rbrace,
     })),
+}
+
+ArrayOrDict: Expression = {
+    <lbrack: "["> <elements: ArrayItems> <rbrack: "]"> => Expression::Array(Box::new(ArrayExpr {
+        lbrack: lbrack.comments,
+        base: Default::default(),
+        elements,
+        rbrack: rbrack.comments,
+    })),
+
+    <lbrack: "["> ":" <rbrack: "]"> => {
+        Expression::Dict(Box::new(DictExpr {
+            lbrack: lbrack.comments,
+            base: Default::default(),
+            elements: Vec::new(),
+            rbrack: rbrack.comments,
+        }))
+    },
+    <lbrack: "["> <key: Expression> <elements: ":"> <val: Expression> <rest: ("," <DictItems>)?> <rbrack: "]"> => {
+        let mut elements = vec![DictItem { key, val, comma: Default::default() }];
+        elements.extend(rest.into_iter().flatten());
+        Expression::Dict(Box::new(DictExpr {
+            lbrack: lbrack.comments,
+            base: Default::default(),
+            elements,
+            rbrack: rbrack.comments,
+        }))
+    }
+}
+
+DictItems: Vec<DictItem> = {
+
+    <prop: DictItem_> => {
+        vec![prop]
+    },
+
+    <mut vec: DictItem+> <last: DictItem_?> => {
+        vec.extend(last);
+        vec
+    },
+}
+
+DictItem: DictItem = {
+    <mut dict: DictItem_> <comma: Comments<",">> => {
+        dict.comma = comma;
+        dict
+    },
+}
+
+DictItem_: DictItem = {
+    <key: Expression> ":" <val: Expression> => {
+        DictItem {
+            key,
+            val,
+            comma: Default::default(),
+        }
+    },
 }
 
 StringExpr: Expression = {
