@@ -1,6 +1,6 @@
-use crate::{ast, ast::*, scanner::*, parser::{strconv, binary_expr}};
+use crate::{ast, ast::*, scanner::*, parser::{strconv, binary_expr, SharedTokenizer, TokenizerMode}};
 
-grammar;
+grammar(tokenizer: &SharedTokenizer<'_>);
 
 extern {
     type Location = crate::scanner::Position;
@@ -160,6 +160,18 @@ StringLit: StringLit = {
     }
 }
 
+DefaultMode: () = {
+    => tokenizer.set_mode(TokenizerMode::Default),
+}
+
+RegexMode: () = {
+    => tokenizer.set_mode(TokenizerMode::Regex),
+}
+
+StringExprMode: () = {
+    => tokenizer.set_mode(TokenizerMode::StringExpr),
+}
+
 Atom: Expression = {
     AtomOpt<"identifier", "paren">
 }
@@ -191,7 +203,7 @@ AtomOpt<ID, PAREN>: Expression = {
 
     <StringLit> => Expression::StringLit(<>),
 
-    "\"" <parts: StringExprPart*> "\"" => Expression::StringExpr(Box::new(StringExpr {
+    "\"" StringExprMode <parts: StringExprPart*> "\"" RegexMode => Expression::StringExpr(Box::new(StringExpr {
         base: Default::default(),
         parts,
     })),

@@ -1,6 +1,6 @@
 //! The Flux parser.
 
-use std::{collections::HashMap, mem, str};
+use std::{cell::RefCell, collections::HashMap, mem, rc::Rc, str};
 
 use super::DefaultHasher;
 use crate::{ast, ast::*, scanner, scanner::*};
@@ -20,20 +20,63 @@ pub fn parse_string(name: String, s: &str) -> File {
     }
 }
 
+#[derive(Clone)]
+#[allow(missing_docs)]
+pub struct SharedTokenizer<'a>(Rc<RefCell<Tokenizer<'a>>>);
+
+impl SharedTokenizer<'_> {
+    pub(crate) fn set_mode(&self, mode: TokenizerMode) {
+        self.0.borrow_mut().mode = mode;
+    }
+}
+
+struct Tokenizer<'a> {
+    scanner: crate::scanner::Scanner<'a>,
+    mode: TokenizerMode,
+    eof: bool,
+}
+
+#[allow(warnings)]
+pub(crate) enum TokenizerMode {
+    Default,
+    Regex,
+    StringExpr,
+}
+
+impl Iterator for SharedTokenizer<'_> {
+    type Item = (scanner::Position, Token, scanner::Position);
+    fn next(&mut self) -> Option<Self::Item> {
+        self.0.borrow_mut().next()
+    }
+}
+
+impl Iterator for Tokenizer<'_> {
+    type Item = (scanner::Position, Token, scanner::Position);
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.eof {
+            return None;
+        }
+        let token = match self.mode {
+            TokenizerMode::Default => self.scanner.scan(),
+            TokenizerMode::Regex => self.scanner.scan_with_regex(),
+            TokenizerMode::StringExpr => self.scanner.scan_string_expr(),
+        };
+        let end_pos = token.end_pos;
+        self.eof |= token.tok == TokenType::Eof;
+        dbg!(&token.tok);
+        Some((token.start_pos, token, end_pos))
+    }
+}
+
 pub(crate) fn parse_string_lalrpop(name: String, s: &str) -> File {
-    let mut scanner = crate::scanner::Scanner::new(s);
-    let mut eof = false;
+    let scanner = crate::scanner::Scanner::new(s);
+    let tokenizer = SharedTokenizer(Rc::new(RefCell::new(Tokenizer {
+        scanner,
+        mode: TokenizerMode::Regex,
+        eof: false,
+    })));
     let mut file = crate::grammar::FileParser::new()
-        .parse(std::iter::from_fn(|| {
-            if eof {
-                return None;
-            }
-            let token = scanner.scan_with_regex();
-            let end_pos = token.end_pos;
-            eof |= token.tok == TokenType::Eof;
-            dbg!(&token.tok);
-            Some((token.start_pos, token, end_pos))
-        }))
+        .parse(&tokenizer, tokenizer.clone())
         .unwrap_or_else(|err| {
             let loc = match &err {
                 lalrpop_util::ParseError::InvalidToken { location } => *location,
