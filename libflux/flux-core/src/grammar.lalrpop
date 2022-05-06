@@ -36,6 +36,8 @@ extern {
 
         "=" => Token { tok: TokenType::Assign, .. },
 
+        "exists" => Token { tok: TokenType::Exists, .. },
+
         "+" => Token { tok: TokenType::Add, .. },
         "-" => Token { tok: TokenType::Sub, .. },
         "*" => Token { tok: TokenType::Mul, .. },
@@ -362,6 +364,12 @@ FunctionParam: Property = {
 
 CallExpr<ID, PAREN>: Expression = {
     AtomOpt<ID, PAREN>,
+
+    "exists" <argument: AtomOpt<ID, PAREN>> if PAREN == "paren" => Expression::Unary(Box::new(UnaryExpr {
+        base: Default::default(),
+        operator: Operator::ExistsOperator,
+        argument,
+    })),
 
     "+" <argument: AtomOpt<ID, PAREN>> if PAREN == "paren" => Expression::Unary(Box::new(UnaryExpr {
         base: Default::default(),
