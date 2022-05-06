@@ -53,6 +53,41 @@ pub(crate) fn parse_string_lalrpop(name: String, s: &str) -> File {
     file
 }
 
+pub(crate) fn binary_expr(left: Expression, op: Token, right: Expression) -> Expression {
+    Expression::Binary(Box::new(BinaryExpr {
+        base: Default::default(),
+        operator: token_to_operator(op.tok),
+        left,
+        right,
+    }))
+}
+
+pub(crate) fn token_to_operator(t: TokenType) -> Operator {
+    match t {
+        TokenType::Add => Operator::AdditionOperator,
+        TokenType::Sub => Operator::SubtractionOperator,
+
+        TokenType::Mul => Operator::MultiplicationOperator,
+        TokenType::Div => Operator::DivisionOperator,
+        TokenType::Mod => Operator::ModuloOperator,
+
+        TokenType::Not => Operator::NotOperator,
+        TokenType::Exists => Operator::ExistsOperator,
+
+        TokenType::Pow => Operator::PowerOperator,
+
+        TokenType::Eq => Operator::EqualOperator,
+        TokenType::Neq => Operator::NotEqualOperator,
+        TokenType::Lte => Operator::LessThanEqualOperator,
+        TokenType::Lt => Operator::LessThanOperator,
+        TokenType::Gte => Operator::GreaterThanEqualOperator,
+        TokenType::Gt => Operator::GreaterThanOperator,
+        TokenType::RegexEq => Operator::RegexpMatchOperator,
+        TokenType::RegexNeq => Operator::NotRegexpMatchOperator,
+        _ => Operator::InvalidOperator,
+    }
+}
+
 struct TokenError {
     pub token: Token,
 }

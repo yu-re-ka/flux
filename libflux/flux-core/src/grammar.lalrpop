@@ -1,4 +1,4 @@
-use crate::{ast, ast::*, scanner::*, parser::strconv};
+use crate::{ast, ast::*, scanner::*, parser::{strconv, binary_expr}};
 
 grammar;
 
@@ -33,6 +33,8 @@ extern {
         "-" => Token { tok: TokenType::Sub, .. },
         "*" => Token { tok: TokenType::Mul, .. },
         "/" => Token { tok: TokenType::Div, .. },
+        "%" => Token { tok: TokenType::Mod, .. },
+        "^" => Token { tok: TokenType::Pow, .. },
 
         "==" => Token { tok: TokenType::Eq, .. },
         "!=" => Token { tok: TokenType::Neq, .. },
@@ -42,6 +44,9 @@ extern {
         ">" => Token { tok: TokenType::Gt, .. },
         "=~" => Token { tok: TokenType::RegexEq, .. },
         "!~" => Token { tok: TokenType::RegexNeq, .. },
+
+        "and" => Token { tok: TokenType::And, .. },
+        "or" => Token { tok: TokenType::Or, .. },
 
         "{" => Token { tok: TokenType::LBrace, .. },
         "[" => Token { tok: TokenType::LBrack, .. },
@@ -229,7 +234,7 @@ ExpressionNoParen: Expression = {
 ExpressionOpt<ID, PAREN>: Expression = {
     AtomOpt<ID, PAREN>,
 
-    <callee: AtomOpt<ID, PAREN>> <lparen: Comments<"(">>  <rparen: Comments<")">> if PAREN == "paren" => {
+    <callee: AtomOpt<ID, PAREN>> <lparen: Comments<"(">> <rparen: Comments<")">> if PAREN == "paren" => {
         Expression::Call(Box::new(CallExpr {
             base: Default::default(),
             callee,
@@ -239,23 +244,48 @@ ExpressionOpt<ID, PAREN>: Expression = {
         }))
     },
 
-    <left: AtomOpt<ID, PAREN>> "+" <right: Expression> => {
+    BinaryExpressions<ID, PAREN>,
+}
+
+BinaryExpressions<ID, PAREN>: Expression = {
+    #[precedence(level="4")]
+    <AtomOpt<ID, PAREN>> <"^"> <Expression> => binary_expr(<>),
+
+    #[precedence(level="5")]
+    <AtomOpt<ID, PAREN>> <"*"> <Expression> => binary_expr(<>),
+    <AtomOpt<ID, PAREN>> <"/"> <Expression> => binary_expr(<>),
+    <AtomOpt<ID, PAREN>> <"%"> <Expression> => binary_expr(<>),
+
+    #[precedence(level="6")]
+    <AtomOpt<ID, PAREN>> <"+"> <Expression> => binary_expr(<>),
+    <AtomOpt<ID, PAREN>> <"-"> <Expression> => binary_expr(<>),
+
+    #[precedence(level="7")]
+    <AtomOpt<ID, PAREN>> <"=="> <Expression> => binary_expr(<>),
+    <AtomOpt<ID, PAREN>> <"!="> <Expression> => binary_expr(<>),
+    <AtomOpt<ID, PAREN>> <"<"> <Expression> => binary_expr(<>),
+    <AtomOpt<ID, PAREN>> <"<="> <Expression> => binary_expr(<>),
+    <AtomOpt<ID, PAREN>> <">"> <Expression> => binary_expr(<>),
+    <AtomOpt<ID, PAREN>> <">="> <Expression> => binary_expr(<>),
+    <AtomOpt<ID, PAREN>> <"=~"> <Expression> => binary_expr(<>),
+    <AtomOpt<ID, PAREN>> <"!~"> <Expression> => binary_expr(<>),
+
+    #[precedence(level="9")]
+    <AtomOpt<ID, PAREN>> <"and"> <Expression> => binary_expr(<>),
+
+    #[precedence(level="10")]
+    <AtomOpt<ID, PAREN>> <"or"> <Expression> => binary_expr(<>),
+}
+
+BinaryExpr<ID, PAREN, OP>: Expression = {
+    <left: AtomOpt<ID, PAREN>> <op: OP> <right: Expression> => {
         Expression::Binary(Box::new(BinaryExpr {
             base: Default::default(),
-            operator: Operator::AdditionOperator,
+            operator: token_to_operator(op.tok),
             left,
             right,
         }))
     },
-
-    <left: AtomOpt<ID, PAREN>> "/" <right: Expression> => {
-        Expression::Binary(Box::new(BinaryExpr {
-            base: Default::default(),
-            operator: Operator::DivisionOperator,
-            left,
-            right,
-        }))
-    }
 }
 
 PropertyItems: Vec<Property> = {
