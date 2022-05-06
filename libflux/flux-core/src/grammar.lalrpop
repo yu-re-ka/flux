@@ -102,22 +102,24 @@ Body_<EXPR>: Vec<Statement> = {
     => Vec::new(),
 
     <s: Statement<"">> <mut b: Body_<"expr">> => {
+        dbg!("asd");
         b.push(s);
         b
     },
 
     <s: ExprStatement> <mut b: Body_<"">> if EXPR == "expr" => {
+        dbg!("2");
         b.push(s);
         b
     }
 }
 
 Statement<EXPR>: Statement = {
-    <id: Identifier> "=" <init: Expression> => Statement::Variable(Box::new(VariableAssgn {
+    <id: Identifier> "=" <init: Expression> => dbg!(Statement::Variable(Box::new(VariableAssgn {
         base: Default::default(),
         id,
         init,
-    })),
+    }))),
 
     <ExprStatement> if EXPR == "expr" => <>
 }
@@ -127,6 +129,17 @@ ExprStatement: Statement = {
         base: Default::default(),
         expression,
     })),
+}
+
+Block: Block = {
+    <lbrace: Comments<"{">> <body: Body_<"">> <rbrace: Comments<"}">> => {
+        Block {
+            base: Default::default(),
+            lbrace,
+            body,
+            rbrace,
+        }
+    }
 }
 
 StringLit: StringLit = {
@@ -165,7 +178,7 @@ AtomOpt<ID, PAREN>: Expression = {
         value: t.lit.parse::<f64>().map_err(|err| err.to_string())?,
     })),
 
-    <StringLit> => Expression::StringLit(<>),
+    <StringLit> if ID == "identifier" => Expression::StringLit(<>),
 
     <t: "time literal"> =>? {
         let value = strconv::parse_time(t.lit.as_str())
@@ -194,7 +207,7 @@ AtomOpt<ID, PAREN>: Expression = {
         }))
     },
 
-    <lparen: Comments<"(">> <expression: Expression> <rparen: Comments<")">> if PAREN == "paren" => Expression::Paren(Box::new(ParenExpr {
+    <lparen: Comments<"(">> <expression: ExpressionOpt<"", "paren">> <rparen: Comments<")">> if PAREN == "paren" => Expression::Paren(Box::new(ParenExpr {
         base: Default::default(),
         lparen,
         expression,
@@ -217,6 +230,23 @@ AtomOpt<ID, PAREN>: Expression = {
     })),
 }
 
+FunctionBody: FunctionBody = {
+   // Block => FunctionBody::Block(<>),
+   ExpressionNoParen => FunctionBody::Expr(<>),
+}
+
+FunctionParam: Property = {
+    Identifier => {
+        Property {
+            base: Default::default(),
+            key: <>.into(),
+            separator: Vec::new(),
+            value: None,
+            comma: Vec::new(),
+        }
+    }
+}
+
 // ParenTail: () = {
 //     <rparen: Comments<")">> => (),
 //
@@ -226,7 +256,7 @@ AtomOpt<ID, PAREN>: Expression = {
 CallExpr<ID, PAREN>: Expression = {
     AtomOpt<ID, PAREN>,
 
-    <callee: AtomOpt<ID, PAREN>> <lparen: Comments<"(">> <rparen: Comments<")">> if PAREN == "paren" => {
+    <callee: AtomOpt<ID, PAREN>> <lparen: Comments<"(">> <rparen: Comments<")">> => {
         Expression::Call(Box::new(CallExpr {
             base: Default::default(),
             callee,
@@ -288,6 +318,20 @@ ExpressionNoParen: Expression = {
 ExpressionOpt<ID, PAREN>: Expression = {
     <AndExpr<ID, PAREN>>,
     <AndExpr<ID, PAREN>> <"or"> <Expression> => binary_expr(<>),
+
+    <lparen: Comments<"(">> <params: CommaSep<FunctionParam>> <rparen: Comments<")">>
+        <arrow: Comments<"=>">> <body: FunctionBody> if PAREN == "paren" =>
+    {
+        Expression::Function(Box::new(FunctionExpr {
+            base: Default::default(),
+            lparen,
+            params,
+            rparen,
+            arrow,
+            body,
+        }))
+    },
+
 }
 
 PropertyItems: Vec<Property> = {
