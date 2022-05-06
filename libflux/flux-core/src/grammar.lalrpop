@@ -22,6 +22,9 @@ extern {
         "package" => Token { tok: TokenType::Package, .. },
         "import" => Token { tok: TokenType::Import, .. },
 
+        "<-" => Token { tok: TokenType::PipeReceive, .. },
+        "|>" => Token { tok: TokenType::PipeForward, .. },
+
         ":" => Token { tok: TokenType::Colon, .. },
         "," => Token { tok: TokenType::Comma, .. },
         "." => Token { tok: TokenType::Dot, .. },
@@ -107,7 +110,7 @@ Body_<EXPR>: Vec<Statement> = {
         b
     },
 
-    <s: ExprStatement> <mut b: Body_<"">> if EXPR == "expr" => {
+    <s: ExprStatement> <mut b: Body_<"expr">> if EXPR == "expr" => {
         dbg!("2");
         b.push(s);
         b
@@ -159,6 +162,10 @@ Atom: Expression = {
 
 AtomOpt<ID, PAREN>: Expression = {
     <Identifier> if ID == "identifier" => Expression::Identifier(<>),
+
+    "<-" => Expression::PipeLit(PipeLit {
+        base: Default::default(),
+    }),
 
     <object: AtomOpt<ID, PAREN>> "." <property: Identifier> => Expression::Member(Box::new(MemberExpr {
         base: Default::default(),
@@ -236,12 +243,12 @@ FunctionBody: FunctionBody = {
 }
 
 FunctionParam: Property = {
-    Identifier => {
+    <key: Identifier> <value: ("=" <Expression>)?> => {
         Property {
             base: Default::default(),
-            key: <>.into(),
+            key: key.into(),
             separator: Vec::new(),
-            value: None,
+            value,
             comma: Vec::new(),
         }
     }
@@ -256,21 +263,43 @@ FunctionParam: Property = {
 CallExpr<ID, PAREN>: Expression = {
     AtomOpt<ID, PAREN>,
 
-    <callee: AtomOpt<ID, PAREN>> <lparen: Comments<"(">> <rparen: Comments<")">> => {
-        Expression::Call(Box::new(CallExpr {
+    CallExpr_<ID, PAREN> => Expression::Call(Box::new(<>)),
+}
+
+
+CallExpr_<ID, PAREN>: CallExpr = {
+    <callee: AtomOpt<ID, PAREN>> <lparen: Comments<"(">> <arguments: CommaSep<Property>> <rparen: Comments<")">> => {
+        CallExpr {
             base: Default::default(),
             callee,
             lparen,
-            arguments: Vec::new(),
+            arguments: vec![Expression::Object(Box::new(ObjectExpr {
+                base: Default::default(),
+                lbrace: vec![],
+                with: None,
+                properties: arguments,
+                rbrace: vec![],
+            }))],
             rparen,
-        }))
+        }
     },
 }
 
-PowExpr<ID, PAREN>: Expression = {
+PipeExpr<ID, PAREN>: Expression = {
     CallExpr<ID, PAREN>,
 
-    <PowExpr<ID, PAREN>> <"^"> <CallExpr<"identifier", "paren">> => binary_expr(<>),
+    <argument: PipeExpr<ID, PAREN>> "|>" <call: CallExpr_<"identifier", "paren">> =>
+        Expression::PipeExpr(Box::new(PipeExpr {
+            base: Default::default(),
+            argument,
+            call,
+        })),
+}
+
+PowExpr<ID, PAREN>: Expression = {
+    PipeExpr<ID, PAREN>,
+
+    <PowExpr<ID, PAREN>> <"^"> <PipeExpr<"identifier", "paren">> => binary_expr(<>),
 }
 
 MulExpr<ID, PAREN>: Expression = {
