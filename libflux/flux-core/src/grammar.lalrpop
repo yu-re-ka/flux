@@ -3,7 +3,7 @@ use crate::{ast, ast::*, scanner::*, parser::{strconv, binary_expr}};
 grammar;
 
 extern {
-    type Location = u32;
+    type Location = crate::scanner::Position;
     type Error = String;
 
     enum Token {
@@ -201,12 +201,12 @@ AtomOpt<ID, PAREN>: Expression = {
         rparen,
     })),
 
-    <lbrack: "["> <elements: ArrayItems> <rbrack: "]"> => dbg!(Expression::Array(Box::new(ArrayExpr {
+    <lbrack: "["> <elements: ArrayItems> <rbrack: "]"> => Expression::Array(Box::new(ArrayExpr {
         lbrack: lbrack.comments,
         base: Default::default(),
         elements,
         rbrack: rbrack.comments,
-    }))),
+    })),
 
     <lbrace: Comments<"{">> <properties: CommaSep<Property>> <rbrace: Comments<"}">> => Expression::Object(Box::new(ObjectExpr {
         lbrace,
@@ -223,15 +223,7 @@ AtomOpt<ID, PAREN>: Expression = {
 //     <rparen: Comments<")">> "=>" => (),
 // }
 
-Expression: Expression = {
-    ExpressionOpt<"identifier", "paren">
-}
-
-ExpressionNoParen: Expression = {
-    ExpressionOpt<"identifier", "">
-}
-
-ExpressionOpt<ID, PAREN>: Expression = {
+CallExpr<ID, PAREN>: Expression = {
     AtomOpt<ID, PAREN>,
 
     <callee: AtomOpt<ID, PAREN>> <lparen: Comments<"(">> <rparen: Comments<")">> if PAREN == "paren" => {
@@ -243,49 +235,59 @@ ExpressionOpt<ID, PAREN>: Expression = {
             rparen,
         }))
     },
-
-    BinaryExpressions<ID, PAREN>,
 }
 
-BinaryExpressions<ID, PAREN>: Expression = {
-    #[precedence(level="4")]
-    <AtomOpt<ID, PAREN>> <"^"> <Expression> => binary_expr(<>),
+PowExpr<ID, PAREN>: Expression = {
+    CallExpr<ID, PAREN>,
 
-    #[precedence(level="5")]
-    <AtomOpt<ID, PAREN>> <"*"> <Expression> => binary_expr(<>),
-    <AtomOpt<ID, PAREN>> <"/"> <Expression> => binary_expr(<>),
-    <AtomOpt<ID, PAREN>> <"%"> <Expression> => binary_expr(<>),
-
-    #[precedence(level="6")]
-    <AtomOpt<ID, PAREN>> <"+"> <Expression> => binary_expr(<>),
-    <AtomOpt<ID, PAREN>> <"-"> <Expression> => binary_expr(<>),
-
-    #[precedence(level="7")]
-    <AtomOpt<ID, PAREN>> <"=="> <Expression> => binary_expr(<>),
-    <AtomOpt<ID, PAREN>> <"!="> <Expression> => binary_expr(<>),
-    <AtomOpt<ID, PAREN>> <"<"> <Expression> => binary_expr(<>),
-    <AtomOpt<ID, PAREN>> <"<="> <Expression> => binary_expr(<>),
-    <AtomOpt<ID, PAREN>> <">"> <Expression> => binary_expr(<>),
-    <AtomOpt<ID, PAREN>> <">="> <Expression> => binary_expr(<>),
-    <AtomOpt<ID, PAREN>> <"=~"> <Expression> => binary_expr(<>),
-    <AtomOpt<ID, PAREN>> <"!~"> <Expression> => binary_expr(<>),
-
-    #[precedence(level="9")]
-    <AtomOpt<ID, PAREN>> <"and"> <Expression> => binary_expr(<>),
-
-    #[precedence(level="10")]
-    <AtomOpt<ID, PAREN>> <"or"> <Expression> => binary_expr(<>),
+    <PowExpr<ID, PAREN>> <"^"> <Expression> => binary_expr(<>),
 }
 
-BinaryExpr<ID, PAREN, OP>: Expression = {
-    <left: AtomOpt<ID, PAREN>> <op: OP> <right: Expression> => {
-        Expression::Binary(Box::new(BinaryExpr {
-            base: Default::default(),
-            operator: token_to_operator(op.tok),
-            left,
-            right,
-        }))
-    },
+MulExpr<ID, PAREN>: Expression = {
+    PowExpr<ID, PAREN>,
+
+    <MulExpr<ID, PAREN>> <"*"> <Expression> => binary_expr(<>),
+    <MulExpr<ID, PAREN>> <"/"> <Expression> => binary_expr(<>),
+    <MulExpr<ID, PAREN>> <"%"> <Expression> => binary_expr(<>),
+}
+
+AddExpr<ID, PAREN>: Expression = {
+    MulExpr<ID, PAREN>,
+
+    <MulExpr<ID, PAREN>> <"+"> <Expression> => binary_expr(<>),
+    <MulExpr<ID, PAREN>> <"-"> <Expression> => binary_expr(<>),
+}
+
+CmpExpr<ID, PAREN>: Expression = {
+    AddExpr<ID, PAREN>,
+
+    <AddExpr<ID, PAREN>> <"=="> <Expression> => binary_expr(<>),
+    <AddExpr<ID, PAREN>> <"!="> <Expression> => binary_expr(<>),
+    <AddExpr<ID, PAREN>> <"<"> <Expression> => binary_expr(<>),
+    <AddExpr<ID, PAREN>> <"<="> <Expression> => binary_expr(<>),
+    <AddExpr<ID, PAREN>> <">"> <Expression> => binary_expr(<>),
+    <AddExpr<ID, PAREN>> <">="> <Expression> => binary_expr(<>),
+    <AddExpr<ID, PAREN>> <"=~"> <Expression> => binary_expr(<>),
+    <AddExpr<ID, PAREN>> <"!~"> <Expression> => binary_expr(<>),
+}
+
+AndExpr<ID, PAREN>: Expression = {
+    CmpExpr<ID, PAREN>,
+
+    <CmpExpr<ID, PAREN>> <"and"> <Expression> => binary_expr(<>),
+}
+
+Expression: Expression = {
+    ExpressionOpt<"identifier", "paren">
+}
+
+ExpressionNoParen: Expression = {
+    ExpressionOpt<"identifier", "">
+}
+
+ExpressionOpt<ID, PAREN>: Expression = {
+    <AndExpr<ID, PAREN>>,
+    <AndExpr<ID, PAREN>> <"or"> <Expression> => binary_expr(<>),
 }
 
 PropertyItems: Vec<Property> = {
@@ -331,7 +333,7 @@ Property: Property = {
 }
 
 ArrayItems: Vec<ArrayItem> = {
-    => dbg!(Vec::new()),
+    => Vec::new(),
 
     <expression: Expression> => {
         vec![ArrayItem {

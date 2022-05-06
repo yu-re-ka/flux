@@ -29,23 +29,41 @@ pub(crate) fn parse_string_lalrpop(name: String, s: &str) -> File {
                 return None;
             }
             let token = scanner.scan_with_regex();
-            let end_offset = token.end_offset;
+            let end_pos = token.end_pos;
             eof |= token.tok == TokenType::Eof;
             dbg!(&token.tok);
-            Some((token.start_offset, token, end_offset))
+            Some((token.start_pos, token, end_pos))
         }))
-        .unwrap_or_else(|err| File {
-            base: BaseNode {
-                location: Default::default(),
-                comments: Default::default(),
-                errors: vec![err.to_string()],
-            },
-            name: Default::default(),
-            metadata: Default::default(),
-            package: Default::default(),
-            imports: Default::default(),
-            body: Default::default(),
-            eof: Default::default(),
+        .unwrap_or_else(|err| {
+            let loc = match &err {
+                lalrpop_util::ParseError::InvalidToken { location } => *location,
+                lalrpop_util::ParseError::UnrecognizedEOF { location, .. } => *location,
+                lalrpop_util::ParseError::UnrecognizedToken { token, .. } => token.0,
+                lalrpop_util::ParseError::ExtraToken { token } => token.0,
+                lalrpop_util::ParseError::User { .. } => Default::default(),
+            };
+            let loc = ast::Position {
+                line: loc.line,
+                column: loc.column,
+            };
+            File {
+                base: BaseNode {
+                    location: ast::SourceLocation {
+                        file: None,
+                        source: None,
+                        start: loc,
+                        end: loc,
+                    },
+                    comments: Default::default(),
+                    errors: vec![err.map_location(|_| "").to_string()],
+                },
+                name: Default::default(),
+                metadata: Default::default(),
+                package: Default::default(),
+                imports: Default::default(),
+                body: Default::default(),
+                eof: Default::default(),
+            }
         });
 
     file.name = name;

@@ -39,7 +39,7 @@ pub struct Scanner<'a> {
 }
 
 /// A position in source code.
-#[derive(Debug, PartialEq, Copy, Clone, Hash)]
+#[derive(Default, Debug, PartialEq, Copy, Clone, Hash)]
 pub struct Position {
     /// Line number.
     pub line: u32,
