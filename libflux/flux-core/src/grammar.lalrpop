@@ -240,41 +240,41 @@ CallExpr<ID, PAREN>: Expression = {
 PowExpr<ID, PAREN>: Expression = {
     CallExpr<ID, PAREN>,
 
-    <PowExpr<ID, PAREN>> <"^"> <CallExpr<"ident", "paren">> => binary_expr(<>),
+    <PowExpr<ID, PAREN>> <"^"> <CallExpr<"identifier", "paren">> => binary_expr(<>),
 }
 
 MulExpr<ID, PAREN>: Expression = {
     PowExpr<ID, PAREN>,
 
-    <MulExpr<ID, PAREN>> <"*"> <PowExpr<"ident", "paren">> => binary_expr(<>),
-    <MulExpr<ID, PAREN>> <"/"> <PowExpr<"ident", "paren">> => binary_expr(<>),
-    <MulExpr<ID, PAREN>> <"%"> <PowExpr<"ident", "paren">> => binary_expr(<>),
+    <MulExpr<ID, PAREN>> <"*"> <PowExpr<"identifier", "paren">> => binary_expr(<>),
+    <MulExpr<ID, PAREN>> <"/"> <PowExpr<"identifier", "paren">> => binary_expr(<>),
+    <MulExpr<ID, PAREN>> <"%"> <PowExpr<"identifier", "paren">> => binary_expr(<>),
 }
 
 AddExpr<ID, PAREN>: Expression = {
     MulExpr<ID, PAREN>,
 
-    <AddExpr<ID, PAREN>> <"+"> <MulExpr<"ident", "paren">> => binary_expr(<>),
-    <AddExpr<ID, PAREN>> <"-"> <MulExpr<"ident", "paren">> => binary_expr(<>),
+    <AddExpr<ID, PAREN>> <"+"> <MulExpr<"identifier", "paren">> => binary_expr(<>),
+    <AddExpr<ID, PAREN>> <"-"> <MulExpr<"identifier", "paren">> => binary_expr(<>),
 }
 
 CmpExpr<ID, PAREN>: Expression = {
     AddExpr<ID, PAREN>,
 
-    <CmpExpr<ID, PAREN>> <"=="> <AddExpr<"ident", "paren">> => binary_expr(<>),
-    <CmpExpr<ID, PAREN>> <"!="> <AddExpr<"ident", "paren">> => binary_expr(<>),
-    <CmpExpr<ID, PAREN>> <"<"> <AddExpr<"ident", "paren">> => binary_expr(<>),
-    <CmpExpr<ID, PAREN>> <"<="> <AddExpr<"ident", "paren">> => binary_expr(<>),
-    <CmpExpr<ID, PAREN>> <">"> <AddExpr<"ident", "paren">> => binary_expr(<>),
-    <CmpExpr<ID, PAREN>> <">="> <AddExpr<"ident", "paren">> => binary_expr(<>),
-    <CmpExpr<ID, PAREN>> <"=~"> <AddExpr<"ident", "paren">> => binary_expr(<>),
-    <CmpExpr<ID, PAREN>> <"!~"> <AddExpr<"ident", "paren">> => binary_expr(<>),
+    <CmpExpr<ID, PAREN>> <"=="> <AddExpr<"identifier", "paren">> => binary_expr(<>),
+    <CmpExpr<ID, PAREN>> <"!="> <AddExpr<"identifier", "paren">> => binary_expr(<>),
+    <CmpExpr<ID, PAREN>> <"<"> <AddExpr<"identifier", "paren">> => binary_expr(<>),
+    <CmpExpr<ID, PAREN>> <"<="> <AddExpr<"identifier", "paren">> => binary_expr(<>),
+    <CmpExpr<ID, PAREN>> <">"> <AddExpr<"identifier", "paren">> => binary_expr(<>),
+    <CmpExpr<ID, PAREN>> <">="> <AddExpr<"identifier", "paren">> => binary_expr(<>),
+    <CmpExpr<ID, PAREN>> <"=~"> <AddExpr<"identifier", "paren">> => binary_expr(<>),
+    <CmpExpr<ID, PAREN>> <"!~"> <AddExpr<"identifier", "paren">> => binary_expr(<>),
 }
 
 AndExpr<ID, PAREN>: Expression = {
     CmpExpr<ID, PAREN>,
 
-    <AndExpr<ID, PAREN>> <"and"> <CmpExpr<"ident", "paren">> => binary_expr(<>),
+    <AndExpr<ID, PAREN>> <"and"> <CmpExpr<"identifier", "paren">> => binary_expr(<>),
 }
 
 Expression: Expression = {
