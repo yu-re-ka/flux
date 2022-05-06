@@ -15,6 +15,10 @@ extern {
         "time literal" => Token { tok: TokenType::Time, .. },
         "regex literal" => Token { tok: TokenType::Regex, .. },
 
+        "\"" => Token { tok: TokenType::Quote, .. },
+        "string expr" => Token { tok: TokenType::StringExpr, .. },
+        "text" => Token { tok: TokenType::Text, .. },
+
         "if" => Token { tok: TokenType::If, .. },
         "else" => Token { tok: TokenType::Else, .. },
         "then" => Token { tok: TokenType::Then, .. },
@@ -185,7 +189,12 @@ AtomOpt<ID, PAREN>: Expression = {
         value: t.lit.parse::<f64>().map_err(|err| err.to_string())?,
     })),
 
-    <StringLit> if ID == "identifier" => Expression::StringLit(<>),
+    <StringLit> => Expression::StringLit(<>),
+
+    "\"" <parts: StringExprPart*> "\"" => Expression::StringExpr(Box::new(StringExpr {
+        base: Default::default(),
+        parts,
+    })),
 
     <t: "time literal"> =>? {
         let value = strconv::parse_time(t.lit.as_str())
@@ -235,6 +244,20 @@ AtomOpt<ID, PAREN>: Expression = {
         properties,
         rbrace,
     })),
+}
+
+StringExprPart: StringExprPart = {
+    "string expr" <expression: Expression> =>  StringExprPart::Interpolated(InterpolatedPart {
+        base: Default::default(),
+        expression,
+    }),
+    "text" =>? {
+        let value = strconv::parse_text(<>.lit.as_str())?;
+        Ok(StringExprPart::Text(TextPart {
+            base: Default::default(),
+            value,
+        }))
+    },
 }
 
 FunctionBody: FunctionBody = {
