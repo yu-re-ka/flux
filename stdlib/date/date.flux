@@ -496,13 +496,14 @@ builtin microsecond : (t: T) => int where T: Timeable
 builtin nanosecond : (t: T) => int where T: Timeable
 
 // builtin _add used by add
-builtin _add : (d: duration, to: T, location: {zone: string, offset: duration}) => time where T: Timeable
+builtin _add : (d: duration, to: T, scale: int, location: {zone: string, offset: duration}) => time where T: Timeable
 
 // add adds a duration to a time value and returns the resulting time value.
 //
 // ## Parameters
 // - d: Duration to add.
 // - to: Time to add the duration to.
+// - scale: Scale the duration by multiplying it before operating on the time. Default is 1.
 // - location: Location to use for the time value.
 //
 //   Use an absolute time or a relative duration.
@@ -549,10 +550,21 @@ builtin _add : (d: duration, to: T, location: {zone: string, offset: duration}) 
 // // Returns 2022-01-01T21:00:00.000000000Z
 // ```
 //
+// ### Add n hours to a time
+//
+// ```no_run
+// import "date"
+//
+// n = 5
+// date.add(d: 1h, scale: n, to: 2022-05-10T00:00:00Z)
+//
+// // Returns 2022-05-10T00:00:00.000000000Z
+// ```
+//
 // ## Metadata
 // tags: date/time
 //
-add = (d, to, location=location) => _add(d, to, location)
+add = (d, to, scale=1, location=location) => _add(d, to, scale, location)
 
 // builtin _sub used by sub
 builtin _sub : (from: T, d: duration, location: {zone: string, offset: duration}) => time where T: Timeable
