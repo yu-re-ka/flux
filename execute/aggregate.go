@@ -177,9 +177,9 @@ type aggregateParallelTransformation struct {
 // NewAggregateParallelTransformation constructs a Transformation and Dataset
 // using the AggregateParallelTransformation implementation.
 func NewAggregateParallelTransformation(id DatasetID, parents []DatasetID, t AggregateParallelTransformation, mem memory.Allocator) (Transformation, Dataset, error) {
-	if len(parents) == 1 {
-		return NewAggregateTransformation(id, t, mem)
-	}
+	// if len(parents) == 1 {
+	// 	return NewAggregateTransformation(id, t, mem)
+	// }
 
 	tr := &aggregateParallelTransformation{
 		aggregateTransformation: aggregateTransformation{
