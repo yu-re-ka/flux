@@ -30,6 +30,16 @@ func (a *aggregateWindowSumInt) Aggregate(ts *array.Int, vs array.Array, start, 
 		b.Append(sum)
 	})
 	result := b.NewIntArray()
+	a.merge(start, stop, result, mem)
+}
+
+func (a *aggregateWindowSumInt) Merge(from aggregateWindow, mem memory.Allocator) {
+	other := from.(*aggregateWindowSumInt)
+	other.vs.Retain()
+	a.merge(other.ts, other.ts, other.vs, mem)
+}
+
+func (a *aggregateWindowSumInt) merge(start, stop *array.Int, result *array.Int, mem memory.Allocator) {
 	a.mergeWindows(start, stop, mem, func(ts, prev, next *array.Int) {
 		if a.vs == nil {
 			a.vs = result
@@ -110,6 +120,17 @@ func (a *aggregateWindowMeanInt) Aggregate(ts *array.Int, vs array.Array, start,
 	})
 
 	counts, sums := countsB.NewIntArray(), sumsB.NewIntArray()
+	a.merge(start, stop, counts, sums, mem)
+}
+
+func (a *aggregateWindowMeanInt) Merge(from aggregateWindow, mem memory.Allocator) {
+	other := from.(*aggregateWindowMeanInt)
+	other.counts.Retain()
+	other.sums.Retain()
+	a.merge(other.ts, other.ts, other.counts, other.sums, mem)
+}
+
+func (a *aggregateWindowMeanInt) merge(start, stop, counts *array.Int, sums *array.Int, mem memory.Allocator) {
 	a.mergeWindows(start, stop, mem, func(ts, prev, next *array.Int) {
 		if a.sums == nil {
 			a.counts, a.sums = counts, sums
@@ -202,6 +223,16 @@ func (a *aggregateWindowSumUint) Aggregate(ts *array.Int, vs array.Array, start,
 		b.Append(sum)
 	})
 	result := b.NewUintArray()
+	a.merge(start, stop, result, mem)
+}
+
+func (a *aggregateWindowSumUint) Merge(from aggregateWindow, mem memory.Allocator) {
+	other := from.(*aggregateWindowSumUint)
+	other.vs.Retain()
+	a.merge(other.ts, other.ts, other.vs, mem)
+}
+
+func (a *aggregateWindowSumUint) merge(start, stop *array.Int, result *array.Uint, mem memory.Allocator) {
 	a.mergeWindows(start, stop, mem, func(ts, prev, next *array.Int) {
 		if a.vs == nil {
 			a.vs = result
@@ -282,6 +313,17 @@ func (a *aggregateWindowMeanUint) Aggregate(ts *array.Int, vs array.Array, start
 	})
 
 	counts, sums := countsB.NewIntArray(), sumsB.NewUintArray()
+	a.merge(start, stop, counts, sums, mem)
+}
+
+func (a *aggregateWindowMeanUint) Merge(from aggregateWindow, mem memory.Allocator) {
+	other := from.(*aggregateWindowMeanUint)
+	other.counts.Retain()
+	other.sums.Retain()
+	a.merge(other.ts, other.ts, other.counts, other.sums, mem)
+}
+
+func (a *aggregateWindowMeanUint) merge(start, stop, counts *array.Int, sums *array.Uint, mem memory.Allocator) {
 	a.mergeWindows(start, stop, mem, func(ts, prev, next *array.Int) {
 		if a.sums == nil {
 			a.counts, a.sums = counts, sums
@@ -374,6 +416,16 @@ func (a *aggregateWindowSumFloat) Aggregate(ts *array.Int, vs array.Array, start
 		b.Append(sum)
 	})
 	result := b.NewFloatArray()
+	a.merge(start, stop, result, mem)
+}
+
+func (a *aggregateWindowSumFloat) Merge(from aggregateWindow, mem memory.Allocator) {
+	other := from.(*aggregateWindowSumFloat)
+	other.vs.Retain()
+	a.merge(other.ts, other.ts, other.vs, mem)
+}
+
+func (a *aggregateWindowSumFloat) merge(start, stop *array.Int, result *array.Float, mem memory.Allocator) {
 	a.mergeWindows(start, stop, mem, func(ts, prev, next *array.Int) {
 		if a.vs == nil {
 			a.vs = result
@@ -454,6 +506,17 @@ func (a *aggregateWindowMeanFloat) Aggregate(ts *array.Int, vs array.Array, star
 	})
 
 	counts, sums := countsB.NewIntArray(), sumsB.NewFloatArray()
+	a.merge(start, stop, counts, sums, mem)
+}
+
+func (a *aggregateWindowMeanFloat) Merge(from aggregateWindow, mem memory.Allocator) {
+	other := from.(*aggregateWindowMeanFloat)
+	other.counts.Retain()
+	other.sums.Retain()
+	a.merge(other.ts, other.ts, other.counts, other.sums, mem)
+}
+
+func (a *aggregateWindowMeanFloat) merge(start, stop, counts *array.Int, sums *array.Float, mem memory.Allocator) {
 	a.mergeWindows(start, stop, mem, func(ts, prev, next *array.Int) {
 		if a.sums == nil {
 			a.counts, a.sums = counts, sums
