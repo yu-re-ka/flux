@@ -72,7 +72,18 @@ func (a *aggregateWindowSumInt) Compute(mem memory.Allocator) (*array.Int, flux.
 		}
 		return append, done
 	})
+	a.ts.Retain()
+	a.vs.Retain()
 	return a.ts, flux.TInt, a.vs
+}
+
+func (a *aggregateWindowSumInt) Close() error {
+	a.release()
+	if a.vs != nil {
+		a.vs.Release()
+		a.vs = nil
+	}
+	return nil
 }
 
 type aggregateWindowMeanInt struct {
@@ -130,9 +141,6 @@ func (a *aggregateWindowMeanInt) Aggregate(ts *array.Int, vs array.Array, start,
 }
 
 func (a *aggregateWindowMeanInt) Compute(mem memory.Allocator) (*array.Int, flux.ColType, array.Array) {
-	defer a.counts.Release()
-	defer a.sums.Release()
-
 	b := array.NewFloatBuilder(mem)
 	b.Resize(a.ts.Len())
 	for i, n := 0, a.sums.Len(); i < n; i++ {
@@ -159,7 +167,21 @@ func (a *aggregateWindowMeanInt) Compute(mem memory.Allocator) (*array.Int, flux
 		}
 		return append, done
 	})
+	a.ts.Retain()
 	return a.ts, flux.TFloat, vs
+}
+
+func (a *aggregateWindowMeanInt) Close() error {
+	a.release()
+	if a.counts != nil {
+		a.counts.Release()
+		a.counts = nil
+	}
+	if a.sums != nil {
+		a.sums.Release()
+		a.sums = nil
+	}
+	return nil
 }
 
 type aggregateWindowSumUint struct {
@@ -222,7 +244,18 @@ func (a *aggregateWindowSumUint) Compute(mem memory.Allocator) (*array.Int, flux
 		}
 		return append, done
 	})
+	a.ts.Retain()
+	a.vs.Retain()
 	return a.ts, flux.TUInt, a.vs
+}
+
+func (a *aggregateWindowSumUint) Close() error {
+	a.release()
+	if a.vs != nil {
+		a.vs.Release()
+		a.vs = nil
+	}
+	return nil
 }
 
 type aggregateWindowMeanUint struct {
@@ -280,9 +313,6 @@ func (a *aggregateWindowMeanUint) Aggregate(ts *array.Int, vs array.Array, start
 }
 
 func (a *aggregateWindowMeanUint) Compute(mem memory.Allocator) (*array.Int, flux.ColType, array.Array) {
-	defer a.counts.Release()
-	defer a.sums.Release()
-
 	b := array.NewFloatBuilder(mem)
 	b.Resize(a.ts.Len())
 	for i, n := 0, a.sums.Len(); i < n; i++ {
@@ -309,7 +339,21 @@ func (a *aggregateWindowMeanUint) Compute(mem memory.Allocator) (*array.Int, flu
 		}
 		return append, done
 	})
+	a.ts.Retain()
 	return a.ts, flux.TFloat, vs
+}
+
+func (a *aggregateWindowMeanUint) Close() error {
+	a.release()
+	if a.counts != nil {
+		a.counts.Release()
+		a.counts = nil
+	}
+	if a.sums != nil {
+		a.sums.Release()
+		a.sums = nil
+	}
+	return nil
 }
 
 type aggregateWindowSumFloat struct {
@@ -372,7 +416,18 @@ func (a *aggregateWindowSumFloat) Compute(mem memory.Allocator) (*array.Int, flu
 		}
 		return append, done
 	})
+	a.ts.Retain()
+	a.vs.Retain()
 	return a.ts, flux.TFloat, a.vs
+}
+
+func (a *aggregateWindowSumFloat) Close() error {
+	a.release()
+	if a.vs != nil {
+		a.vs.Release()
+		a.vs = nil
+	}
+	return nil
 }
 
 type aggregateWindowMeanFloat struct {
@@ -430,9 +485,6 @@ func (a *aggregateWindowMeanFloat) Aggregate(ts *array.Int, vs array.Array, star
 }
 
 func (a *aggregateWindowMeanFloat) Compute(mem memory.Allocator) (*array.Int, flux.ColType, array.Array) {
-	defer a.counts.Release()
-	defer a.sums.Release()
-
 	b := array.NewFloatBuilder(mem)
 	b.Resize(a.ts.Len())
 	for i, n := 0, a.sums.Len(); i < n; i++ {
@@ -459,5 +511,19 @@ func (a *aggregateWindowMeanFloat) Compute(mem memory.Allocator) (*array.Int, fl
 		}
 		return append, done
 	})
+	a.ts.Retain()
 	return a.ts, flux.TFloat, vs
+}
+
+func (a *aggregateWindowMeanFloat) Close() error {
+	a.release()
+	if a.counts != nil {
+		a.counts.Release()
+		a.counts = nil
+	}
+	if a.sums != nil {
+		a.sums.Release()
+		a.sums = nil
+	}
+	return nil
 }

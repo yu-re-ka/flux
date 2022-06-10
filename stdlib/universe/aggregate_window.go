@@ -69,6 +69,9 @@ type aggregateWindow interface {
 
 	// Compute will compute the final values for the aggregated windows.
 	Compute(mem memory.Allocator) (*array.Int, flux.ColType, array.Array)
+
+	// Close will release resources associated with this aggregate window state.
+	Close() error
 }
 
 type aggregateWindowTransformation struct {
@@ -652,6 +655,13 @@ func (a *aggregateWindowBase) createEmptyWindows(mem memory.Allocator, fn func(n
 	a.ts = ts
 }
 
+func (a *aggregateWindowBase) release() {
+	if a.ts != nil {
+		a.ts.Release()
+		a.ts = nil
+	}
+}
+
 type aggregateWindowCount struct {
 	aggregateWindowBase
 	vs *array.Int
@@ -713,7 +723,19 @@ func (a *aggregateWindowCount) Compute(mem memory.Allocator) (*array.Int, flux.C
 		}
 		return append, done
 	})
+
+	a.ts.Retain()
+	a.vs.Retain()
 	return a.ts, flux.TInt, a.vs
+}
+
+func (a *aggregateWindowCount) Close() error {
+	a.release()
+	if a.vs != nil {
+		a.vs.Release()
+		a.vs = nil
+	}
+	return nil
 }
 
 func newAggregateWindowSum(a *aggregateWindowTransformation, valueType flux.ColType) (aggregateWindow, error) {
