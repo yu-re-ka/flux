@@ -122,6 +122,19 @@ func (t *aggregateTransformation) Finish(id DatasetID, err error) {
 			return t.computeFor(key, value)
 		})
 	}
+
+	// If an error occurred, close all items in the global state.
+	// This happens automatically in computeFor for the successful case,
+	// but an error can cause computeFor not to be called on all states.
+	if err != nil {
+		_ = t.d.Range(func(key flux.GroupKey, value interface{}) error {
+			if v, ok := value.(Closer); ok {
+				_ = v.Close()
+			}
+			return nil
+		})
+	}
+
 	err = Close(err, t.t)
 	t.d.Finish(err)
 }
