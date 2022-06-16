@@ -26,7 +26,6 @@ import (
 	_ "github.com/influxdata/flux/stdlib/contrib/tomhollingworth/events"
 	_ "github.com/influxdata/flux/stdlib/csv"
 	_ "github.com/influxdata/flux/stdlib/date"
-	_ "github.com/influxdata/flux/stdlib/date/boundaries"
 	_ "github.com/influxdata/flux/stdlib/dict"
 	_ "github.com/influxdata/flux/stdlib/experimental"
 	_ "github.com/influxdata/flux/stdlib/experimental/aggregate"
