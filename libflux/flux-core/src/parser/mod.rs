@@ -4,6 +4,7 @@ use std::{cell::RefCell, collections::HashMap, mem, rc::Rc, str};
 
 use super::DefaultHasher;
 use crate::{ast, ast::*, scanner, scanner::*};
+use lalrpop_util::state_machine::{LexerIterator, ValidActions};
 
 pub(crate) mod strconv;
 
@@ -24,65 +25,42 @@ pub fn parse_string(name: String, s: &str) -> File {
 #[allow(missing_docs)]
 pub struct SharedTokenizer<'a>(Rc<RefCell<Tokenizer<'a>>>);
 
-impl SharedTokenizer<'_> {
-    pub(crate) fn set_mode(&self, mode: TokenizerMode) {
-        dbg!(&mode);
-        self.0.borrow_mut().mode = mode;
-    }
-}
-
 struct Tokenizer<'a> {
     scanner: crate::scanner::Scanner<'a>,
-    mode: TokenizerMode,
-    inside_string_expr: bool,
     eof: bool,
 }
 
-#[allow(warnings)]
-#[derive(Debug)]
-pub(crate) enum TokenizerMode {
-    Default,
-    Regex,
-    StringExpr,
-}
-
-impl Iterator for SharedTokenizer<'_> {
+impl LexerIterator<Token> for SharedTokenizer<'_> {
     type Item = (scanner::Position, Token, scanner::Position);
-    fn next(&mut self) -> Option<Self::Item> {
-        self.0.borrow_mut().next()
+    fn lex_next(&mut self, valid_actions: ValidActions<'_, Token>) -> Option<Self::Item> {
+        self.0.borrow_mut().lex_next(valid_actions)
     }
 }
 
-impl Iterator for Tokenizer<'_> {
+impl LexerIterator<Token> for Tokenizer<'_> {
     type Item = (scanner::Position, Token, scanner::Position);
-    fn next(&mut self) -> Option<Self::Item> {
+    fn lex_next(&mut self, valid_actions: ValidActions<'_, Token>) -> Option<Self::Item> {
         if self.eof {
             return None;
         }
-        let token = match self.mode {
-            TokenizerMode::Default => self.scanner.scan(),
-            TokenizerMode::Regex => self.scanner.scan_with_regex(),
-            TokenizerMode::StringExpr => self.scanner.scan_string_expr(),
+
+        let mk_token = |tok| Token {
+            tok,
+            lit: Default::default(),
+            start_offset: 0,
+            end_offset: 0,
+            start_pos: Default::default(),
+            end_pos: Default::default(),
+            comments: vec![],
         };
-        dbg!((&token.tok, &token.lit, &self.mode));
-        match token.tok {
-            TokenType::Quote => {
-                self.inside_string_expr = true;
-                match self.mode {
-                    TokenizerMode::Default => self.mode = TokenizerMode::StringExpr,
-                    TokenizerMode::Regex => self.mode = TokenizerMode::StringExpr,
-                    TokenizerMode::StringExpr => {
-                        self.inside_string_expr = false;
-                        self.mode = TokenizerMode::Regex
-                    }
-                }
-            }
-            TokenType::StringExpr => self.mode = TokenizerMode::Regex,
-            TokenType::RBrace if self.inside_string_expr => {
-                self.mode = TokenizerMode::StringExpr;
-            }
-            _ => (),
-        }
+
+        let token = if valid_actions.is_valid(&mk_token(TokenType::Regex)) {
+            self.scanner.scan_with_regex()
+        } else if valid_actions.is_valid(&mk_token(TokenType::StringExpr)) {
+            self.scanner.scan_string_expr()
+        } else {
+            self.scanner.scan()
+        };
         let end_pos = token.end_pos;
         self.eof |= token.tok == TokenType::Eof;
         Some((token.start_pos, token, end_pos))
@@ -93,8 +71,6 @@ pub(crate) fn parse_string_lalrpop(name: String, s: &str) -> File {
     let scanner = crate::scanner::Scanner::new(s);
     let tokenizer = SharedTokenizer(Rc::new(RefCell::new(Tokenizer {
         scanner,
-        mode: TokenizerMode::Regex,
-        inside_string_expr: false,
         eof: false,
     })));
     let mut file = crate::grammar::FileParser::new()

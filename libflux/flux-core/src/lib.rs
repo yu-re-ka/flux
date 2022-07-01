@@ -19,9 +19,6 @@
 extern crate serde_derive;
 #[macro_use]
 extern crate lalrpop_util;
-#[macro_use]
-#[cfg(test)]
-extern crate pretty_assertions;
 
 #[macro_use]
 #[cfg(test)]

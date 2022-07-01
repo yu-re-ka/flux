@@ -1,4 +1,4 @@
-use crate::{ast, ast::*, scanner::*, parser::{strconv, binary_expr, SharedTokenizer, TokenizerMode}};
+use crate::{ast, ast::*, scanner::*, parser::{strconv, binary_expr, SharedTokenizer}};
 
 grammar(tokenizer: &SharedTokenizer<'_>);
 
@@ -115,13 +115,11 @@ Body_<EXPR>: Vec<Statement> = {
     => Vec::new(),
 
     <s: Statement<"">> <mut b: Body_<"expr">> => {
-        dbg!("asd");
         b.push(s);
         b
     },
 
     <s: ExprStatement<"identifier", "">> <mut b: Body_<"expr">> if EXPR == "expr" => {
-        dbg!("2");
         b.push(s);
         b
     }
@@ -166,17 +164,6 @@ StringLit: StringLit = {
     }
 }
 
-DefaultMode: () = {
-    => tokenizer.set_mode(TokenizerMode::Default),
-}
-
-RegexMode: () = {
-    => tokenizer.set_mode(TokenizerMode::Regex),
-}
-
-StringExprMode: () = {
-    => tokenizer.set_mode(TokenizerMode::StringExpr),
-}
 
 Atom: Expression = {
     AtomOpt<"identifier", "paren">
@@ -315,15 +302,11 @@ DictItem_: DictItem = {
 }
 
 StringExpr: Expression = {
-    StringExprStart <StringExprTail>
-}
-
-StringExprStart: () = {
-    "\"" StringExprMode,
+    "\"" <StringExprTail>
 }
 
 StringExprTail: Expression = {
-    StringExprMode <parts: StringExprPart*> "\"" RegexMode => Expression::StringExpr(Box::new(StringExpr {
+    <parts: StringExprPart*> "\"" => Expression::StringExpr(Box::new(StringExpr {
         base: Default::default(),
         parts,
     })),
