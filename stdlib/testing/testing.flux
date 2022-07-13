@@ -158,13 +158,7 @@ diff = (
     ) =>
     {
         return
-            _diff(
-                got,
-                want,
-                verbose,
-                epsilon,
-                nansEqual,
-            )
+            experimental.diff(got, want, epsilon, nansEqual)
                 |> yield(name: "errorOutput")
     }
 
