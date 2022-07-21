@@ -2,6 +2,7 @@ package execute
 
 import (
 	"context"
+	glog "log"
 	"sync"
 
 	"go.uber.org/zap"
@@ -66,6 +67,7 @@ func (d *poolDispatcher) Schedule(fn ScheduleFunc) {
 }
 
 func (d *poolDispatcher) Start(n int, ctx context.Context) {
+	glog.Printf("-------- dispatcher started with %v workers", n)
 	d.wg.Add(n)
 	for i := 0; i < n; i++ {
 		go func() {
