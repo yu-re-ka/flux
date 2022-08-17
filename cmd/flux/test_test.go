@@ -5,6 +5,7 @@ import (
 	"archive/zip"
 	"bufio"
 	"bytes"
+	"context"
 	"errors"
 	"io"
 	"io/fs"
@@ -16,8 +17,14 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/cmd/flux/cmd"
+	"github.com/influxdata/flux/dependencies/feature"
+	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/fluxinit"
+	"github.com/influxdata/flux/lang"
+	"github.com/influxdata/flux/memory"
+	"github.com/influxdata/flux/runtime"
 )
 
 type Summary struct {
@@ -420,4 +427,79 @@ func Test_TestCmd_SkipUntagged(t *testing.T) {
 			t.Errorf("%s: unexpected summary got %+v want %+v", name, got, want)
 		}
 	}
+}
+
+func executeBench(script string) error {
+	ctx := context.Background()
+
+	flagger := executetest.TestFlagger{
+		"vectorizedMap":             true,
+		"vectorizedConst":           true,
+		"vectorizedConditionals":    true,
+		"vectorizedFloat":           true,
+		"vectorizeLogicalOperators": true,
+		"vectorizedEqualityOps":     true,
+	}
+	ctx = feature.Dependency{Flagger: flagger}.Inject(ctx)
+
+	c := lang.FluxCompiler{
+		Query: script,
+	}
+	prog, err := c.Compile(ctx, runtime.Default)
+	if err != nil {
+		return err
+	}
+
+	mem := &memory.ResourceAllocator{}
+	q, err := prog.Start(ctx, mem)
+	if err != nil {
+		return err
+	}
+
+	results := flux.NewResultIteratorFromQuery(q)
+	defer results.Release()
+
+	for results.More() {
+		res := results.Next()
+		if err := res.Tables().Do(func(table flux.Table) error {
+			return nil
+		}); err != nil {
+			return err
+		}
+	}
+
+	results.Release()
+	return results.Err()
+}
+
+func BenchmarkVectorizeToFloat(b *testing.B) {
+	b.Run("Stdlib", func(b *testing.B) {
+		executeBench(`
+import "generate"
+
+generate.from(
+    count: 50000,
+    fn: (n) => n,
+    start: 2021-01-01T00:00:00Z,
+    stop: 2021-01-02T00:00:00Z,
+)
+|> toFloat()
+		`)
+	})
+
+	b.Run("Manual", func(b *testing.B) {
+		executeBench(`
+import "generate"
+
+toFloat2 = (tables=<-) => tables |> map(fn: (r) => ({r with _value: float(v: r._value)}))
+
+generate.from(
+    count: 50000,
+    fn: (n) => n,
+    start: 2021-01-01T00:00:00Z,
+    stop: 2021-01-02T00:00:00Z,
+)
+|> toFloat2()
+		`)
+	})
 }

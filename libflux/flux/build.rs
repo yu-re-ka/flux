@@ -8,7 +8,7 @@ use std::{
 };
 
 use anyhow::{bail, Result};
-use fluxcore::semantic::{bootstrap, flatbuffers::types as fb, sub::Substitutable};
+use fluxcore::semantic::{bootstrap, flatbuffers::types as fb, sub::Substitutable, Feature};
 use walkdir::WalkDir;
 
 fn serialize<'a, T, S, F>(ty: T, f: F, path: &path::Path) -> Result<()>
@@ -57,8 +57,12 @@ fn main() -> Result<()> {
         println!("cargo:rerun-if-changed={}", f);
     }
 
-    let (prelude, imports, sem_pkgs) =
-        bootstrap::infer_stdlib_dir(stdlib_path, Default::default())?;
+    let (prelude, imports, sem_pkgs) = bootstrap::infer_stdlib_dir(
+        stdlib_path,
+        fluxcore::semantic::AnalyzerConfig {
+            features: vec![Feature::VectorizedMap, Feature::VectorizedFloat],
+        },
+    )?;
 
     // Validate there aren't any free type variables in the environment
     for (name, ty) in prelude.iter() {
