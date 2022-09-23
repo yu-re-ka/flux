@@ -1061,9 +1061,10 @@ A statement controls execution.
 
     ImportDeclaration = "import" [identifier] string_lit
 
+
 Associated with every package is a package name and an import path.
 The import statement takes a package's import path and brings all of the identifiers defined in that package into the current scope under a namespace.
-The import statment defines the namespace through which to access the imported identifiers.
+The import statement defines the namespace through which to access the imported identifiers.
 By default the identifier of this namespace is the package name unless otherwise specified.
 For example, given a variable `x` declared in package `foo`, importing `foo` and referencing `x` would look like this:
 
@@ -1369,6 +1370,115 @@ A composite data type is a collection of primitive data types that together have
 A query specification defines what data and operations to perform.
 The execution model reserves the right to perform those operations as efficiently as possible.
 The execution model may rewrite the query in anyway it sees fit while maintaining correctness.
+
+## Modules
+
+>NOTE: Modules are not fully implemented yet, follow https://github.com/influxdata/flux/issues/4296 for details.
+
+A module is a collection of packages that can be imported.
+A module has a module path, version and a collection of packages with their source code.
+
+### Module path
+
+The module path is the import path of the top level package within the module.
+Additionally major versions of a module of two or greater must add a final element to the path of the form `v#` where `#` is the major version number.
+For modules at version zero or one the path must not contain the major version as it is not necessary.
+A change from `v0` to `v1` may include a breaking change but once `v1` is published any future breaking changes will be a new major version.
+
+Example
+
+    foo/bar    // module path of foo/bar for version zero or one
+    foo/bar/v2 // module path of foo/bar for major version two
+
+### Module versions
+
+All modules are versioned using a [semantic version number](https://semver.org/) prefixed with a `v`, i.e. `vMAJOR.MINOR.PATCH`.
+Once a module version has been published it cannot be modified.
+A new version of the module must be published.
+
+### Importing modules
+
+Flux modules are imported using an import declaration.
+The import path may contain specifiers about which versions of a module should be imported.
+
+When no version information is provided the latest version of the module is used.
+A _minimum_ version may be specified using `@` followed by a version number.
+An import may also specify the version `pre` which is the most recent pre-release version of the module.
+
+Examples
+
+    import "foo/module"             // imports the latest version 0.x or 1.x version of the module
+    import "foo/module@v1.5.6"      // imports at least version 1.5.6
+    import "foo/module/v2"          // imports the latest published 2.x version
+    import "foo/module/v2/a"        // imports package a from the latest published 2.x version of the module foo/module
+    import "foo/module/v2/a@v2.3.0" // imports package a from the at least version 2.3.0 of the module foo/module
+    import "foo/module@pre"         // imports the latest pre-release 0.x or 1.x version
+    import "foo/module/v2@pre"      // imports the latest pre-release 2.x version
+
+### Version resolution
+
+When multiple modules both depend on a specific version of another module the maximum version of the minimum versions is used.
+Major versions of a module are considered different modules (they have different module paths), therefore multiple major versions of a module may be imported into the same Flux script.
+
+Example
+
+```
+// a.flux
+package a
+
+import "foo@v1.1.0"
+```
+
+```
+// b.flux
+package b
+
+import "foo@v1.2.0"
+```
+
+```
+// main.flux
+package main
+
+import "a"
+import "b"
+```
+
+Package `main` depends on module `foo` via both of the modules `a` and `b`.
+However `a` and `b` specify different versions of `foo`.
+The possible versions of `foo` include `1.1.0` and `1.2.0`.
+Flux will pick the maximum version of these possible version so version `1.2.0` of `foo` is used.
+This is sound because module `a` has specified that it needs at least version `1.1.0` of `foo` and that constraint is satisfied.
+
+### Registry API
+
+Modules can be published and downloaded over an HTTP API from a registry.
+Modules are immutable, once a version is published it cannot be modified, a new version must be published instead.
+
+The HTTP API will have the routes listed in the following table where `$base` is the anchor point of the API, `$module` is a module path, and `$version` is a version.
+
+| Method | Path                          | Description                                                                                                                                                |
+| ------ | ----                          | -----------                                                                                                                                                |
+| GET    | $base/$module/@v/list         | Returns a list of known versions of the given module in plain text, one per line.                                                                          |
+| GET    | $base/$module/@v/$version.zip | Returns a zip file of the contents of the module at a specific version.                                                                                    |
+| GET    | $base/$module/@latest         | Returns the highest released version, or if no released versions exist the highest pre-release version of the given module in plain text on a single line. |
+| GET    | $base/$module/@pre            | Returns the highest pre-released version of the given module in plain text on a single line.                                                               |
+| POST   | $base/$module/@v/$version.zip | Publish a new version of the module where the POST body contains the zip file contents of the module.                                                      |
+
+As an example, to download the zip file for a module `foo/module` at version `v0.5.6`, for an API endpoint anchored at `https://example.com/flux/modules/` use this path `https://example.com/flux/modules/foo/module/@v/v1.5.6.zip`.
+
+Examples
+
+The following examples use a $base of `/flux/modules/`
+
+    GET /flux/modules/foo/module/@v/list      # Return a list of versions for the module foo/module
+    GET /flux/modules/bar/@v/1.3.4.zip        # Return a zip file of the bar module at version 1.3.4
+    GET /flux/modules/bar/v2/@v/2.3.4.zip     # Return a zip file of the bar module at version 2.3.4
+    GET /flux/modules/bar/@latest             # Return the latest 0.x or 1.x version of bar
+    GET /flux/modules/bar/@pre                # Return the latest  0.x or 1.x pre-release version of bar
+    GET /flux/modules/bar/v2/@latest          # Return the latest 2.x release version of bar
+    GET /flux/modules/bar/v2/@pre             # Return the latest 2.x pre-release version of bar
+
 
 ## Versions and editions
 
