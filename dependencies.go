@@ -26,6 +26,7 @@ const dependenciesKey key = iota
 type Dependencies interface {
 	Dependency
 	HTTPClient() (http.Client, error)
+	PrivateHTTPClient() (http.Client, error)
 	FilesystemService() (filesystem.Service, error)
 	SecretService() (secret.Service, error)
 	URLValidator() (url.Validator, error)
@@ -49,6 +50,14 @@ func (d Deps) HTTPClient() (http.Client, error) {
 		return d.Deps.HTTPClient, nil
 	}
 	return nil, errors.New(codes.Unimplemented, "http client uninitialized in dependencies")
+}
+
+func (d Deps) PrivateHTTPClient() (http.Client, error) {
+	c, err := d.HTTPClient()
+	if err != nil {
+		return nil, err
+	}
+	return http.NewPrivateClient(c), nil
 }
 
 func (d Deps) FilesystemService() (filesystem.Service, error) {

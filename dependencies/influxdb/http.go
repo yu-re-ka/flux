@@ -99,6 +99,10 @@ func (h HttpProvider) clientFor(ctx context.Context, conf Config) (*HttpClient, 
 	}
 	if conf.Host == "" {
 		conf.Host = h.DefaultConfig.Host
+		// If no host is specified, it means we're making a request
+		// against an internal source. In that case, we want to obscure
+		// errors from the http client.
+		httpc = http.NewPrivateClient(httpc)
 	}
 	if err := h.validateHost(deps, conf.Host); err != nil {
 		return nil, err
