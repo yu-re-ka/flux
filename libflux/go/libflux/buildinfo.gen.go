@@ -158,7 +158,7 @@ var sourceHashes = map[string]string{
 	"stdlib/experimental/diff_test.flux":                                                          "b75aa4095b24d67f027b24b0c08e926824a6f68ea292821c025bcb8ac76c0339",
 	"stdlib/experimental/distinct_test.flux":                                                      "c7358d31972d0931aef6735ea94d901827c13fbaaeb9b02ff255391b5f95ea30",
 	"stdlib/experimental/dynamic/dynamic.flux":                                                    "3c70d8deb1d186eafa3b63c44dabe3df9b75595d2598f59a68812cf74b4a6685",
-	"stdlib/experimental/dynamic/dynamic_test.flux":                                               "d989fd19517c63ff6c3c326bb6a73fd6897772989595ccaf5cb72372b7d042be",
+	"stdlib/experimental/dynamic/dynamic_test.flux":                                               "be7a950279e9c48f24c7c494e5bba794bf3956890a17d3cc5a36662235fee309",
 	"stdlib/experimental/experimental.flux":                                                       "65b7c015a47f5f5da48d23a64d73bdf8c6e299b0530ab71af236711369104566",
 	"stdlib/experimental/experimental_test.flux":                                                  "97d2fadc0405ceef1cfa5ab768b41c1f3e00c4ee5f3e6e55e5ff29c4ad2ac340",
 	"stdlib/experimental/fill_test.flux":                                                          "3e31ca59476018a527a33d01d50c492da29f4de095df21c77abdb43c05947baf",
