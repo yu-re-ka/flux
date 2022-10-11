@@ -160,7 +160,7 @@ var sourceHashes = map[string]string{
 	"stdlib/experimental/dynamic/dynamic.flux":                                                    "3c70d8deb1d186eafa3b63c44dabe3df9b75595d2598f59a68812cf74b4a6685",
 	"stdlib/experimental/dynamic/dynamic_test.flux":                                               "d989fd19517c63ff6c3c326bb6a73fd6897772989595ccaf5cb72372b7d042be",
 	"stdlib/experimental/experimental.flux":                                                       "65b7c015a47f5f5da48d23a64d73bdf8c6e299b0530ab71af236711369104566",
-	"stdlib/experimental/experimental_test.flux":                                                  "97d2fadc0405ceef1cfa5ab768b41c1f3e00c4ee5f3e6e55e5ff29c4ad2ac340",
+	"stdlib/experimental/experimental_test.flux":                                                  "4c25db98c5e1d67fcac6d163a5604037d055713080ecec912cc9b876fea8fd7c",
 	"stdlib/experimental/fill_test.flux":                                                          "3e31ca59476018a527a33d01d50c492da29f4de095df21c77abdb43c05947baf",
 	"stdlib/experimental/first_test.flux":                                                         "3bd1ff03bac6a45a3c525abb5ded3377f08195b6a5094caa42c8fb8b96aa6268",
 	"stdlib/experimental/geo/asTracks_test.flux":                                                  "3b33b115eacb39e04177d552cc0180f8969a75832bf457267baceb6d506a6321",
